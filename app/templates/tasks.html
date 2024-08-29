@@ -1,0 +1,46 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}{{ user["fname"] }} | Tasks{% endblock %}
+
+{% block content %}
+
+<span class="sort"> Sort by </span>
+<br><br>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-5 task">
+            <h1><a href="/dashboard/task" class="task-header">Task #001</a></h1>
+            <p></p>
+            <ul>
+                <li>Implement xyz</li>
+                <li>Visit hyg.io</a></li>
+                <li>Like and subscribe to Samuel's post</a></li>
+            </ul>
+            <div class="task-attribute">
+                <span class="task-source">Source: My Todo</span>
+                <span class="task-date">Modified Last: {{ user["dob"] }}</span>
+                <span class="task-deadline" style="color: red">2 days to deadline</span>
+                <div class="task-rank"><em>Very Important</em></div>
+            </div>
+        </div>
+
+        <div class="col-5 offset-1 task">
+            <h1><a href="/dashboard/task" class="task-header">Untitled Task</a></h1>
+            <p></p>
+            <ul>
+                <li>Hii there</li>
+                <li>Just playing around</a></li>
+                <li>Yh I got some tasks too</a></li>
+            </ul>
+            <div class="task-attribute">
+                <span class="task-source">Source: Pan-Atlantic Fishery Project</span>
+                <span class="task-date">Modified Last: {{ user["dob"] }}</span>
+                <span class="task-deadline" style="color:lightgreen">3 weeks to deadline</span>
+                <div class="task-rank"><em>Important</em></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

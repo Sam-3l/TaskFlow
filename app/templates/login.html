@@ -1,0 +1,67 @@
+{% extends 'parents/form_base.html' %}
+
+{% block title %}Dove Airdrop | Login{% endblock %}
+{% block content %}
+
+<div class="login-container">
+<div class="login-box">
+      <h2>Login</h2>
+      <div id="uname_email_err">
+        {% if form.uname_or_email.data %}
+        <div class="alert alert-danger" role="alert">
+          Invalid credentials. Please try again.
+        </div>
+        {% endif %}
+      </div>
+
+      <form method="post" action="">
+      {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+              {{ form.uname_or_email.label(class="form-label") }}
+              {{ form.uname_or_email() }}
+          </div>
+          <div class="mb-3">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password() }}
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              {{ form.remember() }}
+              {{ form.remember.label(class="form-check-label") }}
+            </div>  
+          </div>
+          <div class="forgot-password">
+            <a href="#">Forgot password?</a>
+          </div>
+          {{ form.submit() }}
+    </form>
+    <div class="sign-up">
+        <p>Don't have an account? <a href="/auth/signup">Sign up here</a></p>
+    </div>
+</div>
+</div>
+
+{% with messages = get_flashed_messages() %}
+    {% for message in messages %}
+        {% if message %}
+          <div id="flash-message" class="flash-message">
+            <span>
+                {{ message }}
+            </span>
+            <button id="close-btn" class="close-btn">&times;</button>
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              flash();
+            });
+          </script>
+        {% endif %}
+    {% endfor %}
+{% endwith %}
+<script>
+  login_option = document.getElementsByClassName('form2')[0]
+  login_option.style.display = 'none'
+</script>
+
+{% endblock %} 

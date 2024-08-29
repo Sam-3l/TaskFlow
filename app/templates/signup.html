@@ -1,0 +1,129 @@
+{% extends 'parents/form_base.html' %}
+
+{% block title %}Dove Airdrop | Sign-Up{% endblock %}
+{% block content %}
+
+<h1>Create An Account</h1>
+<p>Enter your details to create an account</p>
+
+<form class="row g-3 form" method="post" action="" onsubmit="return validateForm()">
+  {{ form.hidden_tag() }}
+
+    <div class="col-md-6">
+      {{ form.fname.label(class="form-label") }}
+      {{ form.fname() }}
+      {% for error in form.fname.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-md-6">
+      {{ form.lname.label(class="form-label") }}
+      {{ form.lname() }}
+      {% for error in form.lname.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-md-6">
+      {{ form.gender.label(class="form-label") }}
+      {{ form.gender() }}
+      <div class="error" id="gender_err">
+      {% for error in form.gender.errors %}
+        {{ error }}
+      {% endfor %}
+      </div>
+    </div>
+    <div class="col-md-6">
+      {{ form.username.label(class="form-label") }}
+      <div class="input-group">
+        <span class="input-group-text">@</span>
+        {{ form.username() }}
+      </div>
+      <div id="error-message" class="error"></div>
+      <div class="error" id="uname_err">
+      {% for error in form.username.errors %}
+        {{ error }}
+      {% endfor %}
+      </div>
+    </div>
+    <div class="col-12">
+      {{ form.address.label(class="form-label") }}
+      {{ form.address() }}
+      {% for error in form.address.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-12">
+      {{ form.dob.label(class="form-label") }}
+      {{ form.dob() }}
+      <div class="error" id="dob_err">
+      {% for error in form.dob.errors %}
+        {{ error }}
+      {% endfor %}
+      </div>
+    </div>
+    <div class="col-6">
+      {{ form.email.label(class="form-label") }}
+      {{ form.email() }}
+      <div class="error" id="email_err">
+      {% for error in form.email.errors %}
+        {{ error }}
+        <a href="/auth/login">Login instead?</a>
+      {% endfor %}
+      </div>
+    </div>
+    <div class="col-6">
+      {{ form.phone.label(class="form-label") }}
+      {{ form.phone() }}
+      {% for error in form.phone.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-6">
+      {{ form.city.label(class="form-label") }}
+      {{ form.city() }}
+      {% for error in form.city.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-4">
+      {{ form.state.label(class="form-label") }}
+      {{ form.state() }}
+      {% for error in form.state.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-2">
+      {{ form.zip.label(class="form-label") }}
+      {{ form.zip() }}
+      {% for error in form.zip.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-6">
+      {{ form.password.label(class="form-label") }}
+      {{ form.password() }}
+      {% for error in form.password.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+    <div class="col-6">
+      {{ form.c_pass.label(class="form-label") }}
+      {{ form.c_pass() }}
+      <div class="error" id="cpass_err">
+      {% for error in form.c_pass.errors %}
+        {{ error }}
+      {% endfor %}
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-check">
+        {{ form.check() }}
+        {{ form.check.label(class="form-check-label")}}
+      </div>
+    </div>
+    <div class="col-12">
+      {{ form.submit() }}
+    </div>
+  </form>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}{{ user["fname"] }} | Home{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid home">
+    <div class="row">
+
+    <div class="col-12">
+        <h1>Welcome {{ user["fname"] }}</h1>
+        <br>
+        <h3>Take the tour</h3>
+        <ul>
+            <li><a href="#">Create your first task</a></li>
+            <li><a href="#">Start up a project</a></li>
+            <li><a href="#">Create an interractive to-do list</a></li>
+            <li><a href="#">Join communites and connect</a></li>
+            <li><a href="#">Add friends</a></li>
+        </ul>
+        <hr>
+    </div>
+
+    <div class="col-12">
+        Compete setting up your project 
+        <hr>
+    </div>
+    
+    </div>
+</div>
+{% with messages = get_flashed_messages() %}
+    {% for message in messages %}
+        {% if message %}
+            <div id="flash-message" class="flash-message">
+                <span>
+                    {{ message }}
+                </span>
+                <button id="close-btn" class="close-btn">&times;</button>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    flash();
+                });
+            </script>
+        {% endif %}
+    {% endfor %}
+{% endwith %}
+
+{% endblock %}

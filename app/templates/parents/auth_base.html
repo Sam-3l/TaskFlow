@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href=" {{ url_for('static', filename='styles.css') }} ">
+    <title>{% block title %}{% endblock %}</title>
+</head> 
+<body class="auth_body">
+
+<div class="nav-g">
+    <nav class="navbar navbar-expand-lg navbar-light bg-secondary nav-1 nav-d flex-nowrap">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+            </a>
+            <div class="d-flex justify-content-end align-items-center w-100 dboard-end">
+                <form class="d-flex me-0" action="#" method="post">
+                    <input class="form-control me-2" type="search" placeholder="Press 'enter' to search" aria-label="Search">
+                </form>
+                <div class="navbar-nav">
+                    <div class="nav-link d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='images/uploads/profile_img/'+user['profile_img']) }}" alt="Profie Image" class="profile-img ms-2" onclick="toggleMenu()"/>  
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Second Row Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary nav-2 nav-d p-0">
+        <div class="container-fluid justify-content-center">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                <a class="nav-link {% if active_page == 'home' %} active {% endif %}" href="/dashboard" id="home-link">
+                    <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m4 0-4 3h1v4h2v-2h2v2h2v-4.03l1 .03-4-3z"/>
+                    </svg>&nbsp;
+                    Home
+                </a></li>
+                <li class="nav-item">
+                <a class="nav-link {% if active_page == 'tasks' %} active {% endif %}" href="/dashboard/tasks" id="tasks-link">
+                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
+                        <path d="m139.61 35.5a12 12 0 0 0 -17 0l-63.68 63.31-22.7-22.12a12 12 0 0 0 -17 0l-15.7 15.72a12 12 0 0 0 0 17l47.59 47.4a12.78 12.78 0 0 0 17.61 0l15.59-15.62 72.2-72.19a12.09 12.09 0 0 0 .09-17zm0 159.19a12 12 0 0 0 -17 0l-63.68 63.72-22.7-22.1a12 12 0 0 0 -17 0l-15.7 15.69a12 12 0 0 0 0 17l47.47 47.5a12.77 12.77 0 0 0 17.6 0l15.7-15.69 72.2-72.22a12 12 0 0 0 .09-16.9zm-75.61 173.31c-26.49 0-48.59 21.5-48.59 48s22.12 48 48.59 48a48 48 0 0 0 0-96zm432 16h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0-320h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0 160h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16z"/>
+                    </svg>&nbsp;
+                    Tasks
+                </a></li>
+                <li class="nav-item">
+                <a class="nav-link {% if active_page == 'projects' %} active {% endif %}" href="/dashboard/project" id="projects-link">
+                    <svg enable-background="new 0 0 20 20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
+                        <path clip-rule="evenodd" d="m18 4c0-.55-.45-1-1-1h-14c-.55 0-1 .45-1 1v2h16zm-2-3c0-.55-.45-1-1-1h-10c-.55 0-1 .45-1 1v1h12zm3 6h-18c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-11c0-.55-.45-1-1-1zm-5 7c0 .55-.45 1-1 1h-6c-.55 0-1-.45-1-1v-2h1v2h6v-2h1z" fill-rule="evenodd"/>
+                    </svg>&nbsp;
+                    Projects
+                </a></li>
+                <li class="nav-item {% if active_page == 'likes' %} active {% endif %}">
+                    <a class="nav-link" href="#" id="likes-link">Likes</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+</div>
+
+<!-- User Menu -->
+<div id="userMenu" class="user-menu">
+    <div class="user-info d-flex align-items-center justify-content-between p-3">
+        <div class="d-flex align-items-center">
+            <img src="{{ url_for('static', filename='images/uploads/profile_img/'+user['profile_img']) }}" alt="Profile Image" class="profile-img-small">
+            &nbsp;&nbsp;&nbsp;<span class="ml-2">{{ user["username"] }}</span>
+        </div>
+        <span class="close-menu" onclick="toggleMenu()">&times;</span>
+    </div>    
+    <ul>
+        <li><a href="#">
+            <svg height="25" viewBox="0 0 20 20" width="25" xmlns="http://www.w3.org/2000/svg">
+                <path d="m374 2009c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4m3.758.673c1.366-1.099 2.242-2.783 2.242-4.673 0-3.314-2.686-6-6-6s-6 2.686-6 6c0 1.89.876 3.574 2.242 4.673-3.659 1.375-6.242 4.772-6.242 9.327h2c0-5 3.589-8 8-8s8 3 8 8h2c0-4.555-2.583-7.952-6.242-9.327" fill-rule="evenodd" transform="translate(-364 -1999)"/>
+            </svg>&nbsp;&nbsp;
+            My Profile
+        </a></li>
+        <li><a href="/dashboard/tasks">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" height="25" width="25">
+                <path d="m139.61 35.5a12 12 0 0 0 -17 0l-63.68 63.31-22.7-22.12a12 12 0 0 0 -17 0l-15.7 15.72a12 12 0 0 0 0 17l47.59 47.4a12.78 12.78 0 0 0 17.61 0l15.59-15.62 72.2-72.19a12.09 12.09 0 0 0 .09-17zm0 159.19a12 12 0 0 0 -17 0l-63.68 63.72-22.7-22.1a12 12 0 0 0 -17 0l-15.7 15.69a12 12 0 0 0 0 17l47.47 47.5a12.77 12.77 0 0 0 17.6 0l15.7-15.69 72.2-72.22a12 12 0 0 0 .09-16.9zm-75.61 173.31c-26.49 0-48.59 21.5-48.59 48s22.12 48 48.59 48a48 48 0 0 0 0-96zm432 16h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0-320h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0 160h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16z"/>
+            </svg>&nbsp;&nbsp;
+            My Tasks
+        </a></li>
+        <li><a href="#">
+            <svg enable-background="new 0 0 20 20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" height="25" width="25">
+                <path clip-rule="evenodd" d="m18 4c0-.55-.45-1-1-1h-14c-.55 0-1 .45-1 1v2h16zm-2-3c0-.55-.45-1-1-1h-10c-.55 0-1 .45-1 1v1h12zm3 6h-18c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-11c0-.55-.45-1-1-1zm-5 7c0 .55-.45 1-1 1h-6c-.55 0-1-.45-1-1v-2h1v2h6v-2h1z" fill-rule="evenodd"/>
+            </svg>&nbsp;&nbsp;
+            My Projects
+        </a></li>
+        <li><a href="#">
+            <svg width="25" height="25" viewBox="0 0 24 24" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" class="tools">
+                <path d="M10.0503 10.6066L2.97923 17.6777C2.19818 18.4587 2.19818 19.7251 2.97923 20.5061V20.5061C3.76027 21.2872 5.0266 21.2872 5.80765 20.5061L12.8787 13.4351" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M17.1927 13.7994L21.071 17.6777C21.8521 18.4587 21.8521 19.7251 21.071 20.5061V20.5061C20.29 21.2872 19.0236 21.2872 18.2426 20.5061L12.0341 14.2977" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6.73267 5.90381L4.61135 6.61092L2.49003 3.07539L3.90424 1.66117L7.43978 3.78249L6.73267 5.90381ZM6.73267 5.90381L9.5629 8.73404" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10.0503 10.6066C9.2065 8.45359 9.37147 5.62861 11.111 3.8891C12.8505 2.14958 16.0607 1.76778 17.8285 2.82844L14.7878 5.86911L14.5052 8.98015L17.6162 8.69754L20.6569 5.65686C21.7176 7.42463 21.3358 10.6349 19.5963 12.3744C17.8567 14.1139 15.0318 14.2789 12.8788 13.435" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>&nbsp;&nbsp;    
+            Tools
+        </a></li><!..todos, time tracker, notes, reminders ..>
+        <li><a href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 0 24 24" width="25">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>&nbsp;&nbsp;
+            Notifications
+        </a></li>
+        <li><a href="#">
+            <svg height="25" viewBox="0 0 8 8" width="25" xmlns="http://www.w3.org/2000/svg">
+                <path d="m5.5 0c-.51 0-.95.35-1.22.88.45.54.72 1.28.72 2.13 0 .29-.03.55-.09.81.19.11.38.19.59.19.83 0 1.5-.9 1.5-2s-.67-2-1.5-2zm-3 1c-.83 0-1.5.9-1.5 2s.67 2 1.5 2 1.5-.9 1.5-2-.67-2-1.5-2zm4.75 3.16c-.43.51-1.02.82-1.69.84.27.38.44.84.44 1.34v.66h2v-1.66c0-.52-.31-.97-.75-1.19zm-6.5 1c-.44.22-.75.67-.75 1.19v1.66h5v-1.66c0-.52-.31-.97-.75-1.19-.45.53-1.06.84-1.75.84s-1.3-.32-1.75-.84z"/>
+            </svg>&nbsp;&nbsp;
+            People/Team
+        </a></li>
+        <li><a href="#">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="25" height="25">
+                <path d="m496 384h-432v-304c0-8.84-7.16-16-16-16h-32c-8.84 0-16 7.16-16 16v336c0 17.67 14.33 32 32 32h464c8.84 0 16-7.16 16-16v-32c0-8.84-7.16-16-16-16zm-32-288h-118.06c-21.38 0-32.09 25.85-16.97 40.97l32.4 32.4-73.37 73.38-73.37-73.37c-12.5-12.5-32.76-12.5-45.25 0l-68.69 68.69c-6.25 6.25-6.25 16.38 0 22.63l22.62 22.62c6.25 6.25 16.38 6.25 22.63 0l46.06-46.07 73.37 73.37c12.5 12.5 32.76 12.5 45.25 0l96-96 32.4 32.4c15.12 15.12 40.97 4.41 40.97-16.97v-118.05c.01-8.84-7.15-16-15.99-16z"/>
+            </svg>&nbsp;&nbsp;
+            Analytics & Reporting
+        </a></li>
+        <li><a href="#">
+            <svg height="25" viewBox="0 0 8 8" width="25" xmlns="http://www.w3.org/2000/svg">
+                <path d="m3.5 0-.5 1.19c-.1.03-.19.08-.28.13l-1.19-.5-.72.72.5 1.19c-.05.1-.09.18-.13.28l-1.19.5v1l1.19.5c.04.1.08.18.13.28l-.5 1.19.72.72 1.19-.5c.09.04.18.09.28.13l.5 1.19h1l.5-1.19c.09-.04.19-.08.28-.13l1.19.5.72-.72-.5-1.19c.04-.09.09-.19.13-.28l1.19-.5v-1l-1.19-.5c-.03-.09-.08-.19-.13-.28l.5-1.19-.72-.72-1.19.5c-.09-.04-.19-.09-.28-.13l-.5-1.19h-1zm.5 2.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5z"/>
+            </svg>&nbsp;&nbsp;
+            Settings
+        </a></li>
+        <li><a href="/auth/logout">
+            <svg height="25" viewBox="0 0 8 8" width="25" xmlns="http://www.w3.org/2000/svg" class="logout">
+                <path d="m3 0v1h4v5h-4v1h5v-7zm-1 2-2 1.5 2 1.5v-1h4v-1h-4z"/>
+            </svg>&nbsp;&nbsp;
+            Logout
+        </a></li> 
+    </ul>
+    <ul>
+        <li><a href="#">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="25" height="25">
+                <path d="m502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7v204.5c0 26.5-21.5 48-48 48h-416c-26.5 0-48-21.5-48-48v-204.4c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zm-246.3 129.2c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48h-416c-26.5 0-48 21.5-48 48v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"/>
+            </svg>&nbsp;&nbsp;
+            Help Center
+        </a></li>
+        <li><a href="#">
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="25" height="25">
+                <path d="m28 6h-24a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2v-16a2 2 0 0 0 -2-2zm-2.2 2-9.8 6.78-9.8-6.78zm-21.8 16v-15.09l11.43 7.91a1 1 0 0 0 1.14 0l11.43-7.91v15.09z"/><path d="m0 0h32v32h-32z" fill="none"/>
+            </svg>&nbsp;&nbsp;
+            Contact Support
+        </a></li>
+        <li><a href="#">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="25" height="25">
+                <path d="m144 208c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm112 0c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm112 0c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm-112-176c-141.4 0-256 93.1-256 208 0 47.6 19.9 91.2 52.9 126.3-14.9 39.4-45.9 72.8-46.4 73.2-6.6 7-8.4 17.2-4.6 26s12.5 14.5 22.1 14.5c61.5 0 110-25.7 139.1-46.3 28.9 9.1 60.1 14.3 92.9 14.3 141.4 0 256-93.1 256-208s-114.6-208-256-208zm0 368c-26.7 0-53.1-4.1-78.4-12.1l-22.7-7.2-19.5 13.8c-14.3 10.1-33.9 21.4-57.5 29 7.3-12.1 14.4-25.7 19.9-40.2l10.6-28.1-20.6-21.8c-18.1-19.3-39.8-51.2-39.8-93.4 0-88.2 93.3-160 208-160s208 71.8 208 160-93.3 160-208 160z"/>
+            </svg>&nbsp;&nbsp;
+            Feedback
+        </a></li>
+        <li><a href="#">
+            <svg width="25" height="25" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3L5 3C3.89543 3 3 3.89543 3 5L3 19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 7L17 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 12L17 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 17L13 17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>&nbsp;&nbsp;              
+            TM Docs
+        </a></li>
+    </ul>
+</div>
+<div class="auth_content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
