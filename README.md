@@ -23,27 +23,6 @@
 - PostgreSQL
 - Virtual environment (recommended)
 
-## Features
-
-- **Task Management:** Create, assign, and track tasks with ease.
-- **Deadline Tracking:** Keep track of deadlines and stay organized.
-- **Productivity Tools:** Integrated tools to boost efficiency and accountability.
-- **User-Friendly Interface:** Designed with HTML, CSS, JavaScript, and Bootstrap for a seamless experience.
-
-## Technologies
-
-- **Backend:** Flask, Python
-- **Frontend:** HTML, CSS, JavaScript, Bootstrap
-- **Database:** PostgreSQL
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.x
-- PostgreSQL
-- Virtual environment (recommended)
-
 ### Installation
 
 1. **Clone the repository:**
