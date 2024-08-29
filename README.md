@@ -23,17 +23,6 @@
 - PostgreSQL
 - Virtual environment (recommended)
 
-### Installation
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/Sam-3l/TaskFlow.git
-   cd TaskFlow
-2. **# TaskFlow
-
-**TaskFlow** is a powerful task management application designed to enhance productivity, manage deadlines, and improve task distribution and accountability. Built with Flask, Python, and PostgreSQL, this app offers a user-friendly interface and efficient tools to streamline your workflow.
-
 ## Features
 
 - **Task Management:** Create, assign, and track tasks with ease.
