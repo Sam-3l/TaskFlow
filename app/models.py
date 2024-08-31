@@ -1,5 +1,7 @@
 from . import db
 from flask_login import UserMixin
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.sql import func
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -14,6 +16,8 @@ class User(UserMixin, db.Model):
     city = db.Column(db.String(150), nullable=False)
     state = db.Column(db.String(150), nullable=False)
     zip = db.Column(db.String(150), nullable=False)
+    bio = db.Column(db.Text, nullable=True)
+    date_joined = db.Column(db.Date, default=func.current_date())
     password = db.Column(db.String(150), nullable=False)
     profile_img = db.Column(db.String(120), default="default_male.jpg")
 

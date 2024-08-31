@@ -8,27 +8,30 @@
     <title>{% block title %}{% endblock %}</title>
 </head> 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary p-2 navbar-fixed">
-      <div class="container-fluid">
-      <a class="navbar-brand" href="#"><b>Dove Airdrop</b></a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="https://wa.link/p7m1ff"  tabindex="-1">Join Waitlist</a>
-          </li> 
-          <li class="nav-item">
-            <a class="nav-link active" href="https://wa.link/p7m1ff"  tabindex="-1">NFT</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="https://wa.link/p7m1ff"  tabindex="-1">Explore</a>
-          </li>
-        </ul>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-secondary p-2 navbar-fixed">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        &nbsp;&nbsp;<b>TaskFlow</b>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="https://wa.link/p7m1ff"  tabindex="-1">Support</a>
+        </li> 
+        <li class="nav-item">
+          <a class="nav-link active" href="https://wa.link/p7m1ff"  tabindex="-1">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://wa.link/p7m1ff"  tabindex="-1">Docs</a>
+        </li>
+      </ul>
         <div class="d-flex">
           <span class="form2">Aready have an account? <b><a href="/auth/login">Login</a></b></span>
         </div>

@@ -29,36 +29,57 @@
     </nav>
 
     <!-- Second Row Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary nav-2 nav-d p-0">
-        <div class="container-fluid justify-content-center">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                <a class="nav-link {% if active_page == 'home' %} active {% endif %}" href="/dashboard" id="home-link">
-                    <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg">
-                        <path d="m4 0-4 3h1v4h2v-2h2v2h2v-4.03l1 .03-4-3z"/>
-                    </svg>&nbsp;
-                    Home
-                </a></li>
-                <li class="nav-item">
-                <a class="nav-link {% if active_page == 'tasks' %} active {% endif %}" href="/dashboard/tasks" id="tasks-link">
-                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
-                        <path d="m139.61 35.5a12 12 0 0 0 -17 0l-63.68 63.31-22.7-22.12a12 12 0 0 0 -17 0l-15.7 15.72a12 12 0 0 0 0 17l47.59 47.4a12.78 12.78 0 0 0 17.61 0l15.59-15.62 72.2-72.19a12.09 12.09 0 0 0 .09-17zm0 159.19a12 12 0 0 0 -17 0l-63.68 63.72-22.7-22.1a12 12 0 0 0 -17 0l-15.7 15.69a12 12 0 0 0 0 17l47.47 47.5a12.77 12.77 0 0 0 17.6 0l15.7-15.69 72.2-72.22a12 12 0 0 0 .09-16.9zm-75.61 173.31c-26.49 0-48.59 21.5-48.59 48s22.12 48 48.59 48a48 48 0 0 0 0-96zm432 16h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0-320h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0 160h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16z"/>
-                    </svg>&nbsp;
-                    Tasks
-                </a></li>
-                <li class="nav-item">
-                <a class="nav-link {% if active_page == 'projects' %} active {% endif %}" href="/dashboard/project" id="projects-link">
-                    <svg enable-background="new 0 0 20 20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
-                        <path clip-rule="evenodd" d="m18 4c0-.55-.45-1-1-1h-14c-.55 0-1 .45-1 1v2h16zm-2-3c0-.55-.45-1-1-1h-10c-.55 0-1 .45-1 1v1h12zm3 6h-18c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-11c0-.55-.45-1-1-1zm-5 7c0 .55-.45 1-1 1h-6c-.55 0-1-.45-1-1v-2h1v2h6v-2h1z" fill-rule="evenodd"/>
-                    </svg>&nbsp;
-                    Projects
-                </a></li>
-                <li class="nav-item {% if active_page == 'likes' %} active {% endif %}">
-                    <a class="nav-link" href="#" id="likes-link">Likes</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    {% if active_page %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-secondary nav-2 nav-d p-0">
+            <div class="container-fluid justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'home' %} active {% endif %}" href="/dashboard" id="home-link">
+                        <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="m4 0-4 3h1v4h2v-2h2v2h2v-4.03l1 .03-4-3z"/>
+                        </svg>&nbsp;
+                        Home
+                    </a></li>
+                    <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'tasks' %} active {% endif %}" href="/dashboard/tasks" id="tasks-link">
+                        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
+                            <path d="m139.61 35.5a12 12 0 0 0 -17 0l-63.68 63.31-22.7-22.12a12 12 0 0 0 -17 0l-15.7 15.72a12 12 0 0 0 0 17l47.59 47.4a12.78 12.78 0 0 0 17.61 0l15.59-15.62 72.2-72.19a12.09 12.09 0 0 0 .09-17zm0 159.19a12 12 0 0 0 -17 0l-63.68 63.72-22.7-22.1a12 12 0 0 0 -17 0l-15.7 15.69a12 12 0 0 0 0 17l47.47 47.5a12.77 12.77 0 0 0 17.6 0l15.7-15.69 72.2-72.22a12 12 0 0 0 .09-16.9zm-75.61 173.31c-26.49 0-48.59 21.5-48.59 48s22.12 48 48.59 48a48 48 0 0 0 0-96zm432 16h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0-320h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0 160h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16z"/>
+                        </svg>&nbsp;
+                        Tasks
+                    </a></li>
+                    <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'projects' %} active {% endif %}" href="/dashboard/project" id="projects-link">
+                        <svg enable-background="new 0 0 20 20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
+                            <path clip-rule="evenodd" d="m18 4c0-.55-.45-1-1-1h-14c-.55 0-1 .45-1 1v2h16zm-2-3c0-.55-.45-1-1-1h-10c-.55 0-1 .45-1 1v1h12zm3 6h-18c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-11c0-.55-.45-1-1-1zm-5 7c0 .55-.45 1-1 1h-6c-.55 0-1-.45-1-1v-2h1v2h6v-2h1z" fill-rule="evenodd"/>
+                        </svg>&nbsp;
+                        Projects
+                    </a></li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'people' %} active {% endif %}" href="/dashboard/people" id="people-link">
+                            <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m5.5 0c-.51 0-.95.35-1.22.88.45.54.72 1.28.72 2.13 0 .29-.03.55-.09.81.19.11.38.19.59.19.83 0 1.5-.9 1.5-2s-.67-2-1.5-2zm-3 1c-.83 0-1.5.9-1.5 2s.67 2 1.5 2 1.5-.9 1.5-2-.67-2-1.5-2zm4.75 3.16c-.43.51-1.02.82-1.69.84.27.38.44.84.44 1.34v.66h2v-1.66c0-.52-.31-.97-.75-1.19zm-6.5 1c-.44.22-.75.67-.75 1.19v1.66h5v-1.66c0-.52-.31-.97-.75-1.19-.45.53-1.06.84-1.75.84s-1.3-.32-1.75-.84z"/>
+                            </svg>&nbsp;
+                            People
+                    </a></li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'notif' %} active {% endif %}" href="/dashboard/notifications" id="notif-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">
+                                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                            </svg>&nbsp;
+                            Notifications
+                    </a></li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'upvotes' %} active {% endif %}" href="/dashboard/upvotes" id="upvotes-link">
+                            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10 16L12 14V10L13.6569 8.34314C15.1571 6.84285 16 4.80802 16 2.68629V0H13.3137C11.192 0 9.15714 0.842855 7.65685 2.34315L6 4H2L0 6L10 16ZM10.5 7C11.3284 7 12 6.32843 12 5.5C12 4.67157 11.3284 4 10.5 4C9.67157 4 9 4.67157 9 5.5C9 6.32843 9.67157 7 10.5 7Z" fill="#fff"/>
+                                <path d="M4.9274 13.7558L2.24423 11.0726L0 15L1 16L4.9274 13.7558Z" fill="#fff"/>
+                            </svg>&nbsp;
+                            Upvotes
+                    </a></li>
+                </ul>
+            </div>
+        </nav>
+    {% endif %}
 
 </div>
 
@@ -72,7 +93,7 @@
         <span class="close-menu" onclick="toggleMenu()">&times;</span>
     </div>    
     <ul>
-        <li><a href="#">
+        <li><a href="/profile">
             <svg height="25" viewBox="0 0 20 20" width="25" xmlns="http://www.w3.org/2000/svg">
                 <path d="m374 2009c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4m3.758.673c1.366-1.099 2.242-2.783 2.242-4.673 0-3.314-2.686-6-6-6s-6 2.686-6 6c0 1.89.876 3.574 2.242 4.673-3.659 1.375-6.242 4.772-6.242 9.327h2c0-5 3.589-8 8-8s8 3 8 8h2c0-4.555-2.583-7.952-6.242-9.327" fill-rule="evenodd" transform="translate(-364 -1999)"/>
             </svg>&nbsp;&nbsp;
@@ -160,7 +181,8 @@
         </a></li>
     </ul>
 </div>
-<div class="auth_content">
+
+<div class="{% if active_page %} auth_dashboard_content {% else %} auth_content {% endif %}">
     {% block content %}
     {% endblock %}
 </div>
