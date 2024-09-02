@@ -37,6 +37,11 @@ def tasks():
     return render_template("tasks.html", user=current_user, active_page="tasks")
 
 @login_required
+@main.route("/dashboard/projects")
+def projects():
+    return render_template("projects.html", user=current_user, active_page="projects")
+
+@login_required
 @main.route("/profile")
 def profile():
     formatted_date_joined = format_date(current_user.date_joined)
@@ -49,11 +54,14 @@ def profile():
 def edit_profile():
     pass
 
+@login_required
 @main.route("/user/<int:user_id>/profile")
 def user(user_id):
     if current_user.id == user_id:
         return redirect(url_for("main.profile"))
     user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return "Not found. Check your url", 404
     formatted_date_joined = format_date(user.date_joined)
     formatted_dob = format_date(user.dob)
     dates = {'joined': formatted_date_joined, 'birth': formatted_dob}

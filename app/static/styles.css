@@ -329,12 +329,12 @@ body{
     cursor: pointer;
     align-items: center;
 }
-.task-header{
+.section-header{
     color: #fff;
     text-decoration: none;
 }
 
-.task-header:hover{
+.section-header:hover{
     text-decoration: underline;
     color: #fff;
 }
@@ -379,4 +379,34 @@ body{
 }
 .back{
     cursor: pointer;
+}
+.proj-upvotes{
+    font-size: 28px;
+    cursor: pointer;
+    padding-left: 3%;
+    padding-right: 3%;
+}
+.proj-upvotes svg path{
+    fill: #fff;
+}
+.proj-upvotes:hover{
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20%;
+}
+.proj-type{
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 12%;
+    border: 0.5px solid #0d6efd;
+    padding: 1.5%;
+}
+.proj-role{
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10%;
+    padding: 2px; /* Each role would have a unique color e.g admin orange */
+}
+.proj{
+    padding: 2%;
+    padding-bottom: 0.8%;
+    border-bottom: 1px solid #0d6efd;
 }

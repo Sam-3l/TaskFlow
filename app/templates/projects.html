@@ -1,0 +1,60 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}{{ user["fname"] }} | Projects{% endblock %}
+
+{% block content %}
+
+<span class="sort"> Sort by&nbsp;
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path opacity="0.5" d="M16 18L16 6M16 6L20 10.125M16 6L12 10.125" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 6L8 18M8 18L12 13.875M8 18L4 13.875" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+</span>
+<br>
+
+<div class="container-fluid">
+
+    {% for any in range(20) %}
+        <div class="row proj">
+            <div class="col-12 d-flex justify-content-between align-items-center py-1">
+                <h1><a href="/dashboard/project" class="section-header">Saani Ranch Building Project</a></h1>
+                <div class="d-flex align-items-center">
+                    <div class="me-3 proj-type">
+                        closed
+                    </div>
+                    <div class="d-flex align-items-center proj-upvotes">
+                        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10 16L12 14V10L13.6569 8.34314C15.1571 6.84285 16 4.80802 16 2.68629V0H13.3137C11.192 0 9.15714 0.842855 7.65685 2.34315L6 4H2L0 6L10 16ZM10.5 7C11.3284 7 12 6.32843 12 5.5C12 4.67157 11.3284 4 10.5 4C9.67157 4 9 4.67157 9 5.5C9 6.32843 9.67157 7 10.5 7Z" fill="none"/>
+                            <path d="M4.9274 13.7558L2.24423 11.0726L0 15L1 16L4.9274 13.7558Z" fill="none"/>
+                        </svg>&nbsp;
+                        <span>14</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 py-2">
+                yh some description lorem ipsum Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius ad molestiae repudiandae fugiat quaerat et eaque impedit non error nam, mollitia dolorum libero. Veniam hic voluptatum, numquam sint repellat aliquid.
+                yh some description lorem ipsum Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius ad molestiae repudiandae fugiat quaerat et eaque impedit non error nam, mollitia dolorum libero. Veniam hic voluptatum, numquam sint repellat aliquid.
+            </div>
+
+            <div class="col-12 d-flex justify-content-between align-items-center py-3">
+                <div class="d-flex align-items-center">
+                    <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+                        <path d="m5.5 0c-.51 0-.95.35-1.22.88.45.54.72 1.28.72 2.13 0 .29-.03.55-.09.81.19.11.38.19.59.19.83 0 1.5-.9 1.5-2s-.67-2-1.5-2zm-3 1c-.83 0-1.5.9-1.5 2s.67 2 1.5 2 1.5-.9 1.5-2-.67-2-1.5-2zm4.75 3.16c-.43.51-1.02.82-1.69.84.27.38.44.84.44 1.34v.66h2v-1.66c0-.52-.31-.97-.75-1.19zm-6.5 1c-.44.22-.75.67-.75 1.19v1.66h5v-1.66c0-.52-.31-.97-.75-1.19-.45.53-1.06.84-1.75.84s-1.3-.32-1.75-.84z"/>
+                    </svg>&nbsp;<span class="me-4">12 members</span>
+                    <span class="proj-role d-flex align-items-center">
+                        <svg fill="orange" width="13" height="13" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M960 0C430.645 0 0 430.645 0 960s430.645 960 960 960 960-430.645 960-960S1489.355 0 960 0" fill-rule="evenodd"/>
+                        </svg>&nbsp;Admin
+                    </span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <em class="me-5">Week 3 Task Distribution</em>
+                    <a href="#">View project on Github</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    
+<div>
+
+{% endblock %}
