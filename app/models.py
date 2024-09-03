@@ -39,9 +39,9 @@ class User(UserMixin, db.Model):
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(30), nullable=False)
-    description = db.Column(db.String(160)) # Can be edited or inputed by the user the task is assigned to
-    content = db.Column(db.Text, nullable=False)
+    title = db.Column(db.String(60), nullable=False)
+    description = db.Column(db.Text) # Can be edited or inputed by the user the task is assigned to
+    content = db.Column(db.Text, nullable=True)
     modified_last = db.Column(db.Date, default=func.current_date())
     deadline = db.Column(db.Date, nullable=True)
     priority = db.Column(db.String(30), nullable=True)
@@ -78,8 +78,8 @@ upvotes = db.Table("Upvotes",
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(30), nullable=False)
-    description = db.Column(db.String(160), nullable=False)
+    title = db.Column(db.String(60), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
     type = db.Column(db.String(10), default="closed")
     project_links = db.Column(db.String(255), nullable=True)
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
@@ -88,7 +88,7 @@ class Project(db.Model):
 
 class TaskAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(30), nullable=False)
+    title = db.Column(db.String(60), nullable=False)
     assigned_by_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="task_assignment")
     date_assigned = db.Column(db.Date, default=func.current_date())

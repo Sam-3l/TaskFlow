@@ -16,7 +16,7 @@
     {% for any in range(20) %}
         <div class="row proj">
             <div class="col-12 d-flex justify-content-between align-items-center py-1">
-                <h1><a href="/dashboard/project" class="section-header">Saani Ranch Building Project</a></h1>
+                <h1><a href="/dashboard/projects/projectid" class="section-header">Saani Ranch Building Project</a></h1>
                 <div class="d-flex align-items-center">
                     <div class="me-3 proj-type">
                         closed
@@ -56,5 +56,13 @@
     {% endfor %}
     
 <div>
+
+<div class="fab-container">
+    <a href="/dashboard/projects/new" style="text-decoration:none;">
+        <button class="fab">
+            <span class="fab-icon">+</span>
+        </button>
+    </a>
+</div>
 
 {% endblock %}

@@ -32,7 +32,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        flash("Signed-Up Sucessfully, Please Login", "info")
+        flash("Signed-Up Successfully, Please Login", "success")
         return redirect(url_for("auth.login"))
 
     return render_template('signup.html', form=form)
@@ -48,13 +48,13 @@ def login():
         user = User.query.filter_by(username=form.uname_or_email.data).first() or User.query.filter_by(email=form.uname_or_email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            flash("Logged in successfully", "info")
+            flash("Logged in successfully", "success")
             return redirect(url_for("main.dashboard"))
     return render_template('login.html', form=form)
 
-@login_required
 @auth.route("/logout")
+@login_required
 def logout():
-    flash("Logged out successfully", "info")
+    flash("Logged out successfully", "success")
     logout_user()
     return redirect(url_for("auth.login"))

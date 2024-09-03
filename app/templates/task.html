@@ -1,0 +1,37 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}{{ user["fname"] }} | Tasks{% endblock %}
+
+{% block content %}
+
+<div class="todo-container">
+    <h3 class="text-center mb-4">To-Do List</h3>
+    <div class="input-group mb-3">
+      <input type="text" class="form-control todo-input" placeholder="Add a new task" id="task-input">
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button" id="add-task-btn">Add Task</button>
+      </div>
+    </div>
+    <ul class="list-group todo-list">
+      <!-- Tasks will be dynamically added here -->
+    </ul>
+  </div>
+
+{% with messages = get_flashed_messages() %}
+    {% for message in messages %}
+        {% if message %}
+            <div id="flash-message" class="flash-message">
+                <span>
+                    {{ message }}
+                </span>
+                <button id="close-btn" class="close-btn">&times;</button>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    flash();
+                });
+            </script>
+        {% endif %}
+    {% endfor %}
+{% endwith %}
+  
+{% endblock %}

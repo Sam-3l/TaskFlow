@@ -91,3 +91,90 @@ function flash() {
         });
     });
     
+
+document.addEventListener('DOMContentLoaded', function () {
+    const fab = document.getElementById('fab');
+    const fabOptions = document.getElementById('fab-options');
+
+    fab.addEventListener('click', function () {
+        fab.classList.toggle('open');
+        fabOptions.style.display = fab.classList.contains('open') ? 'flex' : 'none';
+    });
+
+    document.addEventListener('click', function (event) {
+        const isClickInside = fab.contains(event.target) || fabOptions.contains(event.target);
+
+        if (!isClickInside) {
+            fab.classList.remove('open');
+            fabOptions.style.display = 'none';
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const addTaskBtn = document.getElementById('add-task-btn');
+  const taskInput = document.getElementById('task-input');
+  const todoList = document.querySelector('.todo-list');
+
+  // Function to add a task
+  addTaskBtn.addEventListener('click', function () {
+    const taskText = taskInput.value.trim();
+    if (taskText) {
+      addTask(taskText);
+      taskInput.value = '';
+    }
+  });
+
+  // Add task to the list
+  function addTask(taskText) {
+    const listItem = document.createElement('li');
+    listItem.className = 'list-group-item todo-item';
+
+    // Checkbox for completion
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'form-check-input';
+    checkbox.addEventListener('change', toggleComplete);
+
+    // Task label
+    const label = document.createElement('span');
+    label.className = 'task-label';
+    label.textContent = taskText;
+
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.className = 'todo-btn btn btn-warning btn-sm';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => editTask(label));
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'todo-btn btn btn-danger btn-sm';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', () => listItem.remove());
+
+    listItem.appendChild(checkbox);
+    listItem.appendChild(label);
+    listItem.appendChild(editBtn);
+    listItem.appendChild(deleteBtn);
+    todoList.appendChild(listItem);
+  }
+
+  // Toggle task completion
+  function toggleComplete(event) {
+    const label = event.target.nextSibling;
+    if (event.target.checked) {
+      label.classList.add('completed');
+    } else {
+      label.classList.remove('completed');
+    }
+  }
+
+  // Edit task
+  function editTask(label) {
+    const newTaskText = prompt('Edit your task:', label.textContent);
+    if (newTaskText !== null && newTaskText.trim() !== '') {
+      label.textContent = newTaskText.trim();
+    }
+  }
+});

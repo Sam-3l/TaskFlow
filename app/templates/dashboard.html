@@ -27,6 +27,18 @@
     
     </div>
 </div>
+
+<div class="fab-container">
+    <button class="fab" id="fab">
+        <span class="fab-icon">+</span>
+    </button>
+    <ul class="fab-options" id="fab-options">
+        <li><a href="/dashboard/tasks/new" class="fab-option">New Task</a></li>
+        <li><a href="#" class="fab-option">New Project</a></li>
+        <li><a href="#" class="fab-option">New Connection</a></li>
+    </ul>
+</div>
+
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
         {% if message %}
