@@ -3,18 +3,31 @@
 
 {% block content %}
 
-<div class="todo-container">
-    <h3 class="text-center mb-4">To-Do List</h3>
-    <div class="input-group mb-3">
-      <input type="text" class="form-control todo-input" placeholder="Add a new task" id="task-input">
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" id="add-task-btn">Add Task</button>
-      </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-3">
+            <h1>{{ task['title'] }}</h1>
+            {{ task['description'] }}
+        </div>
+
+        <div class="todo-container col-6">
+            <h3 class="text-center mb-4">Tasks List</h3>
+            <div class="input-group mb-3">
+            <input type="text" class="form-control todo-input" placeholder="Add a new task" id="task-input" />
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" id="add-task-btn">Add Task</button>
+            </div>
+            </div>
+            <ul class="list-group todo-list">
+            <!-- Tasks will be dynamically added here -->
+            </ul>
+        </div>
+
+        <div class="col-3">
+            Calendar
+        </div>
     </div>
-    <ul class="list-group todo-list">
-      <!-- Tasks will be dynamically added here -->
-    </ul>
-  </div>
+</div>
 
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
@@ -33,5 +46,5 @@
         {% endif %}
     {% endfor %}
 {% endwith %}
-  
+
 {% endblock %}

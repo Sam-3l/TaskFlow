@@ -318,6 +318,11 @@ body{
     position: absolute;
     display: flex;
 }
+
+.task-deadline{
+    align-items: center;
+}
+
 .sort{
     color: white;
     display: flex;
@@ -329,15 +334,52 @@ body{
     cursor: pointer;
     align-items: center;
 }
-.section-header{
+.tasks-header{
+    width: 95%; 
+    height: 2.5em; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    white-space: normal; /* Allows wrapping */
+}
+
+.tasks-header a{
     color: #fff;
     text-decoration: none;
 }
 
-.section-header:hover{
+.tasks-header a:hover{
     text-decoration: underline;
     color: #fff;
 }
+
+.projects-header{
+    width: 95%; 
+    height: 1.3em; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+
+.projects-header a{
+    color: #fff;
+    text-decoration: none;
+}
+
+.projects-header a:hover{
+    text-decoration: underline;
+    color: #fff;
+}
+
+.task-description{
+    height: 4.7em;
+    overflow: hidden;
+}
+
 .img-p-display{
     border-radius: 50%;
     width: 70%;
@@ -570,7 +612,7 @@ body{
   max-width: 500px;
   margin: 20px auto;
   padding: 20px;
-  background: #f8f9fa;
+  background: #6c757d;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
@@ -582,11 +624,19 @@ body{
   box-shadow: none;
   outline: none;
   border-bottom: 2px solid #ddd;
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.todo-input::placeholder{
+    color: #fff;
 }
 
 .todo-input:focus {
   border-bottom: 2px solid #007bff;
   box-shadow: none;
+  background-color: #6c757d;
+  color: #fff;
 }
 
 /* Task list styling */
@@ -602,7 +652,9 @@ body{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #ddd;
+  background-color: #525a61;
+  color: #fff;
+  border-bottom: 1px solid #6c757d;
   transition: background 0.3s ease;
 }
 
@@ -612,7 +664,7 @@ body{
 
 /* Hover effect */
 .todo-item:hover {
-  background: #f1f1f1;
+  background: #495057;
 }
 
 /* Task label */
@@ -625,7 +677,7 @@ body{
 /* Completed task */
 .completed {
   text-decoration: line-through;
-  color: #6c757d;
+  color: rgb(216, 215, 215);
 }
 
 /* Buttons */
@@ -645,8 +697,31 @@ body{
 }
 
 .text-center{
-    color: #0d6efd;
+    color: #fff;
 }
 
+.no-tasks-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 70vh; /* Adjust based on your needs */
+    text-align: center;
+    background-color: #6c757d; /* Light background for contrast */
+    padding: 20px;
+}
+
+.no-tasks-icon {
+    width: 150px; /* Adjust the size of the SVG */
+    height: auto;
+    margin-bottom: 20px;
+    fill: #ff6f61; /* Example color, change based on your theme */
+}
+
+.no-tasks-message {
+    font-size: 1.5em;
+    color: #fff; /* Dark text color for readability */
+    margin: 0;
+}
 
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */

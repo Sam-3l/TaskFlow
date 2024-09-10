@@ -23,6 +23,7 @@
     <div class="form-group">
         <p>{{ form.description.label(class='form-label') }}</p>
         {{ form.description() }}
+        <span style="color:pink;">{{ form.description.errors[0] }}</span>
     </div>
     <br>
     <div class="form-group">

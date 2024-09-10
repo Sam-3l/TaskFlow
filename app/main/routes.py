@@ -1,9 +1,12 @@
+import re
 from flask.helpers import flash
-from app.models import Task, User
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
-from datetime import datetime
+from app.models import Task, User, TaskAssignment
+from app.forms import CreateTask
+
+from datetime import datetime, timedelta
 
 def format_date(date_obj : datetime):
     day = date_obj.day
@@ -32,10 +35,23 @@ def home():
 def dashboard():
     return render_template("dashboard.html", user=current_user, active_page="home")
 
+@main.app_template_filter("days_diff")
+def date_diff(date1 : datetime, date2 : datetime) -> timedelta.days:
+    if not date2:
+        return 0
+    diff = date2 - date1
+    return diff.days
+
+@main.app_template_filter("absolute")
+def absolute(num):
+    return abs(num)
+
 @main.route("/dashboard/tasks")
 @login_required
 def tasks():
-    return render_template("tasks.html", user=current_user, active_page="tasks")
+    tasks = Task.query.filter_by(assigned_to_user_id=current_user.id).all()
+    todays_date = datetime.now().date()
+    return render_template("tasks.html", user=current_user, tasks=tasks, today=todays_date, active_page="tasks")
 
 @main.route("/dashboard/projects")
 @login_required
@@ -71,8 +87,6 @@ def user(user_id):
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required
 def create_task():
-    from app.forms import CreateTask
-    from app.models import TaskAssignment, Task
     from app import db
 
     form = CreateTask()
@@ -98,4 +112,7 @@ def task(task_id):
     task = Task.query.filter_by(id=task_id).first()
     if not task:
         return "Not Found", 404
+    if task.assigned_to_user_id != current_user.id:
+        flash("You don't have the permission to view this task")
+        return redirect(url_for("main.dashboard"))
     return render_template("task.html", user=current_user, task=task, active_page="tasks")
