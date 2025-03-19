@@ -724,4 +724,17 @@ body{
     margin: 0;
 }
 
+/* Fixed height for carousel */
+.carousel-img {
+    height: 700px; /* Adjust height as needed */
+    object-fit: cover;
+}
+
+/* Fixed height for card images */
+.fixed-card-img {
+    height: 250px; /* Adjust for uniformity */
+    object-fit: cover;
+}
+
+
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */
