@@ -736,5 +736,17 @@ body{
     object-fit: cover;
 }
 
+/* Makes all steps have equal height */
+.h-100 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Adds subtle shadow */
+.shadow-sm {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */
