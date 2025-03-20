@@ -3,58 +3,129 @@
 
 {% block content %}
 
-<div class="container-fluid home">
+<!-- Main Container -->
+<div class="container-fluid mt-4">
+    <!-- Welcome & Stats -->
     <div class="row">
-
-    <div class="col-12">
-        <h1>Welcome {{ user["fname"] }}</h1>
-        <br>
-        <h3>Take the tour</h3>
-        <ul>
-            <li><a href="#">Create your first task</a></li>
-            <li><a href="#">Start up a project</a></li>
-            <li><a href="#">Create an interractive to-do list</a></li>
-            <li><a href="#">Join communites and connect</a></li>
-            <li><a href="#">Add friends</a></li>
-        </ul>
-        <hr>
+        <div class="col-md-12">
+            <div class="card p-4 bg-primary text-white shadow-lg" data-aos="fade-down">
+                <h3 class="fw-bold">👋 Welcome back, {{ user["fname"] }}!</h3>
+                <p class="mb-0">Stay productive and complete your tasks efficiently.</p>
+            </div>
+        </div>
     </div>
 
-    <div class="col-12">
-        Compete setting up your project 
-        <hr>
+    <!-- Quick Stats -->
+    <div class="row g-4 mt-4">
+        <div class="col-md-3" data-aos="fade-up">
+            <div class="card p-3 text-center shadow-sm">
+                <h5 class="text-muted">Total Tasks</h5>
+                <h2 class="fw-bold text-dark">{{ stats.total_tasks }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="card p-3 text-center shadow-sm">
+                <h5 class="text-muted">Pending Tasks</h5>
+                <h2 class="fw-bold text-warning">{{ stats.pending_tasks }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="card p-3 text-center shadow-sm">
+                <h5 class="text-muted">Completed Tasks</h5>
+                <h2 class="fw-bold text-success">{{ stats.completed_tasks }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+            <div class="card p-3 text-center shadow-sm">
+                <h5 class="text-muted">Active Projects</h5>
+                <h2 class="fw-bold text-info">{{ stats.active_projects }}</h2>
+            </div>
+        </div>
     </div>
-    
+
+    <!-- Quick Actions & Tasks -->
+    <div class="row g-4 mt-4">
+        <div class="col-md-6" data-aos="fade-right">
+            <div class="card p-4 shadow-sm">
+                <h5 class="fw-bold mb-4 text-dark">🔧 Quick Actions</h5>
+                <button class="btn btn-success btn-lg w-100 mb-3">+ New Task</button>
+                <button class="btn btn-secondary btn-lg w-100 mb-3">📌 Add Project</button>
+                <button class="btn btn-warning btn-lg w-100">🔔 Set Reminder</button>
+            </div>
+        </div>
+        <div class="col-md-6" data-aos="fade-left">
+            <div class="card p-4 shadow-sm">
+                <h5 class="fw-bold mb-4 text-dark">📝 Task Overview</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>🔵 Task 1 - In Progress</span>
+                        <span class="badge bg-primary rounded-pill">2d</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>🟡 Task 2 - Pending</span>
+                        <span class="badge bg-warning rounded-pill">1d</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>✅ Task 3 - Completed</span>
+                        <span class="badge bg-success rounded-pill">Done</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deadlines & Insights -->
+    <div class="row g-4 mt-4">
+        <div class="col-md-6" data-aos="fade-right">
+            <div class="card p-4 shadow-sm">
+                <h5 class="fw-bold mb-4 text-dark">⏳ Upcoming Deadlines</h5>
+                <p class="text-muted">📅 You have <b>{{ stats.deadlines_today }}</b> tasks due today.</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>📌 Task A - 2 PM</span>
+                        <span class="badge bg-danger rounded-pill">Urgent</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>📌 Task B - 5 PM</span>
+                        <span class="badge bg-warning rounded-pill">High</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6" data-aos="fade-left">
+            <div class="card p-4 shadow-sm">
+                <h5 class="fw-bold mb-4 text-dark">📊 Productivity Insights</h5>
+                <p class="text-muted">You're on a 3-day productivity streak! Keep going!</p>
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-success" style="width: 75%">75% Completed</div>
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-outline-primary">View Full Report</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="fab-container">
-    <button class="fab" id="fab">
-        <span class="fab-icon">+</span>
-    </button>
-    <ul class="fab-options" id="fab-options">
-        <li><a href="/dashboard/tasks/new" class="fab-option">New Task</a></li>
-        <li><a href="#" class="fab-option">New Project</a></li>
-        <li><a href="#" class="fab-option">New Connection</a></li>
-    </ul>
-</div>
-
+<!-- Flash Messages -->
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
         {% if message %}
-            <div id="flash-message" class="flash-message">
-                <span>
-                    {{ message }}
-                </span>
+            <div id="flash-message" class="flash-message" data-aos="fade-in">
+                <span>{{ message }}</span>
                 <button id="close-btn" class="close-btn">&times;</button>
             </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    flash();
-                });
-            </script>
         {% endif %}
     {% endfor %}
 {% endwith %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+    });
+</script>
 
 {% endblock %}

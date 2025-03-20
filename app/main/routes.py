@@ -33,7 +33,14 @@ def home():
 @main.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", user=current_user, active_page="home")
+    stats = {
+        "total_tasks": 15,
+        "pending_tasks": 10,
+        "completed_tasks": 5,
+        "active_projects": 3,
+        "deadlines_today": 2
+    }
+    return render_template("dashboard.html", user=current_user, active_page="home", stats=stats)
 
 @main.app_template_filter("days_diff")
 def date_diff(date1 : datetime, date2 : datetime) -> timedelta.days:

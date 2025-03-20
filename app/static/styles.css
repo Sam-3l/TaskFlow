@@ -2,7 +2,7 @@ body{
     background-color: rgb(248, 250, 247);
 }
 .auth_body{
-    background-color: #495057;
+    background-color: #cfdeeed5;
 }
 
 .navbar-fixed{
@@ -748,5 +748,39 @@ body{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.equal-height {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.quick-btn {
+    width: 100%;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.list-group-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+    .equal-height {
+        margin-bottom: 15px;
+    }
+}
+
+.animate__animated {
+    animation-duration: 0.5s;
+}
 
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */
