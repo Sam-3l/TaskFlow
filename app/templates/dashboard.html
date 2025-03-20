@@ -18,25 +18,25 @@
     <!-- Quick Stats -->
     <div class="row g-4 mt-4">
         <div class="col-md-3" data-aos="fade-up">
-            <div class="card p-3 text-center shadow-sm">
+            <div class="card p-3 text-center shadow-sm equal-height">
                 <h5 class="text-muted">Total Tasks</h5>
                 <h2 class="fw-bold text-dark">{{ stats.total_tasks }}</h2>
             </div>
         </div>
         <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
-            <div class="card p-3 text-center shadow-sm">
+            <div class="card p-3 text-center shadow-sm equal-height">
                 <h5 class="text-muted">Pending Tasks</h5>
                 <h2 class="fw-bold text-warning">{{ stats.pending_tasks }}</h2>
             </div>
         </div>
         <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
-            <div class="card p-3 text-center shadow-sm">
+            <div class="card p-3 text-center shadow-sm equal-height">
                 <h5 class="text-muted">Completed Tasks</h5>
                 <h2 class="fw-bold text-success">{{ stats.completed_tasks }}</h2>
             </div>
         </div>
         <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
-            <div class="card p-3 text-center shadow-sm">
+            <div class="card p-3 text-center shadow-sm equal-height">
                 <h5 class="text-muted">Active Projects</h5>
                 <h2 class="fw-bold text-info">{{ stats.active_projects }}</h2>
             </div>
@@ -46,7 +46,7 @@
     <!-- Quick Actions & Tasks -->
     <div class="row g-4 mt-4">
         <div class="col-md-6" data-aos="fade-right">
-            <div class="card p-4 shadow-sm">
+            <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">🔧 Quick Actions</h5>
                 <button class="btn btn-success btn-lg w-100 mb-3">+ New Task</button>
                 <button class="btn btn-secondary btn-lg w-100 mb-3">📌 Add Project</button>
@@ -54,7 +54,7 @@
             </div>
         </div>
         <div class="col-md-6" data-aos="fade-left">
-            <div class="card p-4 shadow-sm">
+            <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">📝 Task Overview</h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -77,7 +77,7 @@
     <!-- Deadlines & Insights -->
     <div class="row g-4 mt-4">
         <div class="col-md-6" data-aos="fade-right">
-            <div class="card p-4 shadow-sm">
+            <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">⏳ Upcoming Deadlines</h5>
                 <p class="text-muted">📅 You have <b>{{ stats.deadlines_today }}</b> tasks due today.</p>
                 <ul class="list-group list-group-flush">
@@ -92,12 +92,13 @@
                 </ul>
             </div>
         </div>
-        <div class="col-md-6" data-aos="fade-left">
-            <div class="card p-4 shadow-sm">
+        <!-- Progress Bar Animation -->
+        <div class="col-md-6" data-aos="fade-right">
+            <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">📊 Productivity Insights</h5>
                 <p class="text-muted">You're on a 3-day productivity streak! Keep going!</p>
                 <div class="progress mb-3">
-                    <div class="progress-bar bg-success" style="width: 75%">75% Completed</div>
+                    <div class="progress-bar bg-success" style="width: 0%" id="progress-bar">75% Completed</div>
                 </div>
                 <div class="text-center">
                     <button class="btn btn-outline-primary">View Full Report</button>
@@ -119,13 +120,21 @@
     {% endfor %}
 {% endwith %}
 
+<!-- AOS Library & JS -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        AOS.init({
-            duration: 1000,
-            once: true
-        });
+    AOS.init({
+        duration: 1000,
+        easing: 'ease-in-out',
+        once: true
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(() => {
+            document.getElementById("progress-bar").style.width = "75%";
+        }, 500);
     });
 </script>
+
 
 {% endblock %}
