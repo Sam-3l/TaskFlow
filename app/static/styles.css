@@ -192,61 +192,9 @@ body{
     width: 40px;
 }
 
-.profile-img {
-    height: 40px;
-    width: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
 .username {
     font-size: 16px;
     font-weight: 500;
-}
-
-.nav-2 .nav-link.active {
-    font-weight: bold;
-    border-bottom: 3px solid #0d6efd;
-}
-
-.nav-2 .nav-link svg{
-    fill: white;
-    opacity: 0.45;
-}
-
-.nav-2 .nav-link:hover svg{
-    opacity: 0.65;
-}
-
-.nav-2 .nav-link.active svg{
-    opacity: 1;
-}
-
-.nav-2 .nav-link {
-    color: #fff;
-    padding: 10px 15px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-/* Hover effect */
-.nav-2 .nav-link:hover {
-    border-bottom: 3px solid #b0cefc;
-}
-
-.nav-2 .nav-link:focus {
-    border-bottom: 3px solid #1d77fd;
-}
-
-/* Ensure horizontal display on all screens */
-.nav-d .navbar-nav {
-    flex-direction: row !important;
-}
-
-.nav-2 .navbar-nav .nav-link {
-    margin: 0 2px; /* Adjust this value for more or less spacing */
 }
 
 .dboard-end form{
@@ -781,6 +729,103 @@ body{
 
 .animate__animated {
     animation-duration: 0.5s;
+}
+
+
+/* Navbar Styling */
+.navbar {
+    background: linear-gradient(135deg, #4e575f, #6c757d);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand img {
+    height: 40px;
+    width: 40px;
+}
+
+.nav-link {
+    color: #fff !important;
+    padding: 10px 15px !important;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.nav-link.active {
+    font-weight: bold;
+    border-bottom: 3px solid #0d6efd;
+}
+
+.nav-link svg {
+    fill: #fff;
+    opacity: 0.8;
+    margin-right: 8px;
+}
+
+.nav-link:hover svg {
+    opacity: 1;
+}
+
+/* Search Bar */
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Profile Image */
+.profile-img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.profile-img:hover {
+    transform: scale(1.1);
+}
+
+/* User Menu */
+.user-menu {
+    background: #6c757d;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.user-menu ul li a {
+    color: #fff;
+    transition: background 0.3s ease;
+}
+
+.user-menu ul li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .on-sm-grow{
+        flex-grow: 1;
+    }
+    .navbar-nav {
+        margin-top: 10px;
+    }
+
+    .nav-link {
+        padding: 8px 10px !important;
+    }
+
+    .form-control {
+        width: 100%;
+    }
 }
 
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */
