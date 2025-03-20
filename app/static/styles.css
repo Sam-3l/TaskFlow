@@ -233,9 +233,6 @@ body{
     padding: 2%;
     line-height: 30px;
 }
-.logout{
-    fill: red;
-}
 
 .home{
     color: white;
@@ -804,6 +801,15 @@ body{
 .user-menu ul li a {
     color: #fff;
     transition: background 0.3s ease;
+}
+
+.menu-svg{
+    fill: #fff;
+    stroke: none;
+}
+
+.logout{
+    fill: red;
 }
 
 .user-menu ul li a:hover {
