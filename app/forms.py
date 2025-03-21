@@ -48,9 +48,9 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login", render_kw={"class":"btn btn-secondary w-100"})
 
 class CreateTask(FlaskForm):
-    title = StringField("Title:", validators=[DataRequired(), Length(min=3, max=60),], render_kw={"placeholder":"Name your task", "class":"form-control line-input",})
-    description = TextAreaField("Description:", validators=[DataRequired(), Length(min=4, max=245),], render_kw={"placeholder":"Enter description", "class":"form-control line-input description-box",})
-    priority = SelectField("Priority:", validators=[DataRequired(), Length(min=2, max=150),], choices=[("critical", "Critical"), ("high-priority", "High priority"), ("medium-priority", "Medium priority"), ("low-priority", "Low priority"), ("optional", "Optional")], render_kw={"class":"form-select line-input",})
-    deadline = MyDateField("Deadline date:", validators=[Optional()], render_kw={"class":"form-control line-input",})
-    submit = SubmitField("Create Task", render_kw={"class":"btn btn-outline-primary w-100 p-3"})
+    title = StringField("Title:", validators=[DataRequired(), Length(min=3, max=60),], render_kw={"placeholder":"Name your task",})
+    description = TextAreaField("Description:", validators=[DataRequired(), Length(min=4, max=245),], render_kw={"placeholder":"Enter description"})
+    priority = SelectField("Priority:", validators=[DataRequired(), Length(min=2, max=150),], choices=[("critical", "Critical"), ("high-priority", "High priority"), ("medium-priority", "Medium priority"), ("low-priority", "Low priority"), ("optional", "Optional")])
+    deadline = MyDateField("Deadline date:", validators=[Optional()])
+    submit = SubmitField("Create Task")
     

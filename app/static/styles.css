@@ -221,7 +221,7 @@ body{
     color: #fff;
 }
 .auth_dashboard_content{
-    margin-top: 110px;
+    margin-top: 80px;
     padding: 2%;
     color: #fff;
 }
@@ -821,4 +821,5 @@ body{
         right: 1rem;
     }
 }
+
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */
