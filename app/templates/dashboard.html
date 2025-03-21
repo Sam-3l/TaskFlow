@@ -108,6 +108,26 @@
     </div>
 </div>
 
+<div class="fab-container">
+    <!-- Main FAB Button -->
+    <button class="fab-main" id="fab-main">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Speed Dial Options -->
+    <div class="fab-options">
+        <a href="/dashboard/tasks/new" class="fab-option" title="New Task">
+            <i class="fas fa-tasks"></i>
+        </a>
+        <a href="/dashboard/projects/new" class="fab-option" title="New Project">
+            <i class="fas fa-project-diagram"></i>
+        </a>
+        <a href="/dashboard/people" class="fab-option" title="People">
+            <i class="fas fa-users"></i>
+        </a>
+    </div>
+</div>
+
 <!-- Flash Messages -->
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
@@ -134,6 +154,21 @@
             document.getElementById("progress-bar").style.width = "75%";
         }, 500);
     });
+        // Get the FAB elements
+        const fabMain = document.getElementById('fab-main');
+        const fabContainer = document.querySelector('.fab-container');
+    
+        // Toggle speed dial options on FAB click
+        fabMain.addEventListener('click', () => {
+            fabContainer.classList.toggle('active');
+        });
+    
+        // Hide speed dial options when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!fabContainer.contains(event.target)) {
+                fabContainer.classList.remove('active');
+            }
+        });
 </script>
 
 

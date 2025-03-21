@@ -397,81 +397,6 @@ body{
     padding-bottom: 0.8%;
     border-bottom: 1px solid #0d6efd;
 }
-/* Position the fab-container fixed to the bottom right of the viewport */
-.fab-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-}
-
-/* Style the floating action button */
-.fab {
-    background-color: #0d6efd; /* Change to your preferred color */
-    border: none;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    position: relative;
-}
-
-.fab:hover{
-    background-color: #4990fa;  
-    transition: all 0.6s ease;  
-}
-
-/* Rotate the button when it's open */
-.fab.open {
-    transform: rotate(45deg);
-}
-
-/* Add transition effect to the icon */
-.fab-icon {
-    transition: transform 0.3s ease;
-    font-size: 50px;
-    line-height: 1;
-    font-family: sans-serif;
-}
-
-/* Style the options list */
-.fab-options {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    position: absolute;
-    bottom: 70px; /* Adjust as needed */
-    right: 0;
-    display: none; /* Hidden by default */
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Style each option */
-.fab-option {
-    background-color: #0d6efd;
-    padding: 10px 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    color: #4e575f;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-/* Change color on hover */
-.fab-option:hover {
-    background-color: #f0f0f0;
-}
 
 /* Container styling */
 .form-container {
@@ -888,6 +813,84 @@ body{
     align-items: center;
     justify-content: center;
     z-index: 1000;
+}
+
+/* FAB Container */
+.fab-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+}
+
+/* Main FAB Button */
+.fab-main {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #0d6efd; /* Bootstrap primary color */
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.fab-main:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Speed Dial Options */
+.fab-options {
+    position: absolute;
+    bottom: 70px; /* Adjust based on button size */
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.fab-container.active .fab-options {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Individual FAB Options */
+.fab-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.fab-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Tooltip for FAB Options */
+.fab-option[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    right: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 @media (max-width: 768px) {
