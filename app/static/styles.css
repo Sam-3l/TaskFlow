@@ -834,4 +834,67 @@ body{
     }
 }
 
+.task-card {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.scrollable-content {
+    max-height: 120px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+.priority-critical { background-color: #dc3545; }
+.priority-high-priority { background-color: #fd7e14; }
+.priority-medium-priority { background-color: #ffc107; color: #000; }
+.priority-low-priority { background-color: #0dcaf0; }
+.priority-optional { background-color: #6c757d; }
+
+.deadline-danger { background-color: #dc3545; }
+.deadline-warning { background-color: #ffc107; color: #000; }
+.deadline-safe { background-color: #198754; }
+.deadline-secondary {
+    background-color: #6c757d; /* Bootstrap's secondary color */
+    color: white; /* Ensure text is readable */
+}
+.deadline-secondary:hover {
+    background-color: #5a6268; /* Slightly darker shade for hover */
+}
+
+.floating-action-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+@media (max-width: 768px) {
+    .scrollable-content { max-height: 100px; }
+    .floating-action-button {
+        bottom: 1rem;
+        right: 1rem;
+    }
+}
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */
