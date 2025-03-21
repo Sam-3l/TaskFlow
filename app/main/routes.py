@@ -26,6 +26,28 @@ def add_ordinal_suffix(day):
 
 main = Blueprint("main", __name__)
 
+# Custom template filters
+@main.app_template_filter('deadline_category')
+def deadline_category_filter(days):
+    if days is None:
+        return 'secondary'
+    if days <= 3:
+        return 'danger'
+    elif days <= 6:
+        return 'warning'
+    return 'safe'
+
+@main.app_template_filter('deadline_display')
+def deadline_display_filter(days):
+    if days is None:
+        return 'No deadline'
+    if days == 0:
+        return 'Today!'
+    elif days < 0:
+        return f'{-days}d overdue'
+    return f'{days}d left'
+
+
 @main.route("/")
 def home():
     return render_template("index.html")
@@ -42,23 +64,22 @@ def dashboard():
     }
     return render_template("dashboard.html", user=current_user, active_page="home", stats=stats)
 
-@main.app_template_filter("days_diff")
-def date_diff(date1 : datetime, date2 : datetime) -> timedelta.days:
-    if not date2:
-        return 0
-    diff = date2 - date1
-    return diff.days
-
-@main.app_template_filter("absolute")
-def absolute(num):
-    return abs(num)
-
-@main.route("/dashboard/tasks")
+@main.route('/dashboard/tasks')
 @login_required
 def tasks():
+    # Fetch tasks assigned to the current user
     tasks = Task.query.filter_by(assigned_to_user_id=current_user.id).all()
-    todays_date = datetime.now().date()
-    return render_template("tasks.html", user=current_user, tasks=tasks, today=todays_date, active_page="tasks")
+    today = datetime.today().date()
+
+    # Calculate deadline_from_now for each task
+    for task in tasks:
+        if task.deadline:
+            deadline_from_now = (task.deadline - today).days
+        else:
+            deadline_from_now = None
+        task.deadline_from_now = deadline_from_now
+
+    return render_template("tasks.html", user=current_user, tasks=tasks, active_page="tasks", today=today)
 
 @main.route("/dashboard/projects")
 @login_required
