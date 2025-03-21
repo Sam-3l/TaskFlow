@@ -60,5 +60,8 @@ ehthumbs.db
 # Git
 .git/
 
+# env
+.env
+
 # Virtual environment
 pip-wheel-metadata/

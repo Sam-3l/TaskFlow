@@ -1,5 +1,10 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or 'default_secret_key'
@@ -9,8 +14,8 @@ class Config:
     REMEMBER_COOKIE_DURATION = timedelta(days=4)
 
 class DevelopmentConfig(Config):
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:samuel1234@localhost/task_manager'
+    DEBUG = os.getenv('DEBUG', default=False)
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
 class TestingConfig(Config):
     TESTING = True
