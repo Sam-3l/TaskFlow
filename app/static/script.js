@@ -99,70 +99,86 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+
+// Todos
 document.addEventListener('DOMContentLoaded', function () {
-  const addTaskBtn = document.getElementById('add-task-btn');
-  const taskInput = document.getElementById('task-input');
-  const todoList = document.querySelector('.todo-list');
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const taskInput = document.getElementById('task-input');
+    const todoList = document.querySelector('.todo-list');
+    const saveProgressSection = document.querySelector('.save-progress');
+    const saveProgressBtn = document.getElementById('save-progress-btn');
+    const discardProgressBtn = document.getElementById('discard-progress-btn');
 
-  // Function to add a task
-  addTaskBtn.addEventListener('click', function () {
-    const taskText = taskInput.value.trim();
-    if (taskText) {
-      addTask(taskText);
-      taskInput.value = '';
+    let progressChanged = false;
+
+    // Add Todo
+    addTaskBtn.addEventListener('click', async function () {
+        const taskText = taskInput.value.trim();
+        if (taskText) {
+            const response = await fetch(`/dashboard/tasks/${taskId}/add_todo`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: taskText })
+            });
+            const todo = await response.json();
+            addTaskToDOM(todo);
+            taskInput.value = '';
+        }
+    });
+
+    // Toggle Todo Completion
+    todoList.addEventListener('change', function (e) {
+        if (e.target.classList.contains('form-check-input')) {
+            const todoId = e.target.closest('.todo-item').dataset.todoId;
+            const isCompleted = e.target.checked;
+            fetch(`/dashboard/tasks/${taskId}/update_todo/${todoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_completed: isCompleted })
+            });
+            progressChanged = true;
+            saveProgressSection.classList.remove('d-none');
+        }
+    });
+
+    // Save Progress
+    saveProgressBtn.addEventListener('click', async function () {
+        const response = await fetch(`/dashboard/tasks/${taskId}/save_progress`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ progress: calculateProgress() })
+        });
+        if (response.ok) {
+            progressChanged = false;
+            saveProgressSection.classList.add('d-none');
+        }
+    });
+
+    // Discard Progress
+    discardProgressBtn.addEventListener('click', function () {
+        progressChanged = false;
+        saveProgressSection.classList.add('d-none');
+        location.reload(); // Reset UI to saved state
+    });
+
+    // Helper Functions
+    function addTaskToDOM(todo) {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item todo-item d-flex align-items-center';
+        listItem.dataset.todoId = todo.id;
+
+        listItem.innerHTML = `
+            <input type="checkbox" class="form-check-input me-3" ${todo.is_completed ? 'checked' : ''} />
+            <span class="task-label flex-grow-1 ${todo.is_completed ? 'completed' : ''}">${todo.content}</span>
+            <button class="btn btn-sm btn-warning me-2 edit-btn">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+        `;
+        todoList.appendChild(listItem);
     }
-  });
 
-  // Add task to the list
-  function addTask(taskText) {
-    const listItem = document.createElement('li');
-    listItem.className = 'list-group-item todo-item';
-
-    // Checkbox for completion
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'form-check-input';
-    checkbox.addEventListener('change', toggleComplete);
-
-    // Task label
-    const label = document.createElement('span');
-    label.className = 'task-label';
-    label.textContent = taskText;
-
-    // Edit button
-    const editBtn = document.createElement('button');
-    editBtn.className = 'todo-btn btn btn-warning btn-sm';
-    editBtn.textContent = 'Edit';
-    editBtn.addEventListener('click', () => editTask(label));
-
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'todo-btn btn btn-danger btn-sm';
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.addEventListener('click', () => listItem.remove());
-
-    listItem.appendChild(checkbox);
-    listItem.appendChild(label);
-    listItem.appendChild(editBtn);
-    listItem.appendChild(deleteBtn);
-    todoList.appendChild(listItem);
-  }
-
-  // Toggle task completion
-  function toggleComplete(event) {
-    const label = event.target.nextSibling;
-    if (event.target.checked) {
-      label.classList.add('completed');
-    } else {
-      label.classList.remove('completed');
+    function calculateProgress() {
+        const completed = document.querySelectorAll('.form-check-input:checked').length;
+        const total = document.querySelectorAll('.form-check-input').length;
+        return completed - (total - completed); // +n for completed, -n for unchecked
     }
-  }
-
-  // Edit task
-  function editTask(label) {
-    const newTaskText = prompt('Edit your task:', label.textContent);
-    if (newTaskText !== null && newTaskText.trim() !== '') {
-      label.textContent = newTaskText.trim();
-    }
-  }
 });

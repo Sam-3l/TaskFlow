@@ -2,8 +2,9 @@ import re
 from flask.helpers import flash
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
+from flask import request, jsonify
 
-from app.models import Task, User, TaskAssignment
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress
 from app.forms import CreateTask
 
 from datetime import datetime, timedelta
@@ -144,3 +145,60 @@ def task(task_id):
         flash("You don't have the permission to view this task")
         return redirect(url_for("main.dashboard"))
     return render_template("task.html", user=current_user, task=task, active_page="tasks")
+
+@main.route("/dashboard/tasks/<int:task_id>/add_todo", methods=["POST"])
+@login_required
+def add_todo(task_id):
+    from app import db
+
+    data = request.get_json()
+    content = data.get("content")
+    if not content:
+        return jsonify({"error": "Todo content is required"}), 400
+
+    todo = Todo(content=content, task_id=task_id)
+    db.session.add(todo)
+    db.session.commit()
+    return jsonify({"id": todo.id, "content": todo.content, "is_completed": todo.is_completed})
+
+@main.route("/dashboard/tasks/<int:task_id>/update_todo/<int:todo_id>", methods=["PUT"])
+@login_required
+def update_todo(task_id, todo_id):
+    from app import db
+
+    data = request.get_json()
+    todo = Todo.query.get_or_404(todo_id)
+    if "content" in data:
+        todo.content = data["content"]
+    if "is_completed" in data:
+        todo.is_completed = data["is_completed"]
+    db.session.commit()
+    return jsonify({"message": "Todo updated"})
+
+@main.route("/dashboard/tasks/<int:task_id>/delete_todo/<int:todo_id>", methods=["DELETE"])
+@login_required
+def delete_todo(task_id, todo_id):
+    from app import db
+
+    todo = Todo.query.get_or_404(todo_id)
+    if todo.is_completed:
+        progress = TaskProgress(task_id=task_id, progress=-1, notes="undone_on_delete")
+        db.session.add(progress)
+    db.session.delete(todo)
+    db.session.commit()
+    return jsonify({"message": "Todo deleted"})
+
+@main.route("/dashboard/tasks/<int:task_id>/save_progress", methods=["POST"])
+@login_required
+def save_progress(task_id):
+    from app import db
+
+    data = request.get_json()
+    progress = data.get("progress")
+    if not progress:
+        return jsonify({"error": "Progress is required"}), 400
+
+    task_progress = TaskProgress(task_id=task_id, progress=progress)
+    db.session.add(task_progress)
+    db.session.commit()
+    return jsonify({"message": "Progress saved"})

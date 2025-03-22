@@ -40,9 +40,10 @@ class User(UserMixin, db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(60), nullable=False)
-    description = db.Column(db.Text) # Can be edited or inputed by the user the task is assigned to
-    content = db.Column(db.Text, nullable=True)
-    modified_last = db.Column(db.Date, default=func.current_date())
+    description = db.Column(db.Text)
+    todos = db.relationship("Todo", back_populates='task', lazy=True, cascade='all, delete-orphan')
+    created_at = db.Column(db.Date, default=func.current_date())
+    updated_at = db.Column(db.Date, default=func.current_date(), onupdate=func.current_date())
     deadline = db.Column(db.Date, nullable=True)
     priority = db.Column(db.String(30), nullable=True)
     status = db.Column(db.String(30), default="pending")
@@ -51,6 +52,16 @@ class Task(db.Model):
     assignment_id = db.Column(db.Integer, db.ForeignKey("task_assignment.id"))
     assignment = db.relationship("TaskAssignment", back_populates="task")
     task_progress = db.relationship("TaskProgress", back_populates="task", cascade="all, delete-orphan")
+
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(200), nullable=False)
+    is_completed = db.Column(db.Boolean, default=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    created_at = db.Column(db.Date, default=func.current_date())
+    
+    # Relationships
+    task = db.relationship('Task', back_populates='todos')
 
 class TaskProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)

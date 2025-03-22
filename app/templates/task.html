@@ -2,56 +2,93 @@
 {% block title %}{{ user["fname"] }} | Tasks{% endblock %}
 
 {% block content %}
-
-<div class="container-fluid task">
-    <div class="row">
-        <div class="col-3">
-            <h1>{{ task['title'] }}</h1>
-            {{ task['description'] }}
+<div class="container-fluid task-page">
+    <div class="row g-4">
+        <!-- Task Details Column -->
+        <div class="col-lg-3">
+            <div class="task-details card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title">{{ task.title }}</h1>
+                    <p class="card-text">{{ task.description }}</p>
+                    <div class="task-meta">
+                        <span class="badge bg-primary">{{ task.priority }}</span>
+                        <span class="badge bg-secondary">{{ task.status }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="todo-container col-6">
-            <h3 class="text-center mb-4">Tasks List</h3>
-            <div class="input-group mb-3">
-            <input type="text" class="form-control todo-input" placeholder="Add a new task" id="task-input" />
-            <div class="input-group-append">
-                <button class="btn btn-primary" type="button" id="add-task-btn">Add Task</button>
+        <!-- Todo List Column -->
+        <div class="col-lg-6">
+            <div class="todo-container card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Todo List</h3>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control todo-input" placeholder="Add a new todo" id="task-input" />
+                        <button class="btn btn-primary" type="button" id="add-task-btn">Add</button>
+                    </div>
+                    <ul class="list-group todo-list">
+                        {% for todo in task.todos %}
+                        <li class="list-group-item todo-item d-flex align-items-center" data-todo-id="{{ todo.id }}">
+                            <input type="checkbox" class="form-check-input me-3" {% if todo.is_completed %}checked{% endif %} />
+                            <span class="task-label flex-grow-1 {% if todo.is_completed %}completed{% endif %}">{{ todo.content }}</span>
+                            <button class="btn btn-sm btn-warning me-2 edit-btn">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="save-progress mt-3 d-none">
+                        <button class="btn btn-success" id="save-progress-btn">Save Progress</button>
+                        <button class="btn btn-secondary" id="discard-progress-btn">Discard</button>
+                    </div>
+                </div>
             </div>
-            </div>
-            <ul class="list-group todo-list">
-            <!-- Tasks will be dynamically added here -->
-            </ul>
         </div>
 
-        <div class="col-3">
-            Calendar
+        <!-- Calendar Column -->
+        <div class="col-lg-3">
+            <div class="calendar-container card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Calendar</h3>
+                    <!-- Placeholder for calendar -->
+                    <div id="calendar"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-    .task{
-        margin-top: 70px;
-        padding: 2%;
-    }
-</style>
-
+<!-- Flash Messages -->
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
-        {% if message %}
-            <div id="flash-message" class="flash-message">
-                <span>
-                    {{ message }}
-                </span>
-                <button id="close-btn" class="close-btn">&times;</button>
-            </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    flash();
-                });
-            </script>
-        {% endif %}
+        <div id="flash-message" class="flash-message alert alert-info alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     {% endfor %}
 {% endwith %}
 
+<!-- Styles -->
+<style>
+    .task-page {
+        margin-top: 70px;
+        padding: 2%;
+    }
+    .task-details, .todo-container, .calendar-container {
+        border-radius: 10px;
+    }
+    .todo-item {
+        transition: background-color 0.3s;
+    }
+    .todo-item:hover {
+        background-color: #f8f9fa;
+    }
+    .completed {
+        text-decoration: line-through;
+        color: #6c757d;
+    }
+    .save-progress {
+        transition: opacity 0.3s;
+    }
+</style>
 {% endblock %}
