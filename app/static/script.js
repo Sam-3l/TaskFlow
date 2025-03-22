@@ -80,18 +80,6 @@ function flash() {
         });
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const navLinks = document.querySelectorAll('.navbar-dark .nav-link');
-    
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                navLinks.forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-    });
-    
-
 document.addEventListener('DOMContentLoaded', function () {
     const fab = document.getElementById('fab');
     const fabOptions = document.getElementById('fab-options');

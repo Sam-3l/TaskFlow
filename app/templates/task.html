@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid task">
     <div class="row">
         <div class="col-3">
             <h1>{{ task['title'] }}</h1>
@@ -28,6 +28,13 @@
         </div>
     </div>
 </div>
+
+<style>
+    .task{
+        margin-top: 70px;
+        padding: 2%;
+    }
+</style>
 
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
