@@ -2,7 +2,7 @@
 {% block title %}{{ user["fname"] }} | Tasks{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-lg-5 px-3">
+<div class="tasks container-fluid px-lg-5 px-">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-dark mb-0">Your Tasks</h1>
         <div class="dropdown">
@@ -98,6 +98,12 @@
         </div>
     {% endif %}
 </div>
+
+<style>
+    .tasks{
+        margin-top: 100px;
+    }
+</style>
 
 <a href="/dashboard/tasks/new" class="btn btn-primary btn-lg floating-action-button shadow">
     <i class="fas fa-plus"></i>

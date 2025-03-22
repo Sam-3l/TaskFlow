@@ -9,11 +9,6 @@ body{
     position: sticky;
     top: 0;
 }
-.navbar{
-    width: 100%;
-    z-index: 4;
-}
-
 .form input{
     padding: 10px;
 }
@@ -215,19 +210,11 @@ body{
     z-index: 4;
     transition: top 0.3s;
 }
-.auth_content{
-    margin-top: 80px;
-    padding: 2%;
-    color: #fff;
-}
-.auth_dashboard_content{
-    margin-top: 80px;
-    padding: 2%;
-    color: #fff;
-}
 .content{
     margin-top: 0px;
-    padding: 0%;
+    padding: 0px;
+    color: #000;
+    overflow-x: hidden;
 }
 .form-content{
     padding: 2%;
@@ -579,6 +566,8 @@ body{
 .navbar {
     background: linear-gradient(135deg, #4e575f, #6c757d);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    z-index: 4;
 }
 
 .navbar-brand img {

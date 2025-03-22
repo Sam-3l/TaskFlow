@@ -3,201 +3,308 @@
 
 {% block content %}
 <div class="create-task-container">
-    <!-- Back Button -->
-    <div class="back-button" onclick="window.history.back();">
-        <svg width="40" height="40" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#fff" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"/>
-            <path fill="#fff" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"/>
-        </svg>
+    <!-- Left Decorative Panel -->
+    <div class="design-panel">
+        <div class="gradient-mesh"></div>
+        <div class="animated-checkmark">
+            <!-- Animated SVG Checkmark -->
+            <svg viewBox="0 0 100 100" class="checkmark">
+                <path d="M20,50 L40,70 L80,30" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="8" 
+                      stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100"/>
+            </svg>
+        </div>
+        <div class="inspiration-text">
+            <h2>Organize Your Success</h2>
+            <p>"Productivity is never an accident. It's always the result of a commitment to excellence, intelligent planning, and focused effort."</p>
+        </div>
     </div>
 
-    <!-- Form Container -->
-    <div class="form-wrapper">
-        <h1 class="form-title">Create Task</h1>
-        <form class="task-form" method="post">
-            {{ form.hidden_tag() }}
+    <!-- Form Section -->
+    <div class="form-section">
+        <!-- Back Button with improved interaction -->
+        <div class="back-button" onclick="window.history.back();">
+            <svg width="40" height="40" viewBox="0 0 1024 1024">
+                <path fill="currentColor" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"/>
+                <path fill="currentColor" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"/>
+            </svg>
+            <span class="back-text">Back</span>
+        </div>
 
-            <!-- Title Field -->
-            <div class="form-group">
-                {{ form.title.label(class='form-label') }}
-                {{ form.title(class='form-input', placeholder='Name your task') }}
-            </div>
+        <!-- Form Container -->
+        <div class="form-wrapper">
+            <h1 class="form-title">Craft Your Task</h1>
+            <form class="task-form" method="post">
+                {{ form.hidden_tag() }}
 
-            <!-- Description Field -->
-            <div class="form-group">
-                {{ form.description.label(class='form-label') }}
-                {{ form.description(class='form-input textarea', placeholder='Enter description', rows='4') }}
-                {% if form.description.errors %}
-                    <span class="error-message">{{ form.description.errors[0] }}</span>
-                {% endif %}
-            </div>
+                <!-- Title Field -->
+                <div class="form-group floating">
+                    {{ form.title(class='form-input', placeholder=' ', autocomplete='off') }}
+                    {{ form.title.label(class='form-label') }}
+                </div>
 
-            <!-- Priority Field -->
-            <div class="form-group">
-                {{ form.priority.label(class='form-label') }}
-                {{ form.priority(class='form-input select') }}
-            </div>
+                <!-- Description Field -->
+                <div class="form-group floating">
+                    {{ form.description(class='form-input textarea', placeholder=' ', rows='3') }}
+                    {{ form.description.label(class='form-label') }}
+                    {% if form.description.errors %}
+                        <span class="error-message">{{ form.description.errors[0] }}</span>
+                    {% endif %}
+                </div>
 
-            <!-- Deadline Field -->
-            <div class="form-group">
-                {{ form.deadline.label(class='form-label') }}
-                {{ form.deadline(class='form-input date') }}
-            </div>
+                <div class="form-row">
+                    <!-- Priority Field -->
+                    <div class="form-group floating">
+                        {{ form.priority(class='form-input select') }}
+                        {{ form.priority.label(class='form-label') }}
+                    </div>
 
-            <!-- Submit Button -->
-            <div class="form-group">
-                {{ form.submit(class='submit-button') }}
-            </div>
-        </form>
+                    <!-- Deadline Field -->
+                    <div class="form-group floating">
+                        {{ form.deadline(class='form-input date') }}
+                        {{ form.deadline.label(class='form-label') }}
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    {{ form.submit(class='submit-button') }}
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <style>
-    /* General Styles */
+    :root {
+        --neon-blue: #0d6efd;
+        --neon-purple: #6a11cb;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Base Styles */
     .create-task-container {
         display: flex;
-        justify-content: center;
-        align-items: center;
         min-height: 100vh;
-        background-color:rgb(0, 0, 0); /* Dark background */
-        padding: 2rem;
+        background: linear-gradient(135deg, #0f0f1f 0%, #1a1a2f 100%);
+        position: relative;
+        overflow: hidden;
+        margin-top: 60px;
     }
-    
+
+    /* Left Design Panel */
+    .design-panel {
+        flex: 1;
+        position: relative;
+        padding: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: linear-gradient(45deg, rgba(13,110,253,0.1) 0%, rgba(106,17,203,0.1) 100%);
+    }
+
+    .gradient-mesh {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 20%, var(--neon-blue) 0%, transparent 30%),
+            radial-gradient(circle at 80% 80%, var(--neon-purple) 0%, transparent 30%);
+        opacity: 0.1;
+    }
+
+    .animated-checkmark {
+        position: relative;
+        height: 200px;
+    }
+
+    .checkmark {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: draw 3s ease-in-out infinite;
+    }
+
+    .inspiration-text {
+        color: rgba(255,255,255,0.8);
+        max-width: 400px;
+    }
+
+    .inspiration-text h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, #fff 0%, var(--neon-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Form Section */
+    .form-section {
+        width: 45%;
+        min-width: 600px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        padding: 4rem;
+        position: relative;
+        transform: translateZ(0);
+    }
+
+    .form-wrapper {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .form-title {
+        color: #fff;
+        text-align: center;
+        margin-bottom: 3rem;
+        font-size: 2.5rem;
+        position: relative;
+    }
+
+    .form-title::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: var(--neon-blue);
+        margin: 1rem auto;
+        border-radius: 2px;
+    }
+
+    /* Floating Labels */
+    .form-group.floating {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1.25rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        background: var(--glass-bg);
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-label {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255,255,255,0.6);
+        pointer-events: none;
+        transition: all 0.3s ease;
+        background: transparent;
+        padding: 0 0.5rem;
+    }
+
+    .form-input:focus ~ .form-label,
+    .form-input:not(:placeholder-shown) ~ .form-label {
+        top: 0;
+        font-size: 0.8rem;
+        color: var(--neon-blue);
+        background: linear-gradient(to bottom, #1a1a2f 0%, #0f0f1f 50%);
+    }
+
+    /* Interactive Elements */
+    .form-input:focus {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    }
+
+    .select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background: var(--glass-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat;
+        background-position: right 1rem center;
+        background-size: 16px;
+        padding-right: 2.5rem !important;
+        cursor: pointer;
+    }
+
+    .select option {
+        background: #1a1a2f;
+        color: #fff;
+        padding: 0.75rem;
+        margin: 0.25rem 0;
+    }
+
+    .select:hover {
+        border-color: rgba(255,255,255,0.3);
+    }
+
+    .submit-button {
+        background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+        border: none;
+        padding: 1.25rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    }
+
+    /* Back Button */
     .back-button {
         position: absolute;
         top: 2rem;
         left: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255,255,255,0.8);
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: all 0.3s ease;
     }
-    
+
+    .back-button svg {
+        transition: transform 0.3s ease;
+    }
+
     .back-button:hover {
-        transform: scale(1.1);
-    }
-    
-    /* Form Wrapper */
-    .form-wrapper {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 2rem;
-        width: 100%;
-        max-width: 600px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .form-title {
-        color: #fff;
-        text-align: center;
-        margin-bottom: 2rem;
-        font-size: 2rem;
-    }
-    
-    /* Form Groups */
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-label {
-        color: #fff;
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-    
-    .form-input {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.05);
-        color: #fff;
-        font-size: 1rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    
-    .form-input:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
-        outline: none;
-    }
-    
-    /* Textarea */
-    .textarea {
-        resize: vertical;
-        min-height: 120px;
+        color: var(--neon-blue);
     }
 
-    /* Select Dropdown */
-    .select {
-        appearance: none; /* Remove default arrow */
-        -webkit-appearance: none; /* For Safari */
-        -moz-appearance: none; /* For Firefox */
-        background: rgba(255, 255, 255, 0.05) url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") no-repeat right 0.75rem center;
-        background-size: 16px;
-        color: #fff; /* White text */
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        padding: 0.75rem;
-        width: 100%;
-        font-size: 1rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
+    .back-button:hover svg {
+        transform: translateX(-5px);
     }
 
-    .select:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
-        outline: none;
+    .back-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
-    /* Remove default arrow in IE */
-    .select::-ms-expand {
-        display: none;
+    .back-button:hover .back-text {
+        opacity: 1;
     }
-        
-    /* Date Input */
-    .date {
-        background: rgba(255, 255, 255, 0.05);
+
+    /* Animations */
+    @keyframes draw {
+        0% { stroke-dashoffset: 100; }
+        50% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: -100; }
     }
-    
-    /* Submit Button */
-    .submit-button {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: #0d6efd;
-        border: none;
-        border-radius: 8px;
-        color: #fff;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
+
+    @media (max-width: 1200px) {
+        .design-panel { display: none; }
+        .form-section {
+            width: 100%;
+            min-width: auto;
+        }
     }
-    
-    .submit-button:hover {
-        background-color: #0b5ed7;
-    }
-    
-    /* Error Message */
-    .error-message {
-        color: #ff6b6b;
-        font-size: 0.875rem;
-        margin-top: 0.5rem;
-        display: block;
-    }
-    
-    /* Responsive Design */
+
     @media (max-width: 768px) {
-        .create-task-container {
-            padding: 1rem;
-        }
-    
-        .form-wrapper {
-            padding: 1.5rem;
-        }
-    
-        .form-title {
-            font-size: 1.75rem;
-        }
+        .form-section { padding: 2rem; }
+        .form-title { font-size: 2rem; }
     }
 </style>
 {% endblock %}
