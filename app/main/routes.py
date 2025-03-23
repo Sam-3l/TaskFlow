@@ -3,11 +3,14 @@ from flask.helpers import flash
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 from flask import request, jsonify
+from flask_wtf.csrf import validate_csrf
+from wtforms import ValidationError
+
 
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress
 from app.forms import CreateTask
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def format_date(date_obj : datetime):
     day = date_obj.day
@@ -48,6 +51,18 @@ def deadline_display_filter(days):
         return f'{-days}d overdue'
     return f'{days}d left'
 
+@main.app_template_filter('calculate_progress')
+def calculate_progress(task):
+    if not task.todos:
+        return 0
+    completed = sum(1 for todo in task.todos if todo.is_completed)
+    return int((completed / len(task.todos)) * 100)
+
+@main.app_template_filter('datetime_format')
+def datetime_format(value, format="%b %d, %Y"):
+    if value is None:
+        return ""
+    return value.strftime(format)
 
 @main.route("/")
 def home():
@@ -146,59 +161,98 @@ def task(task_id):
         return redirect(url_for("main.dashboard"))
     return render_template("task.html", user=current_user, task=task, active_page="tasks")
 
-@main.route("/dashboard/tasks/<int:task_id>/add_todo", methods=["POST"])
+# Todo API
+@main.route("/tasks/<int:task_id>/todos", methods=["POST"])
 @login_required
-def add_todo(task_id):
+def create_todo(task_id):
     from app import db
 
-    data = request.get_json()
-    content = data.get("content")
-    if not content:
-        return jsonify({"error": "Todo content is required"}), 400
+    try:
+        # Validate CSRF token
+        validate_csrf(request.headers.get('X-CSRFToken'))
+    except ValidationError:
+        return jsonify({"error": "Invalid CSRF token"}), 400
 
-    todo = Todo(content=content, task_id=task_id)
+    data = request.get_json()
+    todo = Todo(content=data['content'], task_id=task_id)
     db.session.add(todo)
     db.session.commit()
-    return jsonify({"id": todo.id, "content": todo.content, "is_completed": todo.is_completed})
+    return jsonify({
+        'id': todo.id,
+        'content': todo.content,
+        'is_completed': todo.is_completed
+    }), 201
 
-@main.route("/dashboard/tasks/<int:task_id>/update_todo/<int:todo_id>", methods=["PUT"])
+@main.route("/tasks/<int:task_id>/progress", methods=["POST"])
 @login_required
-def update_todo(task_id, todo_id):
+def save_task_progress(task_id):
     from app import db
+
+    try:
+        # Validate CSRF token
+        validate_csrf(request.headers.get('X-CSRFToken'))
+    except ValidationError:
+        return jsonify({"error": "Invalid CSRF token"}), 400
 
     data = request.get_json()
-    todo = Todo.query.get_or_404(todo_id)
-    if "content" in data:
-        todo.content = data["content"]
-    if "is_completed" in data:
-        todo.is_completed = data["is_completed"]
+    progress = TaskProgress(
+        task_id=task_id,
+        progress=data['progress'],
+        notes="Manual save"
+    )
+    db.session.add(progress)
     db.session.commit()
-    return jsonify({"message": "Todo updated"})
+    return jsonify({'message': 'Progress saved'}), 200
 
-@main.route("/dashboard/tasks/<int:task_id>/delete_todo/<int:todo_id>", methods=["DELETE"])
+@main.route("/todos/<int:todo_id>", methods=["PUT"])
 @login_required
-def delete_todo(task_id, todo_id):
+def update_todo(todo_id):
     from app import db
+    
+    try:
+        # Validate CSRF token
+        validate_csrf(request.headers.get('X-CSRFToken'))
+    except ValidationError:
+        return jsonify({"error": "Invalid CSRF token"}), 400
+
+    todo = Todo.query.get_or_404(todo_id)
+    data = request.get_json()
+
+    # Update todo content
+    if 'content' in data:
+        todo.content = data['content']
+
+    # Update completion status
+    if 'is_completed' in data:
+        todo.is_completed = data['is_completed']
+
+    db.session.commit()
+    return jsonify({
+        'id': todo.id,
+        'content': todo.content,
+        'is_completed': todo.is_completed
+    }), 200
+
+@main.route("/todos/<int:todo_id>", methods=["DELETE"])
+@login_required
+def delete_todo(todo_id):
+    from app import db
+
+    try:
+        # Validate CSRF token
+        validate_csrf(request.headers.get('X-CSRFToken'))
+    except ValidationError:
+        return jsonify({"error": "Invalid CSRF token"}), 400
 
     todo = Todo.query.get_or_404(todo_id)
     if todo.is_completed:
-        progress = TaskProgress(task_id=task_id, progress=-1, notes="undone_on_delete")
+        # Record undone progress if deleting a completed todo
+        progress = TaskProgress(
+            task_id=todo.task_id,
+            progress=-1,
+            notes="Undone via deletion"
+        )
         db.session.add(progress)
     db.session.delete(todo)
     db.session.commit()
-    return jsonify({"message": "Todo deleted"})
-
-@main.route("/dashboard/tasks/<int:task_id>/save_progress", methods=["POST"])
-@login_required
-def save_progress(task_id):
-    from app import db
-
-    data = request.get_json()
-    progress = data.get("progress")
-    if not progress:
-        return jsonify({"error": "Progress is required"}), 400
-
-    task_progress = TaskProgress(task_id=task_id, progress=progress)
-    db.session.add(task_progress)
-    db.session.commit()
-    return jsonify({"message": "Progress saved"})
+    return jsonify({'message': 'Todo deleted'}), 200

@@ -101,84 +101,139 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 // Todos
-document.addEventListener('DOMContentLoaded', function () {
-    const addTaskBtn = document.getElementById('add-task-btn');
-    const taskInput = document.getElementById('task-input');
-    const todoList = document.querySelector('.todo-list');
-    const saveProgressSection = document.querySelector('.save-progress');
-    const saveProgressBtn = document.getElementById('save-progress-btn');
-    const discardProgressBtn = document.getElementById('discard-progress-btn');
+document.addEventListener('DOMContentLoaded', () => {
+    const taskId = document.getElementById('task-id').value;
+    const csrfToken = document.getElementById('csrf-token').value; // Get CSRF token
+    let isProgressModified = false;
 
-    let progressChanged = false;
+    // Real-time Todo Interactions
+    document.querySelector('.todo-list').addEventListener('click', async (e) => {
+        const todoItem = e.target.closest('.todo-item');
+        const todoId = todoItem?.dataset.todoId;
 
-    // Add Todo
-    addTaskBtn.addEventListener('click', async function () {
-        const taskText = taskInput.value.trim();
-        if (taskText) {
-            const response = await fetch(`/dashboard/tasks/${taskId}/add_todo`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: taskText })
-            });
-            const todo = await response.json();
-            addTaskToDOM(todo);
-            taskInput.value = '';
+        // Checkbox Toggle
+        if (e.target.matches('input[type="checkbox"]')) {
+            const isCompleted = e.target.checked;
+            await updateTodo(todoId, { is_completed: isCompleted });
+            toggleProgressUI();
+        }
+
+        // Delete Todo
+        if (e.target.closest('.btn-delete')) {
+            const wasCompleted = todoItem.dataset.initialCompleted === 'true';
+            await deleteTodo(todoId, wasCompleted);
+            todoItem.remove();
+            toggleProgressUI();
+        }
+
+        // Edit Todo
+        if (e.target.closest('.btn-edit')) {
+            const textElement = todoItem.querySelector('.todo-text');
+            const newText = prompt('Edit todo:', textElement.textContent);
+            if (newText) {
+                await updateTodo(todoId, { content: newText });
+                textElement.textContent = newText;
+            }
         }
     });
 
-    // Toggle Todo Completion
-    todoList.addEventListener('change', function (e) {
-        if (e.target.classList.contains('form-check-input')) {
-            const todoId = e.target.closest('.todo-item').dataset.todoId;
-            const isCompleted = e.target.checked;
-            fetch(`/dashboard/tasks/${taskId}/update_todo/${todoId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_completed: isCompleted })
-            });
-            progressChanged = true;
-            saveProgressSection.classList.remove('d-none');
-        }
+    // Add New Todo
+    document.getElementById('add-task-btn').addEventListener('click', async () => {
+        const input = document.getElementById('task-input');
+        const content = input.value.trim();
+        if (!content) return;
+
+        const todo = await fetch(`/tasks/${taskId}/todos`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // Include CSRF token
+            },
+            body: JSON.stringify({ content })
+        }).then(res => res.json());
+
+        appendTodoItem(todo);
+        input.value = '';
     });
 
     // Save Progress
-    saveProgressBtn.addEventListener('click', async function () {
-        const response = await fetch(`/dashboard/tasks/${taskId}/save_progress`, {
+    document.getElementById('save-progress').addEventListener('click', async () => {
+        const progress = calculateCurrentProgress();
+        await fetch(`/tasks/${taskId}/progress`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ progress: calculateProgress() })
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // Include CSRF token
+            },
+            body: JSON.stringify({ progress })
         });
-        if (response.ok) {
-            progressChanged = false;
-            saveProgressSection.classList.add('d-none');
-        }
+        isProgressModified = false;
+        updateProgressUI();
     });
 
-    // Discard Progress
-    discardProgressBtn.addEventListener('click', function () {
-        progressChanged = false;
-        saveProgressSection.classList.add('d-none');
-        location.reload(); // Reset UI to saved state
+    // Discard Changes
+    document.getElementById('discard-progress').addEventListener('click', () => {
+        document.querySelectorAll('.todo-item').forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.checked = item.dataset.initialCompleted === 'true';
+        });
+        isProgressModified = false;
+        updateProgressUI();
     });
 
     // Helper Functions
-    function addTaskToDOM(todo) {
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item todo-item d-flex align-items-center';
-        listItem.dataset.todoId = todo.id;
-
-        listItem.innerHTML = `
-            <input type="checkbox" class="form-check-input me-3" ${todo.is_completed ? 'checked' : ''} />
-            <span class="task-label flex-grow-1 ${todo.is_completed ? 'completed' : ''}">${todo.content}</span>
-            <button class="btn btn-sm btn-warning me-2 edit-btn">Edit</button>
-            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-        `;
-        todoList.appendChild(listItem);
+    function toggleProgressUI() {
+        isProgressModified = true;
+        document.querySelector('.progress-actions').classList.add('visible');
     }
 
-    function calculateProgress() {
-        const completed = document.querySelectorAll('.form-check-input:checked').length;
-        const total = document.querySelectorAll('.form-check-input').length;
-        return completed - (total - completed); // +n for completed, -n for unchecked
+    function calculateCurrentProgress() {
+        const changes = [];
+        document.querySelectorAll('.todo-item').forEach(item => {
+            const initial = item.dataset.initialCompleted === 'true';
+            const current = item.querySelector('input').checked;
+            if (initial !== current) changes.push(current ? 1 : -1);
+        });
+        return changes.reduce((a, b) => a + b, 0);
+    }
+
+    function appendTodoItem(todo) {
+        const html = `
+            <li class="todo-item" data-todo-id="${todo.id}" data-initial-completed="false">
+                <label class="todo-checkbox">
+                    <input type="checkbox" ${todo.is_completed ? 'checked' : ''} />
+                    <span class="checkmark"></span>
+                </label>
+                <span class="todo-text">${todo.content}</span>
+                <div class="todo-actions">
+                    <button class="btn-edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="btn-delete"><i class="fas fa-trash"></i></button>
+                </div>
+            </li>
+        `;
+        document.querySelector('.todo-list').insertAdjacentHTML('beforeend', html);
+    }
+
+    // Helper function to update a todo
+    async function updateTodo(todoId, data) {
+        await fetch(`/todos/${todoId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // Include CSRF token
+            },
+            body: JSON.stringify(data)
+        });
+    }
+
+    // Helper function to delete a todo
+    async function deleteTodo(todoId, wasCompleted) {
+        await fetch(`/todos/${todoId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // Include CSRF token
+            }
+        });
     }
 });

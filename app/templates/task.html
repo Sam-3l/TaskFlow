@@ -1,94 +1,153 @@
 {% extends 'parents/auth_base.html' %}
-{% block title %}{{ user["fname"] }} | Tasks{% endblock %}
+{% block title %}{{ task.title }} | Task{% endblock %}
 
 {% block content %}
-<div class="container-fluid task-page">
-    <div class="row g-4">
-        <!-- Task Details Column -->
-        <div class="col-lg-3">
-            <div class="task-details card shadow-sm">
-                <div class="card-body">
-                    <h1 class="card-title">{{ task.title }}</h1>
-                    <p class="card-text">{{ task.description }}</p>
-                    <div class="task-meta">
-                        <span class="badge bg-primary">{{ task.priority }}</span>
-                        <span class="badge bg-secondary">{{ task.status }}</span>
-                    </div>
+<div class="task-container">
+    <!-- Header Section -->
+    <div class="task-header">
+        <h1 class="task-title">{{ task.title }}</h1>
+        <div class="task-meta">
+            <span class="badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
+            <span class="deadline">{{ task.deadline|datetime_format('%b %d, %Y') if task.deadline }}</span>
+        </div>
+    </div>
+
+    <div class="task-layout">
+        <!-- Todo List Section -->
+        <div class="todo-section">
+            <div class="todo-card">
+                <form class="todo-create">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <input type="text" id="task-input" placeholder="Add a new todo..." class="todo-input" />
+                    <button id="add-task-btn" class="btn-add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </form>
+                
+                <ul class="todo-list">
+                    {% for todo in task.todos %}
+                    <li class="todo-item" data-todo-id="{{ todo.id }}" data-initial-completed="{{ todo.is_completed|tojson }}">
+                        <label class="todo-checkbox">
+                            <input type="checkbox" {% if todo.is_completed %}checked{% endif %} />
+                            <span class="checkmark"></span>
+                        </label>
+                        <span class="todo-text {% if todo.is_completed %}completed{% endif %}">{{ todo.content }}</span>
+                        <div class="todo-actions">
+                            <button class="btn-edit"><i class="fas fa-pencil-alt"></i></button>
+                            <button class="btn-delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Progress Actions -->
+                <div class="progress-actions hidden">
+                    <button id="save-progress" class="btn-save">Save Progress</button>
+                    <button id="discard-progress" class="btn-discard">Discard</button>
                 </div>
             </div>
         </div>
 
-        <!-- Todo List Column -->
-        <div class="col-lg-6">
-            <div class="todo-container card shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title text-center mb-4">Todo List</h3>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control todo-input" placeholder="Add a new todo" id="task-input" />
-                        <button class="btn btn-primary" type="button" id="add-task-btn">Add</button>
-                    </div>
-                    <ul class="list-group todo-list">
-                        {% for todo in task.todos %}
-                        <li class="list-group-item todo-item d-flex align-items-center" data-todo-id="{{ todo.id }}">
-                            <input type="checkbox" class="form-check-input me-3" {% if todo.is_completed %}checked{% endif %} />
-                            <span class="task-label flex-grow-1 {% if todo.is_completed %}completed{% endif %}">{{ todo.content }}</span>
-                            <button class="btn btn-sm btn-warning me-2 edit-btn">Edit</button>
-                            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    <div class="save-progress mt-3 d-none">
-                        <button class="btn btn-success" id="save-progress-btn">Save Progress</button>
-                        <button class="btn btn-secondary" id="discard-progress-btn">Discard</button>
-                    </div>
-                </div>
+        <!-- Side Panel (Description & Stats) -->
+        <div class="side-panel">
+            <div class="description-card">
+                <h3>Description</h3>
+                <p class="task-description">{{ task.description or "No description provided" }}</p>
             </div>
-        </div>
-
-        <!-- Calendar Column -->
-        <div class="col-lg-3">
-            <div class="calendar-container card shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title text-center mb-4">Calendar</h3>
-                    <!-- Placeholder for calendar -->
-                    <div id="calendar"></div>
+            
+            <div class="stats-card">
+                <h3>Progress</h3>
+                <div class="progress-circle" data-progress="{{ task|calculate_progress }}">
+                    <span class="progress-value">0%</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages() %}
-    {% for message in messages %}
-        <div id="flash-message" class="flash-message alert alert-info alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    {% endfor %}
-{% endwith %}
+<!-- Hidden Task ID for JS -->
+<input type="hidden" id="task-id" value="{{ task.id }}" />
 
-<!-- Styles -->
 <style>
-    .task-page {
-        margin-top: 70px;
-        padding: 2%;
+    /* Modern CSS with Gradient & Smooth Transitions */
+    .task-container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        margin-top: 80px;
     }
-    .task-details, .todo-container, .calendar-container {
-        border-radius: 10px;
+
+    .task-header {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        color: white;
     }
+
+    .todo-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+    }
+
     .todo-item {
-        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        background: #fff;
+        border-radius: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
+
     .todo-item:hover {
-        background-color: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
-    .completed {
-        text-decoration: line-through;
-        color: #6c757d;
+
+    .todo-checkbox {
+        position: relative;
+        margin-right: 1rem;
     }
-    .save-progress {
+
+    .checkmark {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border: 2px solid #667eea;
+        border-radius: 6px;
+        position: relative;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"]:checked + .checkmark::after {
+        content: "✓";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #667eea;
+    }
+
+    .btn-add {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .progress-actions {
+        margin-top: 1.5rem;
+        opacity: 0;
         transition: opacity 0.3s;
+    }
+
+    .progress-actions.visible {
+        opacity: 1;
     }
 </style>
 {% endblock %}
