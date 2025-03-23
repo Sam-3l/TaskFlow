@@ -17,7 +17,7 @@
         <div class="todo-section">
             <div class="todo-card">
                 <form class="todo-create">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <input type="hidden" id="csrf-token" name="csrf_token" value="{{ csrf_token() }}" />
                     <input type="text" id="task-input" placeholder="Add a new todo..." class="todo-input" />
                     <button id="add-task-btn" class="btn-add">
                         <i class="fas fa-plus"></i>

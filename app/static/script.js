@@ -13,25 +13,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Store the last known scroll position
-let lastScrollTop = 0;
-const navbar = document.querySelector('.nav-g');
-
-window.addEventListener('scroll', function() {
-    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-
-    if (currentScroll > lastScrollTop) {
-        // Scrolling down
-        navbar.style.top = '-70px'; // Adjust based on your navbar height
-    } else {
-        // Scrolling up
-        navbar.style.top = '0';
-    }
-
-    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // For Mobile or negative scrolling
-});
-
-
 function displayoff(element_id, input = null){
     let error_message = document.getElementById(element_id);
     error_message.style.display = "none";
@@ -79,26 +60,6 @@ function flash() {
             flashMessage.classList.remove('show');
         });
     }
-
-document.addEventListener('DOMContentLoaded', function () {
-    const fab = document.getElementById('fab');
-    const fabOptions = document.getElementById('fab-options');
-
-    fab.addEventListener('click', function () {
-        fab.classList.toggle('open');
-        fabOptions.style.display = fab.classList.contains('open') ? 'flex' : 'none';
-    });
-
-    document.addEventListener('click', function (event) {
-        const isClickInside = fab.contains(event.target) || fabOptions.contains(event.target);
-
-        if (!isClickInside) {
-            fab.classList.remove('open');
-            fabOptions.style.display = 'none';
-        }
-    });
-});
-
 
 // Todos
 document.addEventListener('DOMContentLoaded', () => {
