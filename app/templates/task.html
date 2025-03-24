@@ -27,10 +27,9 @@
                 <ul class="todo-list">
                     {% for todo in task.todos %}
                     <li class="todo-item" data-todo-id="{{ todo.id }}" data-initial-completed="{{ todo.is_completed|tojson }}">
-                        <label class="todo-checkbox">
-                            <input type="checkbox" {% if todo.is_completed %}checked{% endif %} />
-                            <span class="checkmark"></span>
-                        </label>
+                        <div class="todo-checkbox">
+                            <input type="checkbox" class="checkmark" {% if todo.is_completed %}checked{% endif %} />
+                        </div>
                         <span class="todo-text {% if todo.is_completed %}completed{% endif %}">{{ todo.content }}</span>
                         <div class="todo-actions">
                             <button class="btn-edit"><i class="fas fa-pencil-alt"></i></button>
@@ -107,6 +106,11 @@
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
 
+    .completed{
+        text-decoration: line-through;
+        /* styling this better later */
+    }
+
     .todo-checkbox {
         position: relative;
         margin-right: 1rem;
@@ -117,18 +121,8 @@
         width: 24px;
         height: 24px;
         border: 2px solid #667eea;
-        border-radius: 6px;
         position: relative;
         cursor: pointer;
-    }
-
-    input[type="checkbox"]:checked + .checkmark::after {
-        content: "✓";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        color: #667eea;
     }
 
     .btn-add {

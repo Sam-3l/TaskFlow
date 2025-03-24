@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskId = document.getElementById('task-id').value;
     const csrfToken = document.getElementById('csrf-token').value; // Get CSRF token
     let isProgressModified = false;
+    let progress = 0
 
     // Real-time Todo Interactions
     document.querySelector('.todo-list').addEventListener('click', async (e) => {
@@ -76,24 +77,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.matches('input[type="checkbox"]')) {
             const isCompleted = e.target.checked;
             await updateTodo(todoId, { is_completed: isCompleted });
-            toggleProgressUI();
+            progress = calculateCurrentProgress()
+            if (progress === 0){
+                toggleProgressUI("hide")
+            }
+            else{
+                toggleProgressUI("show")
+            }
         }
 
         // Delete Todo
         if (e.target.closest('.btn-delete')) {
             const wasCompleted = todoItem.dataset.initialCompleted === 'true';
             await deleteTodo(todoId, wasCompleted);
-            todoItem.remove();
+            // update the get
             toggleProgressUI();
         }
 
         // Edit Todo
         if (e.target.closest('.btn-edit')) {
-            const textElement = todoItem.querySelector('.todo-text');
             const newText = prompt('Edit todo:', textElement.textContent);
             if (newText) {
                 await updateTodo(todoId, { content: newText });
-                textElement.textContent = newText;
+                // update the get
             }
         }
     });
@@ -113,8 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({ content })
         }).then(res => res.json());
 
-        appendTodoItem(todo);
         input.value = '';
+        // update the get
     });
 
     // Save Progress
@@ -129,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({ progress })
         });
         isProgressModified = false;
-        updateProgressUI();
     });
 
     // Discard Changes
@@ -139,13 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.checked = item.dataset.initialCompleted === 'true';
         });
         isProgressModified = false;
-        updateProgressUI();
     });
 
     // Helper Functions
-    function toggleProgressUI() {
+    function toggleProgressUI(action){
         isProgressModified = true;
-        document.querySelector('.progress-actions').classList.add('visible');
+        if (action === "show"){
+            document.querySelector('.progress-actions').classList.add('visible');
+        }else{
+            document.querySelector('.progress-actions').classList.remove('visible');
+        }
     }
 
     function calculateCurrentProgress() {
@@ -156,23 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (initial !== current) changes.push(current ? 1 : -1);
         });
         return changes.reduce((a, b) => a + b, 0);
-    }
-
-    function appendTodoItem(todo) {
-        const html = `
-            <li class="todo-item" data-todo-id="${todo.id}" data-initial-completed="false">
-                <label class="todo-checkbox">
-                    <input type="checkbox" ${todo.is_completed ? 'checked' : ''} />
-                    <span class="checkmark"></span>
-                </label>
-                <span class="todo-text">${todo.content}</span>
-                <div class="todo-actions">
-                    <button class="btn-edit"><i class="fas fa-pencil-alt"></i></button>
-                    <button class="btn-delete"><i class="fas fa-trash"></i></button>
-                </div>
-            </li>
-        `;
-        document.querySelector('.todo-list').insertAdjacentHTML('beforeend', html);
     }
 
     // Helper function to update a todo
