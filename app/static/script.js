@@ -65,8 +65,7 @@ function flash() {
 document.addEventListener('DOMContentLoaded', () => {
     const taskId = document.getElementById('task-id').value;
     const csrfToken = document.getElementById('csrf-token').value; // Get CSRF token
-    let isProgressModified = false;
-    let progress = 0
+    let progress = []
 
     // Real-time Todo Interactions
     document.querySelector('.todo-list').addEventListener('click', async (e) => {
@@ -76,36 +75,48 @@ document.addEventListener('DOMContentLoaded', () => {
         // Checkbox Toggle
         if (e.target.matches('input[type="checkbox"]')) {
             const isCompleted = e.target.checked;
-            await updateTodo(todoId, { is_completed: isCompleted });
-            progress = calculateCurrentProgress()
-            if (progress === 0){
-                toggleProgressUI("hide")
+            let todoIndex = progress.findIndex(todo => todo.todoId === todoId);
+            if (todoIndex !== -1){
+                progress.splice(todoIndex, 1);
+            }else{
+                progress.push({ todoId, progress: isCompleted ? 1 : -1 })
             }
-            else{
-                toggleProgressUI("show")
+            if (progress.length !== 0){
+                toggleProgressUI("show");
+            }else{
+                toggleProgressUI("hide")
             }
         }
 
         // Delete Todo
         if (e.target.closest('.btn-delete')) {
+            if (progress.length !== 0){
+                alert("You have unsaved changes, progress would be lost if you continue")
+            }
             const wasCompleted = todoItem.dataset.initialCompleted === 'true';
             await deleteTodo(todoId, wasCompleted);
-            // update the get
-            toggleProgressUI();
+            location.reload()
         }
 
         // Edit Todo
         if (e.target.closest('.btn-edit')) {
+            if (progress.length !== 0){
+                alert("You have unsaved changes, progress would be lost if you continue")
+            }
+            const textElement = todoItem.querySelector('.todo-text');
             const newText = prompt('Edit todo:', textElement.textContent);
             if (newText) {
                 await updateTodo(todoId, { content: newText });
-                // update the get
+                location.reload()
             }
         }
     });
 
     // Add New Todo
     document.getElementById('add-task-btn').addEventListener('click', async () => {
+        if (progress.length !== 0){
+            alert("You have unsaved changes, progress would be lost if you continue")
+        }
         const input = document.getElementById('task-input');
         const content = input.value.trim();
         if (!content) return;
@@ -114,27 +125,32 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken // Include CSRF token
+                'X-CSRFToken': csrfToken 
             },
             body: JSON.stringify({ content })
         }).then(res => res.json());
 
         input.value = '';
-        // update the get
+        location.reload()
     });
 
     // Save Progress
     document.getElementById('save-progress').addEventListener('click', async () => {
-        const progress = calculateCurrentProgress();
+        for (let index = 0; index < progress.length; index++) {
+            const todo = progress[index];
+            await updateTodo(todo.todoId, { is_completed: todo.progress === 1 ? true : false });            
+        }
+        progress = progress.map(todo => todo.progress)
+        notes = document.getElementById("notes").value
         await fetch(`/tasks/${taskId}/progress`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken // Include CSRF token
+                'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify({ progress })
+            body: JSON.stringify({ progress, notes: notes ? notes : null })
         });
-        isProgressModified = false;
+        location.reload()
     });
 
     // Discard Changes
@@ -143,27 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const checkbox = item.querySelector('input[type="checkbox"]');
             checkbox.checked = item.dataset.initialCompleted === 'true';
         });
-        isProgressModified = false;
+        progress = []
+        toggleProgressUI("hide")
     });
 
     // Helper Functions
     function toggleProgressUI(action){
-        isProgressModified = true;
         if (action === "show"){
             document.querySelector('.progress-actions').classList.add('visible');
         }else{
             document.querySelector('.progress-actions').classList.remove('visible');
         }
-    }
-
-    function calculateCurrentProgress() {
-        const changes = [];
-        document.querySelectorAll('.todo-item').forEach(item => {
-            const initial = item.dataset.initialCompleted === 'true';
-            const current = item.querySelector('input').checked;
-            if (initial !== current) changes.push(current ? 1 : -1);
-        });
-        return changes.reduce((a, b) => a + b, 0);
     }
 
     // Helper function to update a todo
@@ -172,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken // Include CSRF token
+                'X-CSRFToken': csrfToken  
             },
             body: JSON.stringify(data)
         });
@@ -184,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken // Include CSRF token
+                'X-CSRFToken': csrfToken  
             }
         });
     }

@@ -68,8 +68,9 @@ class TaskProgress(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey("task.id"))
     task = db.relationship("Task", back_populates="task_progress")
     date_made = db.Column(db.Date, default=func.current_date())
-    progress = db.Column(db.Integer, nullable=False)
+    progress = db.Column(ARRAY(db.Integer), nullable=False)
     notes = db.Column(db.Text, nullable=True)
+
 
 # Many To Many Association Tables
 

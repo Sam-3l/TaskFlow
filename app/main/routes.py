@@ -53,9 +53,17 @@ def deadline_display_filter(days):
 
 @main.app_template_filter('calculate_progress')
 def calculate_progress(task):
+    from app import db
+
     if not task.todos:
         return 0
     completed = sum(1 for todo in task.todos if todo.is_completed)
+    task = Task.query.get(task.id)
+    if completed == len(task.todos):
+        task.status = "completed"
+    else:
+        task.status = "pending"
+    db.session.commit()
     return int((completed / len(task.todos)) * 100)
 
 @main.app_template_filter('datetime_format')
@@ -198,7 +206,7 @@ def save_task_progress(task_id):
     progress = TaskProgress(
         task_id=task_id,
         progress=data['progress'],
-        notes="Manual save"
+        notes=data['notes']
     )
     db.session.add(progress)
     db.session.commit()
@@ -249,7 +257,7 @@ def delete_todo(todo_id):
         # Record undone progress if deleting a completed todo
         progress = TaskProgress(
             task_id=todo.task_id,
-            progress=-1,
+            progress=[-1,],
             notes="Undone via deletion"
         )
         db.session.add(progress)
