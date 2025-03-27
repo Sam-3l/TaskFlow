@@ -214,7 +214,6 @@ def create_todo(task_id):
     db.session.commit()
 
     task = Task.query.get(task_id)
-    db.session.refresh(task)
     completed = sum(1 for todo in task.todos if todo.is_completed)
     if completed == len(task.todos) and len(task.todos) != 0:
         task.status = "completed"
