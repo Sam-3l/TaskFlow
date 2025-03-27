@@ -66,7 +66,11 @@ def datetime_format(value, format="%b %d, %Y"):
 
 @main.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", active_page="home")
+
+@main.route("/features")
+def features():
+    return render_template("features.html", active_page="features")
 
 @main.route("/dashboard")
 @login_required

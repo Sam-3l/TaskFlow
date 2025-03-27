@@ -106,81 +106,153 @@ body{
     margin-top: 0;
     margin-right: 6px;
 }
+
 .user-menu {
     position: fixed;
     top: 0;
-    right: -300px;
+    right: 0px;
+    display: none;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-top: 0px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
     width: 300px;
-    height: 100%;
-    background-color: #899a9d; 
-    transition: right 0.3s ease;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
     z-index: 8;
-    padding-top: 0px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    max-height: 100vh;
     overflow-y: auto;
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #adb5bd #f8f9fa;
 }
-.user-menu.active {
-    right: 0;
-}
-.user-menu ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-.user-menu ul li {
-    border-bottom: 1px solid #495057;
-}
-.user-menu ul li a {
-    display: block;
-    padding: 10px;
-    color: #495057;
-    text-decoration: none;
-    font-size: 16px;
-}
-.user-menu ul li a:hover {
-    background-color: #e9ecef; /* Bootstrap secondary light shade */
-}
-.user-info {
-    border-bottom: 3px solid #495057;
-    background-color: #9aabac;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-} 
-.profile-img-small {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-}
-.close-menu {
-    font-size: 24px;
-    cursor: pointer;
-    color: #495057;
-}
-.close-menu:hover {
-    color: #dc3545; 
-}
-.user-menu ul{
-    border-bottom: 3px solid #495057;
-}
+
 .user-menu::-webkit-scrollbar {
-    width: 8px; /* Width of the scrollbar */
+    width: 8px;
 }
 
 .user-menu::-webkit-scrollbar-thumb {
-    background-color: #6c757d; /* Color of the scrollbar thumb */
-    border-radius: 10px; /* Rounded corners */
+    background-color: #adb5bd;
+    border-radius: 4px;
 }
 
 .user-menu::-webkit-scrollbar-thumb:hover {
-    background-color: #495057; /* Darker color on hover */
+    background-color: #495057;
 }
 
-.user-menu::-webkit-scrollbar-track {
-    background-color: #f8f9fa; /* Background color of the scrollbar track */
+.user-menu.active{
+    display: block;
 }
 
+/* User Info Section */
+.user-info {
+    background: var(--bs-secondary);
+    padding: 1.5rem;
+    border-bottom: 3px solid #0d6efd; /* Blue accent */
+}
+
+.profile-img-small {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-info span {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.close-menu {
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.close-menu:hover {
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+/* Menu Items Styling */
+.user-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-menu li {
+    border-bottom: 1px solid #f1f4f7;
+}
+
+.user-menu li:last-child {
+    border-bottom: none;
+}
+
+.user-menu a {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: #2c3e50;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.user-menu a:hover {
+    background: #f8f9fa;
+    padding-left: 2rem;
+}
+
+.user-menu a:hover .menu-svg {
+    color: #0d6efd; /* Blue accent */
+}
+
+.menu-svg {
+    width: 22px;
+    height: 22px;
+    margin-right: 1rem;
+    color: #6c757d; /* Secondary color */
+    transition: color 0.2s ease;
+}
+
+/* Section Dividers */
+.user-menu ul:not(:first-child)::before {
+    content: '';
+    display: block;
+    height: 3px;
+    background: #0d6efd;
+    margin: 0.5rem 0rem;
+}
+
+/* Logout Special Styling */
+.user-menu .logout {
+    color: #dc3545;
+}
+
+.user-menu .logout:hover {
+    color: #bb2d3b;
+}
+
+/* Active State Indicator */
+.user-menu a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #0d6efd;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.user-menu a:hover::after {
+    opacity: 1;
+}
 
 .logo {
     height: 40px;
