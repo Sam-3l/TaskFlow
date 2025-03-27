@@ -1,4 +1,4 @@
-import re
+import math
 from flask.helpers import flash
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
@@ -53,17 +53,9 @@ def deadline_display_filter(days):
 
 @main.app_template_filter('calculate_progress')
 def calculate_progress(task):
-    from app import db
-
     if not task.todos:
         return 0
     completed = sum(1 for todo in task.todos if todo.is_completed)
-    task = Task.query.get(task.id)
-    if completed == len(task.todos):
-        task.status = "completed"
-    else:
-        task.status = "pending"
-    db.session.commit()
     return int((completed / len(task.todos)) * 100)
 
 @main.app_template_filter('datetime_format')
@@ -162,12 +154,47 @@ def create_task():
 @login_required
 def task(task_id):
     task = Task.query.filter_by(id=task_id).first()
+
     if not task:
         return "Not Found", 404
     if task.assigned_to_user_id != current_user.id:
         flash("You don't have the permission to view this task")
         return redirect(url_for("main.dashboard"))
-    return render_template("task.html", user=current_user, task=task, active_page="tasks")
+    
+    if task.status == "completed":
+        advice = "Great job! Keep going and complete more tasks at your own pace."
+    elif task.deadline:
+        today = datetime.today().date() 
+        if (task.deadline - today).days <= 0:
+            advice = "You're past the deadline, but don't worry! Just focus on completing as many tasks as you can."
+        else:
+            days_to_finish = (task.deadline - task.created_at).days
+            todos_per_day = math.ceil(len(task.todos)/days_to_finish)
+            todos_expected_to_be_completed_today = ((today - task.created_at).days + 1)*todos_per_day  # How much todos should have been done by end of today
+            todos_completed = sum(1 for todo in task.todos if todo.is_completed)
+            todos_left = len(task.todos) - todos_completed
+            todos_to_be_done_today = min(todos_expected_to_be_completed_today - todos_completed, todos_left)  # Todos expected to be done added to completed today.
+            if todos_per_day == 1:
+                if todos_to_be_done_today <= 0:
+                    advice = "You're on track! Try to complete at least one task per day, or even more if you feel up to it."
+                elif todos_to_be_done_today == 1:
+                    advice = "You're almost there! One more todo will keep you on pace."
+                else:
+                    advice = f"Try to complete at least one todo per day. You have {todos_to_be_done_today} left for today, but feel free to go beyond!"
+            elif todos_per_day > 1:
+                if todos_to_be_done_today <= 0:
+                    advice = f"You're doing great! Aim for at least {todos_per_day} todos per day, or more if you're feeling productive."
+                elif todos_to_be_done_today == 1:
+                    advice = f"Nice work! Just one more todo will keep you on track."
+                else:
+                    advice = f"Keep up the momentum! {todos_to_be_done_today} more to reach today's goal ({todos_per_day} per day), but you can always push ahead!"
+            else:
+                advice = "Kickstart your productivity."
+    else:
+        advice = "Stay productive at your own pace. Small steps add up!"
+    
+    info = {'total': len(task.todos), 'advice': advice}
+    return render_template("task.html", user=current_user, task=task, active_page="tasks", info=info)
 
 # Todo API
 @main.route("/tasks/<int:task_id>/todos", methods=["POST"])
@@ -185,6 +212,16 @@ def create_todo(task_id):
     todo = Todo(content=data['content'], task_id=task_id)
     db.session.add(todo)
     db.session.commit()
+
+    task = Task.query.get(task_id)
+    db.session.refresh(task)
+    completed = sum(1 for todo in task.todos if todo.is_completed)
+    if completed == len(task.todos) and len(task.todos) != 0:
+        task.status = "completed"
+    else:
+        task.status = "pending"
+    db.session.commit()
+
     return jsonify({
         'id': todo.id,
         'content': todo.content,
@@ -208,7 +245,7 @@ def save_task_progress(task_id):
         progress=data['progress'],
         notes=data['notes']
     )
-    db.session.add(progress)
+    db.session.add(progress)    
     db.session.commit()
     return jsonify({'message': 'Progress saved'}), 200
 
@@ -235,6 +272,15 @@ def update_todo(todo_id):
         todo.is_completed = data['is_completed']
 
     db.session.commit()
+
+    task = Task.query.get(todo.task_id)
+    completed = sum(1 for todo in task.todos if todo.is_completed)
+    if completed == len(task.todos) and len(task.todos) != 0:
+        task.status = "completed"
+    else:
+        task.status = "pending"
+    db.session.commit()
+
     return jsonify({
         'id': todo.id,
         'content': todo.content,
@@ -263,4 +309,13 @@ def delete_todo(todo_id):
         db.session.add(progress)
     db.session.delete(todo)
     db.session.commit()
+
+    task = Task.query.get(todo.task_id)
+    completed = sum(1 for todo in task.todos if todo.is_completed)
+    if completed == len(task.todos) and len(task.todos) != 0:
+        task.status = "completed"
+    else:
+        task.status = "pending"
+    db.session.commit()
+
     return jsonify({'message': 'Todo deleted'}), 200

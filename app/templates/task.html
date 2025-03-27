@@ -49,6 +49,11 @@
                     {% endfor %}
                 </ul>
 
+                <div class="info">
+                    <div>Todos: {{ info['total'] }} todo{%if info['total'] > 1 %}s{% endif %}</div>
+                    <div>{{ info['advice'] }}</div>
+                </div>
+                
                 <!-- Progress Actions -->
                 <div class="progress-actions">
                     <textarea id="notes" class="notes-input" placeholder="Add progress notes..."></textarea>
@@ -258,8 +263,8 @@
 
     .checkmark-custom {
         display: inline-block;
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         border: 2px solid var(--text-secondary);
         border-radius: 50%;
         position: relative;
@@ -267,8 +272,9 @@
     }
 
     .checkmark:checked + .checkmark-custom {
-        background: var(--primary);
-        border-color: var(--primary);
+        background: var(--text-secondary);
+        border-color: var(--text-secondary);
+        opacity: 0.9;
     }
 
     .checkmark:checked + .checkmark-custom::after {
@@ -280,10 +286,10 @@
         color: white;
     }
 
-    .checkmark:checked ~ .todo-text {
+    .completed {
         color: var(--text-secondary);
         text-decoration: line-through;
-        opacity: 0.8;
+        opacity: 0.9;
     }
 
     .todo-actions {
@@ -409,6 +415,17 @@
     .btn-discard:hover {
         background: var(--danger);
         color: white;
+    }
+
+    .task-description{
+        height: auto;
+    }
+    
+    .info{
+        color: var(--text-primary);
+        font-size: 13px;
+        padding-left: 1rem;
+        opacity: 0.8;
     }
 
     @media (max-width: 768px) {
