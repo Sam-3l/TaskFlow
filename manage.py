@@ -9,4 +9,4 @@ def reset_db():
         print("database reset successfully")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
