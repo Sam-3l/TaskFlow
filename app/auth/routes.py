@@ -28,6 +28,13 @@ def signup():
         data["password"] = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         
         # data storage
+        data.setdefault("gender", None)
+        data.setdefault("address", None)
+        data.setdefault("dob", None)
+        data.setdefault("phone", None)
+        data.setdefault("city", None)
+        data.setdefault("state", None)
+        data.setdefault("zip", None)
         new_user = User(**data)
         db.session.add(new_user)
         db.session.commit()

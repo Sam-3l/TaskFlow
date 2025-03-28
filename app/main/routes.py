@@ -14,6 +14,8 @@ from app.forms import CreateTask
 from datetime import datetime, date
 
 def format_date(date_obj : datetime):
+    if not date_obj:
+        return None
     day = date_obj.day
     month_year = date_obj.strftime("%B %Y")
     day_with_suffix = add_ordinal_suffix(day)
@@ -135,6 +137,11 @@ def tasks():
 @main.route("/dashboard/projects")
 @login_required
 def projects():
+    return render_template("projects.html", user=current_user, active_page="projects")
+
+@main.route("/dashboard/projects/new")
+@login_required
+def create_projects():
     return render_template("projects.html", user=current_user, active_page="projects")
 
 @main.route("/profile")

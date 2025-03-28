@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card p-4 bg-primary text-white shadow-lg" data-aos="fade-down">
-                <h3 class="fw-bold">👋 Welcome back, {{ user["fname"] }}!</h3>
+                <h3 class="fw-bold">👋 Welcome{% if stats.total_tasks != 0 or stats.active_projects != 0 %} back{% endif %}, {{ user["fname"] }}!</h3>
                 <p class="mb-0">Stay productive and complete your tasks efficiently.</p>
             </div>
         </div>
@@ -20,10 +20,10 @@
         {% if stats.total_tasks == 0 and stats.active_projects == 0 %}
             <div class="col-md-12" data-aos="fade-up">
                 <div class="card p-4 text-center shadow-sm">
-                    <h4 class="text-muted">👋 Welcome! Let's Get Started</h4>
+                    <h4 class="text-muted">👋 Welcome {{ user["fname"] }}! Let's Get Started</h4>
                     <p class="text-dark">Create your first task and start managing your projects efficiently.</p>
-                    <a href="/dashboard/tasks/new" class="btn btn-primary">+ Create First Task</a>
-                    <a href="/dashboard/projects/new" class="btn btn-secondary">📌 Start a Project</a>
+                    <a href="/dashboard/tasks/new" class="btn btn-primary p-2">+ Create First Task</a>
+                    <a href="/dashboard/projects/new" class="btn btn-secondary p-2">📌 Start a Project</a>
                 </div>
             </div>
         {% else %}
@@ -88,7 +88,7 @@
                                 {% elif task.status == 'completed' %} bg-success 
                                 {% else %} bg-primary {% endif %}
                                 rounded-pill">
-                                {% if task.status == 'completed' %} Done {% else %} {{ (task.deadline.date() - today).days }}d {% endif %}
+                                {% if task.status == 'completed' %} Done {% elif task.deadline %} {{ (task.deadline.date() - today).days }}d {% else %} pending {% endif %}
                             </span>
                         </li>
                         {% endfor %}
