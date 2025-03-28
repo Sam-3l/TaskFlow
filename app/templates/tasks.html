@@ -2,7 +2,7 @@
 {% block title %}{{ user["fname"] }} | Tasks{% endblock %}
 
 {% block content %}
-<div class="tasks container-fluid px-lg-5 px-">
+<div class="tasks container-fluid px-lg-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-dark mb-0">Your Tasks</h1>
         <div class="dropdown">
@@ -60,7 +60,7 @@
                             <div class="d-flex justify-content-between text-muted small">
                                 <span>
                                     <i class="fas fa-pencil-alt me-1"></i>
-                                    {{ task["updated_at"] }}
+                                    {{ task["updated_at"].date() }}
                                 </span>
                                 <span>
                                     {% if task['source'] %}

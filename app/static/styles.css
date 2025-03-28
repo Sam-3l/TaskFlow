@@ -56,23 +56,14 @@ body{
     margin-left: 10px;
 }
 
-.form2{
-    color: white;
-    font-family: sans-serif;
-}
-
-.form2 a{
-    color: white;
-    text-decoration: none;
-}
-
-.login-container {
+.login-container, .signup-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
 }
-.login-box {
+
+.login-box{
     background: #fff;
     padding: 40px;
     border-radius: 8px;
@@ -80,7 +71,16 @@ body{
     width: 100%;
     max-width: 400px;
 }
-.login-box h2 {
+
+.signup-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 550px;
+}
+.login-box h2, .signup-box h2{
     margin-bottom: 20px;
     font-weight: 600;
     text-align: center;
@@ -505,13 +505,13 @@ body{
 }
 
 /* Search Bar */
-.form-control {
+.search {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #fff;
 }
 
-.form-control::placeholder {
+.search::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -565,7 +565,7 @@ body{
         padding: 8px 10px !important;
     }
 
-    .form-control {
+    .search {
         width: 100%;
     }
 }

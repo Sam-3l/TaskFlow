@@ -5,12 +5,13 @@ from flask_login import login_required, current_user
 from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
 from wtforms import ValidationError
+from sqlalchemy.sql import func
 
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership
 from app.forms import CreateTask
 
-from datetime import datetime
+from datetime import datetime, date
 
 def format_date(date_obj : datetime):
     day = date_obj.day
@@ -75,14 +76,44 @@ def features():
 @main.route("/dashboard")
 @login_required
 def dashboard():
+    from app import db
+
+    # Get the three most recent tasks assigned to the user
+    recent_tasks = (
+        Task.query.filter_by(assigned_to_user_id=current_user.id)
+        .order_by(Task.updated_at.desc())  # Order by most recently updated
+        .limit(3)
+        .all()
+    )
+
+    # Filter tasks based on status
+    pending_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id, status="pending").count()
+    completed_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id, status="completed").count()
+
+    # Count active projects the user is a member of
+    active_projects = db.session.query(membership).filter(
+        membership.c.user_id == current_user.id,
+        membership.c.status == "active"
+    ).count()
+
+    # Count tasks with deadlines today
+    deadlines_today = Task.query.filter(
+        Task.assigned_to_user_id == current_user.id, func.date(Task.deadline) == date.today()
+    ).all()
+
+    # Stats dictionary
     stats = {
-        "total_tasks": 15,
-        "pending_tasks": 10,
-        "completed_tasks": 5,
-        "active_projects": 3,
-        "deadlines_today": 2
+        "total_tasks": pending_tasks + completed_tasks,
+        "pending_tasks": pending_tasks,
+        "completed_tasks": completed_tasks,
+        "active_projects": active_projects,
+        "deadlines_today": deadlines_today,
+        "deadlines_today_count": len(deadlines_today)
     }
-    return render_template("dashboard.html", user=current_user, active_page="home", stats=stats)
+
+    today = datetime.today().date()
+
+    return render_template("dashboard.html", user=current_user, active_page="home", stats=stats, recent_tasks=recent_tasks, today=today)
 
 @main.route('/dashboard/tasks')
 @login_required
@@ -94,7 +125,7 @@ def tasks():
     # Calculate deadline_from_now for each task
     for task in tasks:
         if task.deadline:
-            deadline_from_now = (task.deadline - today).days
+            deadline_from_now = (task.deadline.date() - today).days
         else:
             deadline_from_now = None
         task.deadline_from_now = deadline_from_now
@@ -109,8 +140,9 @@ def projects():
 @main.route("/profile")
 @login_required
 def profile():
-    formatted_date_joined = format_date(current_user.date_joined)
-    formatted_dob = format_date(current_user.dob)
+    user = current_user
+    formatted_date_joined = format_date(user.date_joined.date() if isinstance(user.date_joined, datetime) else user.date_joined)
+    formatted_dob = format_date(user.dob.date() if isinstance(user.dob, datetime) else user.dob)
     dates = {'joined': formatted_date_joined, 'birth': formatted_dob}
     return render_template("profile.html", user=current_user, user_profile_info=current_user, active_page=None, dates=dates)
 
@@ -169,12 +201,12 @@ def task(task_id):
         advice = "Great job! Keep going and complete more tasks at your own pace."
     elif task.deadline:
         today = datetime.today().date() 
-        if (task.deadline - today).days <= 0:
+        if (task.deadline.date() - today).days <= 0:
             advice = "You're past the deadline, but don't worry! Just focus on completing as many tasks as you can."
         else:
-            days_to_finish = (task.deadline - task.created_at).days
+            days_to_finish = (task.deadline.date() - task.created_at.date()).days
             todos_per_day = math.ceil(len(task.todos)/days_to_finish)
-            todos_expected_to_be_completed_today = ((today - task.created_at).days + 1)*todos_per_day  # How much todos should have been done by end of today
+            todos_expected_to_be_completed_today = ((today - task.created_at.date()).days + 1)*todos_per_day  # How much todos should have been done by end of today
             todos_completed = sum(1 for todo in task.todos if todo.is_completed)
             todos_left = len(task.todos) - todos_completed
             todos_to_be_done_today = min(todos_expected_to_be_completed_today - todos_completed, todos_left)  # Todos expected to be done added to completed today.
@@ -223,6 +255,7 @@ def create_todo(task_id):
         task.status = "completed"
     else:
         task.status = "pending"
+    task.updated_at = datetime.utcnow()
     db.session.commit()
 
     return jsonify({
@@ -282,6 +315,7 @@ def update_todo(todo_id):
         task.status = "completed"
     else:
         task.status = "pending"
+    task.updated_at = datetime.utcnow()
     db.session.commit()
 
     return jsonify({
@@ -319,6 +353,7 @@ def delete_todo(todo_id):
         task.status = "completed"
     else:
         task.status = "pending"
+    task.updated_at = datetime.utcnow()
     db.session.commit()
 
     return jsonify({'message': 'Todo deleted'}), 200

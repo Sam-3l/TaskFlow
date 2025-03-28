@@ -17,61 +17,88 @@
 
     <!-- Quick Stats -->
     <div class="row g-4 mt-4">
-        <div class="col-md-3" data-aos="fade-up">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Total Tasks</h5>
-                <h2 class="fw-bold text-dark">{{ stats.total_tasks }}</h2>
+        {% if stats.total_tasks == 0 and stats.active_projects == 0 %}
+            <div class="col-md-12" data-aos="fade-up">
+                <div class="card p-4 text-center shadow-sm">
+                    <h4 class="text-muted">👋 Welcome! Let's Get Started</h4>
+                    <p class="text-dark">Create your first task and start managing your projects efficiently.</p>
+                    <a href="/dashboard/tasks/new" class="btn btn-primary">+ Create First Task</a>
+                    <a href="/dashboard/projects/new" class="btn btn-secondary">📌 Start a Project</a>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Pending Tasks</h5>
-                <h2 class="fw-bold text-warning">{{ stats.pending_tasks }}</h2>
+        {% else %}
+            <div class="col-md-3" data-aos="fade-up">
+                <div class="card p-3 text-center shadow-sm equal-height">
+                    <h5 class="text-muted">Total Tasks</h5>
+                    <h2 class="fw-bold text-dark">{{ stats.total_tasks }}</h2>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Completed Tasks</h5>
-                <h2 class="fw-bold text-success">{{ stats.completed_tasks }}</h2>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="card p-3 text-center shadow-sm equal-height">
+                    <h5 class="text-muted">Pending Tasks</h5>
+                    <h2 class="fw-bold text-warning">{{ stats.pending_tasks }}</h2>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Active Projects</h5>
-                <h2 class="fw-bold text-info">{{ stats.active_projects }}</h2>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="card p-3 text-center shadow-sm equal-height">
+                    <h5 class="text-muted">Completed Tasks</h5>
+                    <h2 class="fw-bold text-success">{{ stats.completed_tasks }}</h2>
+                </div>
             </div>
-        </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="card p-3 text-center shadow-sm equal-height">
+                    <h5 class="text-muted">Active Projects</h5>
+                    <h2 class="fw-bold text-info">{{ stats.active_projects }}</h2>
+                </div>
+            </div>
+        {% endif %}
     </div>
+
 
     <!-- Quick Actions & Tasks -->
     <div class="row g-4 mt-4">
         <div class="col-md-6" data-aos="fade-right">
             <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">🔧 Quick Actions</h5>
-                <button class="btn btn-success btn-lg w-100 mb-3">+ New Task</button>
-                <button class="btn btn-secondary btn-lg w-100 mb-3">📌 Add Project</button>
+                <button class="btn btn-success btn-lg w-100 mb-3" onclick="location.href='/dashboard/tasks/new'">+ New Task</button>
+                <button class="btn btn-secondary btn-lg w-100 mb-3" onclick="location.href='/dashboard/projects/new'">📌 Add Project</button>
                 <button class="btn btn-warning btn-lg w-100">🔔 Set Reminder</button>
             </div>
         </div>
+
         <div class="col-md-6" data-aos="fade-left">
             <div class="card p-4 shadow-sm equal-height">
-                <h5 class="fw-bold mb-4 text-dark">📝 Task Overview</h5>
+                <h5 class="fw-bold mb-4 text-dark">📝 Recent Tasks</h5>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>🔵 Task 1 - In Progress</span>
-                        <span class="badge bg-primary rounded-pill">2d</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>🟡 Task 2 - Pending</span>
-                        <span class="badge bg-warning rounded-pill">1d</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>✅ Task 3 - Completed</span>
-                        <span class="badge bg-success rounded-pill">Done</span>
-                    </li>
+                    {% if recent_tasks %}
+                        {% for task in recent_tasks %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                {% if task.status == "pending" %}
+                                    🟡 
+                                {% elif task.status == "completed" %}
+                                    ✅ 
+                                {% else %}
+                                    🔵 
+                                {% endif %}
+                                {{ task.title }} - {{ task.status|capitalize }}
+                            </span>
+                            <span class="badge 
+                                {% if task.status == 'pending' %} bg-warning 
+                                {% elif task.status == 'completed' %} bg-success 
+                                {% else %} bg-primary {% endif %}
+                                rounded-pill">
+                                {% if task.status == 'completed' %} Done {% else %} {{ (task.deadline.date() - today).days }}d {% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-center text-muted">No recent tasks available</li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
+
     </div>
 
     <!-- Deadlines & Insights -->
@@ -79,23 +106,25 @@
         <div class="col-md-6" data-aos="fade-right">
             <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">⏳ Upcoming Deadlines</h5>
-                <p class="text-muted">📅 You have <b>{{ stats.deadlines_today }}</b> tasks due today.</p>
+                {% if stats.deadlines_today %}
+                <p class="text-muted">📅 You have <b>{{ stats.deadlines_today_count }}</b> task{%if stats.deadlines_today_count>1%}s{%endif%} due today.</p>
                 <ul class="list-group list-group-flush">
+                {% for task in stats.deadlines_today %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>📌 Task A - 2 PM</span>
-                        <span class="badge bg-danger rounded-pill">Urgent</span>
+                        <span>📌 {{ task.title }}</span>
+                        <span class="badge bg-danger rounded-pill">{{ task.priority }}</span>
                     </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>📌 Task B - 5 PM</span>
-                        <span class="badge bg-warning rounded-pill">High</span>
-                    </li>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">📅 You have no task due today.</p>
+                {% endif %}
                 </ul>
             </div>
         </div>
         <!-- Progress Bar Animation -->
         <div class="col-md-6" data-aos="fade-right">
             <div class="card p-4 shadow-sm equal-height">
-                <h5 class="fw-bold mb-4 text-dark">📊 Productivity Insights</h5>
+                <h5 class="fw-bold mb-4 text-dark">📊 Productivity Insights - hardcoded</h5>
                 <p class="text-muted">You're on a 3-day productivity streak! Keep going!</p>
                 <div class="progress mb-3">
                     <div class="progress-bar bg-success" style="width: 0%" id="progress-bar">75% Completed</div>
@@ -132,10 +161,17 @@
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
         {% if message %}
-            <div id="flash-message" class="flash-message" data-aos="fade-in">
-                <span>{{ message }}</span>
-                <button id="close-btn" class="close-btn">&times;</button>
-            </div>
+          <div id="flash-message" class="flash-message">
+            <span>
+                {{ message }}
+            </span>
+            <button id="close-btn" class="close-btn">&times;</button>
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              flash();
+            });
+          </script>
         {% endif %}
     {% endfor %}
 {% endwith %}

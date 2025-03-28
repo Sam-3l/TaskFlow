@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.orm import backref
 from . import db
 from flask_login import UserMixin
@@ -5,20 +6,20 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(150), nullable=False)
     lname = db.Column(db.String(150), nullable=False)
-    gender = db.Column(db.String(15), nullable=False)
+    gender = db.Column(db.String(15), nullable=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
     address = db.Column(db.String(150), nullable=True)
-    dob = db.Column(db.Date, nullable=False)
+    dob = db.Column(db.Date, nullable=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
-    phone = db.Column(db.String(50), nullable=False)
-    city = db.Column(db.String(150), nullable=False)
-    state = db.Column(db.String(150), nullable=False)
-    zip = db.Column(db.String(150), nullable=False)
+    phone = db.Column(db.String(50), nullable=True)
+    city = db.Column(db.String(150), nullable=True)
+    state = db.Column(db.String(150), nullable=True)
+    zip = db.Column(db.String(150), nullable=True)
     bio = db.Column(db.Text, default="Hey there.\nStay proactive.")
-    date_joined = db.Column(db.Date, default=func.current_date())
+    date_joined = db.Column(db.DateTime, default=func.current_timestamp())
     password = db.Column(db.String(150), nullable=False)
     profile_img = db.Column(db.String(120), default="default_male.jpg")
     task = db.relationship("Task", back_populates="user", cascade="all, delete-orphan")
@@ -42,9 +43,9 @@ class Task(db.Model):
     title = db.Column(db.String(60), nullable=False)
     description = db.Column(db.Text)
     todos = db.relationship("Todo", back_populates='task', lazy=True, cascade='all, delete-orphan')
-    created_at = db.Column(db.Date, default=func.current_date())
-    updated_at = db.Column(db.Date, default=func.current_date(), onupdate=func.current_date())
-    deadline = db.Column(db.Date, nullable=True)
+    created_at = db.Column(db.DateTime, default=func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
+    deadline = db.Column(db.DateTime, nullable=True)
     priority = db.Column(db.String(30), nullable=True)
     status = db.Column(db.String(30), default="pending")
     assigned_to_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -58,7 +59,7 @@ class Todo(db.Model):
     content = db.Column(db.String(200), nullable=False)
     is_completed = db.Column(db.Boolean, default=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    created_at = db.Column(db.Date, default=func.current_date())
+    created_at = db.Column(db.DateTime, default=func.current_timestamp())
     
     # Relationships
     task = db.relationship('Task', back_populates='todos')
@@ -67,17 +68,16 @@ class TaskProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey("task.id"))
     task = db.relationship("Task", back_populates="task_progress")
-    date_made = db.Column(db.Date, default=func.current_date())
+    date_made = db.Column(db.DateTime, default=func.current_timestamp())
     progress = db.Column(ARRAY(db.Integer), nullable=False)
     notes = db.Column(db.Text, nullable=True)
-
 
 # Many To Many Association Tables
 
 membership = db.Table("ProjectMembership",
     db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True),
     db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
-    db.Column("date_joined", db.Date, default=func.current_date()),
+    db.Column("date_joined", db.DateTime, default=func.current_timestamp()),
     db.Column("roles", ARRAY(db.String(30))),
     db.Column("status", db.String(30)) # pending, active, inactive(past member)
     )
@@ -85,7 +85,7 @@ membership = db.Table("ProjectMembership",
 upvotes = db.Table("Upvotes",
     db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True),
     db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
-    db.Column("date_upvoted", db.Date, default=func.current_date())
+    db.Column("date_upvoted", db.DateTime, default=func.current_timestamp())
     )
 
 class Project(db.Model):
@@ -103,7 +103,7 @@ class TaskAssignment(db.Model):
     title = db.Column(db.String(60), nullable=False)
     assigned_by_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship("User", back_populates="task_assignment")
-    date_assigned = db.Column(db.Date, default=func.current_date())
+    date_assigned = db.Column(db.DateTime, default=func.current_timestamp())
     task = db.relationship("Task", back_populates="assignment", cascade="all, delete-orphan")
     source_project_id = db.Column(db.Integer, db.ForeignKey("project.id"))
     source = db.relationship("Project", back_populates="task_assignment")
