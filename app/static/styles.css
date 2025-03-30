@@ -511,6 +511,11 @@ body{
     color: #fff;
 }
 
+.search:focus {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
 .search::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }

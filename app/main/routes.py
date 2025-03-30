@@ -11,7 +11,7 @@ from sqlalchemy.sql import func
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership
 from app.forms import CreateTask
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 def format_date(date_obj : datetime):
     if not date_obj:
@@ -203,11 +203,72 @@ def task(task_id):
     if task.assigned_to_user_id != current_user.id:
         flash("You don't have the permission to view this task")
         return redirect(url_for("main.dashboard"))
+    todos_total = len(task.todos)
+    
+    # Determine date range
+    today = datetime.today().date()
+    created_date = task.created_at.date() if task.created_at else today
+    deadline_date = task.deadline.date() if task.deadline else None
+    
+    # Calculate dynamic date range (max 7 days)
+    date_range_days = min((today - created_date).days + 1, 7)
+    start_date = today - timedelta(days=date_range_days - 1)
+    
+    # Generate all dates in range
+    dates = [start_date + timedelta(days=i) for i in range(date_range_days)]
+    date_labels = [d.strftime("%a %d") for d in dates]
+
+    # Get all progress entries
+    progress_entries = TaskProgress.query.filter(
+        TaskProgress.task_id == task_id,
+        TaskProgress.date_made.between(start_date, today)
+    ).order_by(TaskProgress.date_made).all()
+
+    # Structure data for chart
+    chart_data = []
+    current_value = 0
+    max_value = 0
+    
+    for date in dates:
+        # Get all progress changes for this date
+        daily_changes = []
+        for entry in progress_entries:
+            if entry.date_made == date:
+                daily_changes.extend(entry.progress)
+        
+        if not daily_changes:
+            # No changes - maintain current value
+            chart_data.append({
+                'x': date.isoformat(),
+                'y': current_value,
+                'changes': 0
+            })
+            continue
+            
+        # Calculate positions for intra-day changes
+        num_changes = len(daily_changes)
+        for i, change in enumerate(daily_changes):
+            current_value += change
+            max_value = max(max_value, current_value)
+            chart_data.append({
+                'x': date.isoformat(),
+                'y': current_value,
+                'change': change,
+                'position': f"{i+1}/{num_changes}"
+            })
+            
+        # Add final position for the day
+        chart_data.append({
+            'x': date.isoformat(),
+            'y': current_value,
+            'changes': num_changes
+        })
+
+    has_progress = any(entry.progress for entry in progress_entries) if progress_entries else False
     
     if task.status == "completed":
         advice = "Great job! Keep going and complete more tasks at your own pace."
     elif task.deadline:
-        today = datetime.today().date() 
         if (task.deadline.date() - today).days <= 0:
             advice = "You're past the deadline, but don't worry! Just focus on completing as many tasks as you can."
         else:
@@ -235,9 +296,22 @@ def task(task_id):
                 advice = "Kickstart your productivity."
     else:
         advice = "Stay productive at your own pace. Small steps add up!"
+
+    print(date_labels, chart_data)
     
     info = {'total': len(task.todos), 'advice': advice}
-    return render_template("task.html", user=current_user, task=task, active_page="tasks", info=info)
+    return render_template("task.html", 
+                            user=current_user, 
+                            task=task, 
+                            active_page="tasks", 
+                            info=info,
+                            chart_data=chart_data,
+                            date_labels=date_labels,
+                            todos_total=todos_total,
+                            max_value=max(max_value, todos_total),
+                            has_progress=has_progress,
+                            deadline=deadline_date if (deadline_date and start_date <= deadline_date <= today) else None
+                        )
 
 # Todo API
 @main.route("/tasks/<int:task_id>/todos", methods=["POST"])

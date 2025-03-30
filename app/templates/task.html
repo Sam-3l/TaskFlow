@@ -82,10 +82,129 @@
             </div>
         </div>
     </div>
+
+    <!-- Pulse Chart -->
+    <div class="chart-container glass-card" style="height: 400px; position: relative;">
+        {% if has_progress %}
+            <canvas id="pulseChart"></canvas>
+        {% else %}
+        <div class="empty-state text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h5 class="mt-3">No Progress Data Available Yet</h5>
+            <small class="text-muted-extra">Start tracking progress by making changes to todos</small>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Hidden Task ID for JS -->
 <input type="hidden" id="task-id" value="{{ task.id }}" />
+
+<script>
+{% if has_progress %}
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('pulseChart').getContext('2d');
+    const chartData = {{ chart_data | tojson | safe }};
+    console.log(chartData.map(d => ({
+        x: d.x,
+        y: d.y,
+        change: d.change,
+        position: d.position
+    })));
+    console.log(chartData)
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Progress Pulse',
+                data: chartData.map(d => ({
+                    x: d.x,
+                    y: d.y,
+                    change: d.change,
+                    position: d.position
+                })),
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0,
+                stepped: true,
+                pointRadius: ctx => {
+                    return ctx.raw.change !== undefined ? 5 : 0;
+                }
+            }, {
+                type: 'line',
+                label: 'Total Todos',
+                data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
+                borderColor: '#28a745',
+                borderDash: [5, 5],
+                borderWidth: 1,
+                pointRadius: 0
+            }{% if deadline %}, {
+                type: 'line',
+                label: 'Deadline',
+                data: [{x: '{{ deadline }}', y: 0}, {x: '{{ deadline }}', y: {{ max_value }}}],
+                borderColor: '#dc3545',
+                borderWidth: 2,
+                pointRadius: 0
+            }{% endif %}]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        displayFormats: { day: 'EEE dd' }
+                    },
+                    ticks: {
+                        source: {{ date_labels | tojson | safe }}
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: {{ max_value }},
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: (items) => {
+                            const date = new Date(items[0].raw.x);
+                            return date.toLocaleDateString('en-US', {
+                                weekday: 'short', 
+                                day: 'numeric'
+                            });
+                        },
+                        label: (ctx) => {
+                            if (ctx.raw.change !== undefined) {
+                                return `Change: ${ctx.raw.change > 0 ? '+' : ''}${ctx.raw.change}`;
+                            }
+                            return `Final: ${ctx.raw.y}`;
+                        },
+                        footer: (items) => {
+                            if (items[0].raw.position) {
+                                return `Action ${items[0].raw.position}`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+{% endif %}
+</script>
+
 
 <style>
     :root {
@@ -460,5 +579,20 @@
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    .empty-state {
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .empty-state svg {
+        opacity: 0.5;
+    }
+    
+    .text-muted-extra {
+        color: #adb5bd;
+        font-size: 0.85rem;
+    }
 </style>
+
 {% endblock %}
