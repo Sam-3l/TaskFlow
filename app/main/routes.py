@@ -221,49 +221,44 @@ def task(task_id):
     # Get all progress entries
     progress_entries = TaskProgress.query.filter(
         TaskProgress.task_id == task_id,
-        TaskProgress.date_made.between(start_date, today)
+        TaskProgress.date_made.between(start_date, today+timedelta(days=1))
     ).order_by(TaskProgress.date_made).all()
 
     # Structure data for chart
-    chart_data = []
-    current_value = 0
     max_value = 0
+    current_value = 0
+    x = 0
+    chart_data = [{'x': x, 'y': current_value, 'day': start_date.isoformat(),},]
     
     for date in dates:
         # Get all progress changes for this date
         daily_changes = []
         for entry in progress_entries:
-            if entry.date_made == date:
+            print(entry.date_made)
+            if entry.date_made.date() == date:
                 daily_changes.extend(entry.progress)
-        
+
         if not daily_changes:
+            x += 1
             # No changes - maintain current value
             chart_data.append({
-                'x': date.isoformat(),
+                'x': x, 
                 'y': current_value,
-                'changes': 0
-            })
+                'day': date.isoformat(),
+                })
             continue
+
             
         # Calculate positions for intra-day changes
-        num_changes = len(daily_changes)
-        for i, change in enumerate(daily_changes):
+        for change in daily_changes:
+            x += 1
             current_value += change
-            max_value = max(max_value, current_value)
             chart_data.append({
-                'x': date.isoformat(),
+                'x': x, 
                 'y': current_value,
-                'change': change,
-                'position': f"{i+1}/{num_changes}"
+                'day': date.isoformat(),
             })
             
-        # Add final position for the day
-        chart_data.append({
-            'x': date.isoformat(),
-            'y': current_value,
-            'changes': num_changes
-        })
-
     has_progress = any(entry.progress for entry in progress_entries) if progress_entries else False
     
     if task.status == "completed":
@@ -297,7 +292,7 @@ def task(task_id):
     else:
         advice = "Stay productive at your own pace. Small steps add up!"
 
-    print(date_labels, chart_data)
+    print(chart_data)
     
     info = {'total': len(task.todos), 'advice': advice}
     return render_template("task.html", 

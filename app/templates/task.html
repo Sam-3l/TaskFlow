@@ -107,39 +107,31 @@
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('pulseChart').getContext('2d');
     const chartData = {{ chart_data | tojson | safe }};
-    console.log(chartData.map(d => ({
-        x: d.x,
-        y: d.y,
-        change: d.change,
-        position: d.position
-    })));
-    console.log(chartData)
 
     new Chart(ctx, {
         type: 'line',
         data: {
+            labels: chartData.map(d => d.x),
             datasets: [{
                 label: 'Progress Pulse',
                 data: chartData.map(d => ({
                     x: d.x,
                     y: d.y,
-                    change: d.change,
-                    position: d.position
                 })),
                 borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
                 tension: 0,
-                stepped: true,
-                pointRadius: ctx => {
-                    return ctx.raw.change !== undefined ? 5 : 0;
-                }
+                stepped: false,
+                borderWidth: 2,
+                pointRadius: 4, 
+                //ctx => {
+                //    return ctx.raw.change !== undefined ? 5 : 0;
+                //}
             }, {
                 type: 'line',
                 label: 'Total Todos',
                 data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
                 borderColor: '#28a745',
-                borderDash: [5, 5],
-                borderWidth: 1,
+                borderWidth: 2,
                 pointRadius: 0
             }{% if deadline %}, {
                 type: 'line',
@@ -155,13 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             scales: {
                 x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day',
-                        displayFormats: { day: 'EEE dd' }
-                    },
                     ticks: {
-                        source: {{ date_labels | tojson | safe }}
+                        source: 'labels'
                     },
                     grid: {
                         display: false
@@ -450,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
         {% if task|calculate_progress == 100 %}
         background: conic-gradient(var(--primary) 100%, #e2e8f0 100%);
         {% else %}
-        background: conic-gradient(var(--primary) {{ (task|calculate_progress)/2 }}%, #e2e8f0 {{ task|calculate_progress }}%);
+        background: conic-gradient(var(--primary) {{ (task|calculate_progress)/1.5 }}%, #e2e8f0 {{ task|calculate_progress }}%);
         {% endif %}
         position: relative;
         margin: 1rem auto;
