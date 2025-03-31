@@ -198,6 +198,17 @@ def create_task():
 def task(task_id):
     task = Task.query.filter_by(id=task_id).first()
 
+    # Todos
+    todos = (
+        Todo.query.filter_by(task=task)
+        .order_by(Todo.created_at.asc())  # Order by most recently updated
+        .all()
+    )
+
+    completed_todos = [todo for todo in todos if todo.is_completed]
+    todos = [todo for todo in todos if not todo.is_completed]
+    todos.extend(completed_todos) 
+
     if not task:
         return "Not Found", 404
     if task.assigned_to_user_id != current_user.id:
@@ -234,7 +245,6 @@ def task(task_id):
         # Get all progress changes for this date
         daily_changes = []
         for entry in progress_entries:
-            print(entry.date_made)
             if entry.date_made.date() == date:
                 daily_changes.extend(entry.progress)
 
@@ -253,6 +263,7 @@ def task(task_id):
         for change in daily_changes:
             x += 1
             current_value += change
+            max_value=max(max_value, current_value)
             chart_data.append({
                 'x': x, 
                 'y': current_value,
@@ -260,6 +271,12 @@ def task(task_id):
             })
             
     has_progress = any(entry.progress for entry in progress_entries) if progress_entries else False
+
+    if task.deadline:
+        deadline_from_now = (task.deadline.date() - today).days
+    else:
+        deadline_from_now = None
+    task.deadline_from_now = deadline_from_now
     
     if task.status == "completed":
         advice = "Great job! Keep going and complete more tasks at your own pace."
@@ -291,13 +308,12 @@ def task(task_id):
                 advice = "Kickstart your productivity."
     else:
         advice = "Stay productive at your own pace. Small steps add up!"
-
-    print(chart_data)
     
     info = {'total': len(task.todos), 'advice': advice}
     return render_template("task.html", 
                             user=current_user, 
                             task=task, 
+                            todos=todos,
                             active_page="tasks", 
                             info=info,
                             chart_data=chart_data,
@@ -327,10 +343,13 @@ def create_todo(task_id):
 
     task = Task.query.get(task_id)
     completed = sum(1 for todo in task.todos if todo.is_completed)
-    if completed == len(task.todos) and len(task.todos) != 0:
+    
+    if not completed:
+        task.status = "pending"
+    elif completed == len(task.todos):
         task.status = "completed"
     else:
-        task.status = "pending"
+        task.status = "in progress"
     task.updated_at = datetime.utcnow()
     db.session.commit()
 
@@ -387,10 +406,13 @@ def update_todo(todo_id):
 
     task = Task.query.get(todo.task_id)
     completed = sum(1 for todo in task.todos if todo.is_completed)
-    if completed == len(task.todos) and len(task.todos) != 0:
+    
+    if not completed:
+        task.status = "pending"
+    elif completed == len(task.todos):
         task.status = "completed"
     else:
-        task.status = "pending"
+        task.status = "in progress"
     task.updated_at = datetime.utcnow()
     db.session.commit()
 
@@ -425,10 +447,13 @@ def delete_todo(todo_id):
 
     task = Task.query.get(todo.task_id)
     completed = sum(1 for todo in task.todos if todo.is_completed)
-    if completed == len(task.todos) and len(task.todos) != 0:
+    
+    if not completed:
+        task.status = "pending"
+    elif completed == len(task.todos):
         task.status = "completed"
     else:
-        task.status = "pending"
+        task.status = "in progress"
     task.updated_at = datetime.utcnow()
     db.session.commit()
 

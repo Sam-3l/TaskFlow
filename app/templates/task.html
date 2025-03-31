@@ -11,14 +11,14 @@
                 <span class="badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
                 <span class="deadline">
                     <i class="fas fa-clock"></i>
-                    {{ task.deadline|datetime_format('%b %d, %Y') if task.deadline }}
+                    {{ task.deadline_from_now|deadline_display if task.deadline }}
                 </span>
             </div>
         </div>
     </div>
 
     <div class="task-layout">
-        <!-- Todo List Section -->
+        <!-- Todo List Section And Pulse Chart -->
         <div class="todo-section">
             <div class="todo-card glass-card">
                 <form class="todo-create">
@@ -32,7 +32,7 @@
                 </form>
                 
                 <ul class="todo-list">
-                    {% for todo in task.todos %}
+                    {% for todo in todos %}
                     <li class="todo-item" data-todo-id="{{ todo.id }}" data-initial-completed="{{ todo.is_completed|tojson }}">
                         <label class="todo-content">
                             <div class="todo-checkbox">
@@ -63,6 +63,21 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Pulse Chart -->
+            <div class="chart-container glass-card" style="height: 400px; position: relative;">
+                {% if has_progress %}
+                    <canvas id="pulseChart"></canvas>
+                {% else %}
+                <div class="empty-state text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h5 class="mt-3">No Progress Data Available Yet</h5>
+                    <small class="text-muted-extra">Start tracking progress by making changes to todos</small>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Side Panel (Description & Stats) -->
@@ -80,22 +95,16 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Pulse Chart -->
-    <div class="chart-container glass-card" style="height: 400px; position: relative;">
-        {% if has_progress %}
-            <canvas id="pulseChart"></canvas>
-        {% else %}
-        <div class="empty-state text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h5 class="mt-3">No Progress Data Available Yet</h5>
-            <small class="text-muted-extra">Start tracking progress by making changes to todos</small>
+            <div class="calendar-card glass-card">
+                <h3 class="panel-title"><i class="fas fa-chart-pie"></i> Calendar</h3>
+                <div class="progress-circle">
+                    <div class="circle-overlay">
+                        <span class="progress-value">...</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        {% endif %}
     </div>
 </div>
 
@@ -122,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tension: 0,
                 stepped: false,
                 borderWidth: 2,
-                pointRadius: 4, 
+                pointRadius: 2, 
                 //ctx => {
                 //    return ctx.raw.change !== undefined ? 5 : 0;
                 //}
@@ -131,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Total Todos',
                 data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
                 borderColor: '#28a745',
-                borderWidth: 2,
+                borderWidth: 1,
                 pointRadius: 0
             }{% if deadline %}, {
                 type: 'line',
