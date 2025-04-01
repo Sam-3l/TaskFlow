@@ -9,7 +9,7 @@
             <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
                 Sort by
             </button>
-            <ul class="dropdown-menu dropdown-menu-end">
+            <ul class="dropdown-menu dropdown-menu-end tasks-sort">
                 <li><a class="dropdown-item" href="#">Priority</a></li>
                 <li><a class="dropdown-item" href="#">Deadline</a></li>
                 <li><a class="dropdown-item" href="#">Last Modified & Status</a></li>
@@ -26,8 +26,10 @@
                             <div class="d-flex align-items-center">
                                 {% if task["status"] == 'completed' %}
                                     <i class="fas fa-check-circle text-success me-2"></i>
-                                {% else %}
+                                {% elif task["status"] == 'in progress' %}
                                     <i class="fas fa-circle-notch text-primary me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-spinner text-primary me-2"></i>
                                 {% endif %}
                                 <h3 class="h6 mb-0">
                                     <a href="/dashboard/tasks/{{ task['id'] }}" class="text-decoration-none text-dark stretched-link">
