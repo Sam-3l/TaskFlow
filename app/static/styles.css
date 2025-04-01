@@ -717,4 +717,16 @@ body{
     }
 }
 
+/* Highlight active sort option */
+.dropdown-item.active-sort {
+    background-color: rgba(13, 110, 253, 0.1);
+    font-weight: 500;
+}
+
+/* Checkmark icon for active item */
+.dropdown-item .bi-check-lg {
+    display: inline-block !important;
+    color: #0d6efd;
+}
+
 /* I NEED TO CHANGE THE DATE AND SELECT COLOR FROM BLACK  */

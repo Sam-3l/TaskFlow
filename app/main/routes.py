@@ -6,6 +6,7 @@ from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
 from wtforms import ValidationError
 from sqlalchemy.sql import func
+from sqlalchemy import case
 
 
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership
@@ -120,8 +121,20 @@ def dashboard():
 @main.route('/dashboard/tasks')
 @login_required
 def tasks():
+    priority_order = case(
+        {
+            'Critical': 0,
+            'High priority': 1,
+            'Medium priority': 2,
+            'Low priority': 3,
+            'Optional': 4
+        },
+        value=Task.priority,
+        else_=5
+    )
     # Fetch tasks assigned to the current user
-    tasks = Task.query.filter_by(assigned_to_user_id=current_user.id).all()
+    tasks_query = Task.query.filter_by(assigned_to_user_id=current_user.id)
+    tasks = tasks_query.order_by(priority_order, Task.updated_at.desc()).all()
     today = datetime.today().date()
 
     # Calculate deadline_from_now for each task

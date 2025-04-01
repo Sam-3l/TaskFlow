@@ -202,3 +202,116 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Tasks sort.
+document.addEventListener('DOMContentLoaded', function() {
+    const sortLabels = {
+        'priority': 'Priority & Last Modified',
+        'deadline': 'Deadline',
+        'status': 'Status & Last Modified'
+    };
+
+    const sortKeys = {
+        PRIORITY: 'priority',
+        DEADLINE: 'deadline',
+        STATUS: 'status'
+    };
+
+    // Priority and status hierarchies
+    const priorityOrder = {
+        'Critical': 0,
+        'High priority': 1,
+        'Medium priority': 2,
+        'Low priority': 3,
+        'Optional': 4
+    };
+
+    const statusOrder = {
+        'pending': 0,
+        'in progress': 1,
+        'completed': 2
+    };
+
+    // Get stored sort or default to priority
+    const currentSort = localStorage.getItem('taskSort') || sortKeys.PRIORITY;
+    applySort(currentSort);
+
+    // Dropdown click handler
+    document.querySelectorAll('.tasks-sort .dropdown-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const sortKey = this.dataset.sort;
+            localStorage.setItem('taskSort', sortKey);
+            applySort(sortKey);
+        });
+    });
+
+    function applySort(sortKey) {
+        const container = document.getElementById('tasks-container');
+        const tasks = Array.from(container.querySelectorAll('.task-card-container'));
+
+        tasks.sort(getSortFunction(sortKey));
+        tasks.forEach(task => container.appendChild(task));
+        updateActiveSortUI(sortKey);
+    }
+
+    function updateActiveSortUI(sortKey) {
+        // Update dropdown label
+        document.getElementById('current-sort-label').textContent = sortLabels[sortKey];
+        
+        // Remove all active states
+        document.querySelectorAll('.tasks-sort .dropdown-item').forEach(item => {
+            item.classList.remove('active-sort');
+            item.querySelector('.bi-check-lg').classList.add('d-none');
+        });
+        
+        // Add active state to current sort
+        const activeItem = document.querySelector(`.tasks-sort .dropdown-item[data-sort="${sortKey}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active-sort');
+            activeItem.querySelector('.bi-check-lg').classList.remove('d-none');
+        }
+    }
+
+    function getSortFunction(sortKey) {
+        switch(sortKey) {
+            case sortKeys.PRIORITY:
+                return (a, b) => {
+                    const priorityCompare = comparePriorities(a, b);
+                    return priorityCompare !== 0 ? priorityCompare : compareLastModified(b, a);
+                };
+            
+            case sortKeys.DEADLINE:
+                return (a, b) => {
+                    const deadlineCompare = compareDeadlines(a, b);
+                    return deadlineCompare !== 0 ? deadlineCompare : compareLastModified(b, a);
+                };
+            
+            case sortKeys.STATUS:
+                return (a, b) => {
+                    const statusCompare = compareStatuses(a, b);
+                    return statusCompare !== 0 ? statusCompare : compareLastModified(b, a);
+                };
+        }
+    }
+
+    // Comparison functions
+    function comparePriorities(a, b) {
+        return (priorityOrder[a.dataset.priority] || 4) - (priorityOrder[b.dataset.priority] || 4);
+    }
+
+    function compareDeadlines(a, b) {
+        const aDeadline = a.dataset.deadline ? new Date(a.dataset.deadline) : Infinity;
+        const bDeadline = b.dataset.deadline ? new Date(b.dataset.deadline) : Infinity;
+        return aDeadline - bDeadline;
+    }
+
+    function compareStatuses(a, b) {
+        return (statusOrder[a.dataset.status] || 2) - (statusOrder[b.dataset.status] || 2);
+    }
+
+    function compareLastModified(a, b) {
+        return new Date(b.dataset.updated) - new Date(a.dataset.updated);
+    }
+
+    updateActiveSortUI(currentSort);
+});
