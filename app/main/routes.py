@@ -89,7 +89,7 @@ def dashboard():
     )
 
     # Filter tasks based on status
-    pending_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id, status="pending").count()
+    total_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id).count()
     completed_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id, status="completed").count()
 
     # Count active projects the user is a member of
@@ -105,8 +105,8 @@ def dashboard():
 
     # Stats dictionary
     stats = {
-        "total_tasks": pending_tasks + completed_tasks,
-        "pending_tasks": pending_tasks,
+        "total_tasks": total_tasks,
+        "pending_tasks": total_tasks - completed_tasks,
         "completed_tasks": completed_tasks,
         "active_projects": active_projects,
         "deadlines_today": deadlines_today,
