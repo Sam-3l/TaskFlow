@@ -170,10 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            if (successMessage) {
-                showModal('Success', successMessage);
-            }
-            
             return await response.json();
         } catch (error) {
             console.error('Fetch error:', error);
@@ -216,24 +212,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Delete Todo
         if (e.target.closest('.btn-delete')) {
-            if (progress.length !== 0) {
-                showModal('Unsaved Changes', 'You have unsaved changes. Progress would be lost if you continue.', async () => {
-                    const wasCompleted = todoItem.dataset.initialCompleted === 'true';
-                    try {
-                        await deleteTodo(todoId, wasCompleted);
-                        location.reload();
-                    } catch (error) {
-                        console.error('Delete error:', error);
-                    }
-                });
-            } else {
-                const wasCompleted = todoItem.dataset.initialCompleted === 'true';
+            const wasCompleted = todoItem.dataset.initialCompleted === 'true';
+            
+            const executeDelete = async () => {
                 try {
                     await deleteTodo(todoId, wasCompleted);
                     location.reload();
                 } catch (error) {
                     console.error('Delete error:', error);
                 }
+            };
+
+            if (progress.length !== 0) {
+                // Show unsaved changes warning first
+                showModal('Unsaved Changes', 
+                    'You have unsaved changes. Progress would be lost if you continue.', 
+                    () => {
+                        // Only show delete confirmation after user confirms they want to continue
+                        const confirmDelete = () => {
+                            showModal('Confirm Delete', 
+                                'Are you sure you want to delete this todo item?', 
+                                executeDelete,
+                                'Delete'
+                            );
+                        };
+                        
+                        // Small timeout ensures the first modal closes completely
+                        setTimeout(confirmDelete, 300);
+                    }
+                );
+            } else {
+                // No unsaved changes - go straight to delete confirmation
+                showModal('Confirm Delete', 
+                    'Are you sure you want to delete this todo item?', 
+                    executeDelete,
+                    'Delete'
+                );
             }
         }
 
