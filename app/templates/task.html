@@ -11,6 +11,7 @@
                 <span class="badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
                 <span class="deadline">
                     <i class="fas fa-clock"></i>
+                    {{ task.deadline | datetime_format }}
                     {{ task.status | capitalize }} - {{ task.deadline_from_now|deadline_display if task.deadline and task.status != 'completed' }}
                 </span>
             </div>

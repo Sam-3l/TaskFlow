@@ -123,11 +123,11 @@ def dashboard():
 def tasks():
     priority_order = case(
         {
-            'Critical': 0,
-            'High priority': 1,
-            'Medium priority': 2,
-            'Low priority': 3,
-            'Optional': 4
+            'critical': 0,
+            'high-priority': 1,
+            'medium-priority': 2,
+            'low-priority': 3,
+            'optional': 4
         },
         value=Task.priority,
         else_=5
@@ -363,7 +363,7 @@ def create_todo(task_id):
         task.status = "completed"
     else:
         task.status = "in progress"
-    task.updated_at = datetime.utcnow()
+    task.updated_at = func.now()
     db.session.commit()
 
     return jsonify({
@@ -426,7 +426,7 @@ def update_todo(todo_id):
         task.status = "completed"
     else:
         task.status = "in progress"
-    task.updated_at = datetime.utcnow()
+    task.updated_at = func.now()
     db.session.commit()
 
     return jsonify({
@@ -467,7 +467,7 @@ def delete_todo(todo_id):
         task.status = "completed"
     else:
         task.status = "in progress"
-    task.updated_at = datetime.utcnow()
+    task.updated_at = func.now()
     db.session.commit()
 
     return jsonify({'message': 'Todo deleted'}), 200

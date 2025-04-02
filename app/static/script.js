@@ -203,33 +203,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Tasks sort.
+// Tasks sort
 document.addEventListener('DOMContentLoaded', function() {
     const sortLabels = {
         'priority': 'Priority & Last Modified',
         'deadline': 'Deadline',
-        'status': 'Status & Last Modified'
+        'last_modified': 'Last Modified'
     };
 
     const sortKeys = {
         PRIORITY: 'priority',
         DEADLINE: 'deadline',
-        STATUS: 'status'
+        LAST_MODIFIED: 'last_modified'
     };
 
-    // Priority and status hierarchies
+    // Priority hierarchy
     const priorityOrder = {
-        'Critical': 0,
-        'High priority': 1,
-        'Medium priority': 2,
-        'Low priority': 3,
-        'Optional': 4
-    };
-
-    const statusOrder = {
-        'pending': 0,
-        'in progress': 1,
-        'completed': 2
+        'critical': 0,
+        'high-priority': 1,
+        'medium-priority': 2,
+        'low-priority': 3,
+        'optional': 4
     };
 
     // Get stored sort or default to priority
@@ -276,20 +270,36 @@ document.addEventListener('DOMContentLoaded', function() {
         switch(sortKey) {
             case sortKeys.PRIORITY:
                 return (a, b) => {
+                    const aCompleted = a.dataset.status === 'completed';
+                    const bCompleted = b.dataset.status === 'completed';
+
+                    // Separate completed/non-completed
+                    if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+
+                    // Sort non-completed by priority then last modified
                     const priorityCompare = comparePriorities(a, b);
-                    return priorityCompare !== 0 ? priorityCompare : compareLastModified(b, a);
+                    return priorityCompare !== 0 ? priorityCompare : compareLastModified(a, b);
                 };
             
             case sortKeys.DEADLINE:
                 return (a, b) => {
+                    const aCompleted = a.dataset.status === 'completed';
+                    const bCompleted = b.dataset.status === 'completed';
+
+                    if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+
                     const deadlineCompare = compareDeadlines(a, b);
-                    return deadlineCompare !== 0 ? deadlineCompare : compareLastModified(b, a);
+                    return deadlineCompare !== 0 ? deadlineCompare : compareLastModified(a, b);
                 };
             
-            case sortKeys.STATUS:
+            case sortKeys.LAST_MODIFIED:
                 return (a, b) => {
-                    const statusCompare = compareStatuses(a, b);
-                    return statusCompare !== 0 ? statusCompare : compareLastModified(b, a);
+                    const aCompleted = a.dataset.status === 'completed';
+                    const bCompleted = b.dataset.status === 'completed';
+
+                    if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+
+                    return compareLastModified(a, b);
                 };
         }
     }
@@ -303,10 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const aDeadline = a.dataset.deadline ? new Date(a.dataset.deadline) : Infinity;
         const bDeadline = b.dataset.deadline ? new Date(b.dataset.deadline) : Infinity;
         return aDeadline - bDeadline;
-    }
-
-    function compareStatuses(a, b) {
-        return (statusOrder[a.dataset.status] || 2) - (statusOrder[b.dataset.status] || 2);
     }
 
     function compareLastModified(a, b) {
