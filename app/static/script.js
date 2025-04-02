@@ -219,11 +219,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Priority hierarchy
     const priorityOrder = {
-        'critical': 0,
-        'high-priority': 1,
-        'medium-priority': 2,
-        'low-priority': 3,
-        'optional': 4
+        'critical': 1,
+        'high-priority': 2,
+        'medium-priority': 3,
+        'low-priority': 4,
+        'optional': 5
     };
 
     // Get stored sort or default to priority

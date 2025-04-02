@@ -123,14 +123,14 @@ def dashboard():
 def tasks():
     priority_order = case(
         {
-            'critical': 0,
-            'high-priority': 1,
-            'medium-priority': 2,
-            'low-priority': 3,
-            'optional': 4
+            'critical': 1,
+            'high-priority': 2,
+            'medium-priority': 3,
+            'low-priority': 4,
+            'optional': 5
         },
         value=Task.priority,
-        else_=5
+        else_=6
     )
     # Fetch tasks assigned to the current user
     tasks_query = Task.query.filter_by(assigned_to_user_id=current_user.id)
