@@ -136,31 +136,37 @@
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('pulseChart').getContext('2d');
         const chartData = {{ chart_data | tojson | safe }};
-    
-        // Preprocess data to find day ranges
-        const dayGroups = [];
-        let currentDay = null;
         
-        chartData.forEach((d) => {
-            if (d.day !== currentDay) {
-                currentDay = d.day;
-                dayGroups.push({
-                    day: d.day,
-                    startX: d.x,
-                    endX: d.x
-                });
+        const days = [...new Set(chartData.map(d => d.day))].sort((a,b) => new Date(a) - new Date(b));
+        const dayRanges = days.reduce((acc, day) => {
+            const xValues = chartData.filter(d => d.day === day).map(d => d.x);
+            acc[day] = {
+                minX: Math.min(...xValues),
+                maxX: Math.max(...xValues),
+                // Initialize boundaries
+                startBoundary: null,
+                endBoundary: null
+            };
+            return acc;
+        }, {});
+    
+        // Calculate boundaries for each day
+        days.forEach((day, index) => {
+            if (index === 0) {
+                // First day: start at minX, end at maxX
+                dayRanges[day].startBoundary = dayRanges[day].minX;
+                dayRanges[day].endBoundary = dayRanges[day].maxX;
             } else {
-                dayGroups[dayGroups.length - 1].endX = d.x;
+                // Subsequent days: start at previous day's end, end at current day's maxX
+                const prevDay = days[index - 1];
+                dayRanges[day].startBoundary = dayRanges[prevDay].endBoundary;
+                dayRanges[day].endBoundary = dayRanges[day].maxX;
             }
         });
     
-        // Format date as "Mon, 24"
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                day: 'numeric' 
-            });
+            return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
         }
     
         new Chart(ctx, {
@@ -177,7 +183,7 @@
                 }, {
                     type: 'line',
                     label: 'Total Todos',
-                    data: chartData.map(d => ({ x: d.x, y: {{ todos_total }} })),
+                    data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
                     borderColor: '#28a745',
                     borderWidth: 1,
                     pointRadius: 0
@@ -185,11 +191,19 @@
                     type: 'line',
                     label: 'Deadline',
                     data: (() => {
-                        const deadlineEntry = chartData.find(d => d.day === '{{ deadline }}');
-                        return deadlineEntry ? [
-                            { x: deadlineEntry.x, y: 0 },
-                            { x: deadlineEntry.x, y: {{ max_value }} }
-                        ] : [];
+                        const deadlineDay = days.find(d => d === '{{ deadline }}');
+                        if (!deadlineDay) return [];
+                        const prevDayIndex = days.indexOf(deadlineDay) - 1;
+                        let verticalLineX;
+                        if (prevDayIndex >= 0) {
+                            verticalLineX = dayRanges[days[prevDayIndex]].endBoundary;
+                        } else {
+                            verticalLineX = dayRanges[deadlineDay].startBoundary;
+                        }
+                        return [
+                            { x: verticalLineX, y: 0 },
+                            { x: verticalLineX, y: {{ max_value }} }
+                        ];
                     })(),
                     borderColor: '#dc3545',
                     borderWidth: 2,
@@ -201,39 +215,89 @@
                 maintainAspectRatio: false,
                 scales: {
                     x: {
+                        title: {
+                            display: true,
+                            text: 'Weekdays',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            padding: {top: 10}
+                        },
                         type: 'linear',
                         ticks: {
                             callback: function(value) {
-                                // Show label at midpoint of each day range
-                                const group = dayGroups.find(g => {
-                                    const mid = (g.startX + g.endX) / 2;
-                                    return Math.abs(mid - value) < 0.5;
+                                // Find the day whose midpoint matches the tick value
+                                const day = days.find(d => {
+                                    const range = dayRanges[d];
+                                    const midpoint = (range.startBoundary + range.endBoundary) / 2;
+                                    return Math.abs(value - midpoint) < 0.01;
                                 });
-                                if (group) return formatDate(group.day);
-                                
-                                // Show tick marks at start/end of ranges
-                                return dayGroups.some(g => g.startX === value || g.endX === value) ? '' : undefined;
+                                return day ? formatDate(day) : '';
                             },
-                            autoSkip: false,
-                            stepSize: 1
+                            autoSkip: false
+                        },
+                        afterBuildTicks: function(axis) {
+                            const ticks = new Set();
+                            days.forEach(day => {
+                                const range = dayRanges[day];
+                                // Vertical lines at boundaries
+                                ticks.add(range.startBoundary);
+                                ticks.add(range.endBoundary);
+                                // Midpoint for label
+                                ticks.add((range.startBoundary + range.endBoundary) / 2);
+                            });
+                            axis.ticks = Array.from(ticks).sort((a,b) => a-b).map(v => ({ value: v }));
                         },
                         grid: {
-                            display: true,
-                            drawTicks: true
+                            color: ctx => {
+                                const tickValue = ctx.tick.value;
+                                // Show grid lines only at boundaries (not midpoints)
+                                return days.some(d => 
+                                    dayRanges[d].startBoundary === tickValue || 
+                                    dayRanges[d].endBoundary === tickValue
+                                ) ? '#ddd' : 'transparent';
+                            }
                         }
                     },
                     y: {
                         min: 0,
                         max: {{ max_value }},
-                        ticks: { stepSize: 1 }
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Todos',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            padding: {bottom: 10}
+                        }
                     }
                 },
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            title: (items) => formatDate(items[0].raw.x),
-                            label: (ctx) => `Final: ${ctx.raw.y}`,
-                            footer: (items) => items[0].raw.position ? `Action ${items[0].raw.position}` : ''
+                            title: (items) => {
+                                const date = new Date(items[0].raw.x);
+                                return date.toLocaleDateString('en-US', {
+                                    weekday: 'short', 
+                                    day: 'numeric'
+                                });
+                            },
+                            label: (ctx) => {
+                                if (ctx.raw.change !== undefined) {
+                                    return `Change: ${ctx.raw.change > 0 ? '+' : ''}${ctx.raw.change}`;
+                                }
+                                return `Final: ${ctx.raw.y}`;
+                            },
+                            footer: (items) => {
+                                if (items[0].raw.position) {
+                                    return `Action ${items[0].raw.position}`;
+                                }
+                            }
                         }
                     }
                 }
@@ -242,7 +306,6 @@
     });
     {% endif %}
     </script>
-
 
 <style>
     :root {
