@@ -6,14 +6,33 @@
     <!-- Header Section -->
     <div class="task-header">
         <div class="header-content">
-            <h1 class="task-title">{{ task.title }}</h1>
-            <div class="task-meta">
-                <span class="badge priority-{{ task.priority|lower }}">{{ task.priority }}</span>
-                <span class="deadline">
-                    <i class="fas fa-clock"></i>
-                    {{ task.deadline | datetime_format }}
-                    {{ task.status | capitalize }} - {{ task.deadline_from_now|deadline_display if task.deadline and task.status != 'completed' }}
+            <div class="title-row">
+                <h1 class="task-title">{{ task.title }}</h1>
+                &nbsp;
+                <span class="badge priority-{{ task.priority|lower|replace('-', '') }}">
+                    <i class="fas fa-{% if task.priority == 'critical' %}exclamation-triangle{% elif task.priority == 'high-priority' %}arrow-up{% elif task.priority == 'medium-priority' %}equals{% elif task.priority == 'low-priority' %}arrow-down{% else %}circle{% endif %}"></i>
+                    {{ task.priority|replace('-', ' ')|title }}
                 </span>
+            </div>
+            
+            <div class="meta-row">
+                <div class="deadline-card">
+                    <div class="icon-box calendar">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="deadline-details">
+                        <span class="deadline-date">{{ task.deadline | datetime_format }}</span>
+                        <span class="time-remaining">
+                            <i class="fas fa-hourglass-half"></i>
+                            {{ task.deadline_from_now|deadline_display if task.deadline and task.status != 'completed' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="status-pill status-{{ task.status|lower|replace(' ', '-') }}">
+                    <i class="fas fa-{% if task.status == 'completed' %}check-circle{% elif task.status == 'in-progress' %}spinner{% else %}circle{% endif %}"></i>
+                    {{ task.status | capitalize }}
+                </div>
             </div>
         </div>
     </div>
@@ -113,94 +132,116 @@
 <input type="hidden" id="task-id" value="{{ task.id }}" />
 
 <script>
-{% if has_progress %}
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('pulseChart').getContext('2d');
-    const chartData = {{ chart_data | tojson | safe }};
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartData.map(d => d.x),
-            datasets: [{
-                label: 'Progress Pulse',
-                data: chartData.map(d => ({
-                    x: d.x,
-                    y: d.y,
-                })),
-                borderColor: '#0d6efd',
-                tension: 0,
-                stepped: false,
-                borderWidth: 2,
-                pointRadius: 2, 
-                //ctx => {
-                //    return ctx.raw.change !== undefined ? 5 : 0;
-                //}
-            }, {
-                type: 'line',
-                label: 'Total Todos',
-                data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
-                borderColor: '#28a745',
-                borderWidth: 1,
-                pointRadius: 0
-            }{% if deadline %}, {
-                type: 'line',
-                label: 'Deadline',
-                data: [{x: '{{ deadline }}', y: 0}, {x: '{{ deadline }}', y: {{ max_value }}}],
-                borderColor: '#dc3545',
-                borderWidth: 2,
-                pointRadius: 0
-            }{% endif %}]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    ticks: {
-                        source: 'labels'
+    {% if has_progress %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('pulseChart').getContext('2d');
+        const chartData = {{ chart_data | tojson | safe }};
+    
+        // Preprocess data to find day ranges
+        const dayGroups = [];
+        let currentDay = null;
+        
+        chartData.forEach((d) => {
+            if (d.day !== currentDay) {
+                currentDay = d.day;
+                dayGroups.push({
+                    day: d.day,
+                    startX: d.x,
+                    endX: d.x
+                });
+            } else {
+                dayGroups[dayGroups.length - 1].endX = d.x;
+            }
+        });
+    
+        // Format date as "Mon, 24"
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                day: 'numeric' 
+            });
+        }
+    
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.map(d => d.x),
+                datasets: [{
+                    label: 'Progress Pulse',
+                    data: chartData.map(d => ({ x: d.x, y: d.y })),
+                    borderColor: '#0d6efd',
+                    tension: 0,
+                    borderWidth: 2,
+                    pointRadius: 2
+                }, {
+                    type: 'line',
+                    label: 'Total Todos',
+                    data: chartData.map(d => ({ x: d.x, y: {{ todos_total }} })),
+                    borderColor: '#28a745',
+                    borderWidth: 1,
+                    pointRadius: 0
+                }{% if deadline %}, {
+                    type: 'line',
+                    label: 'Deadline',
+                    data: (() => {
+                        const deadlineEntry = chartData.find(d => d.day === '{{ deadline }}');
+                        return deadlineEntry ? [
+                            { x: deadlineEntry.x, y: 0 },
+                            { x: deadlineEntry.x, y: {{ max_value }} }
+                        ] : [];
+                    })(),
+                    borderColor: '#dc3545',
+                    borderWidth: 2,
+                    pointRadius: 0
+                }{% endif %}]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        ticks: {
+                            callback: function(value) {
+                                // Show label at midpoint of each day range
+                                const group = dayGroups.find(g => {
+                                    const mid = (g.startX + g.endX) / 2;
+                                    return Math.abs(mid - value) < 0.5;
+                                });
+                                if (group) return formatDate(group.day);
+                                
+                                // Show tick marks at start/end of ranges
+                                return dayGroups.some(g => g.startX === value || g.endX === value) ? '' : undefined;
+                            },
+                            autoSkip: false,
+                            stepSize: 1
+                        },
+                        grid: {
+                            display: true,
+                            drawTicks: true
+                        }
                     },
-                    grid: {
-                        display: false
+                    y: {
+                        min: 0,
+                        max: {{ max_value }},
+                        ticks: { stepSize: 1 }
                     }
                 },
-                y: {
-                    min: 0,
-                    max: {{ max_value }},
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        title: (items) => {
-                            const date = new Date(items[0].raw.x);
-                            return date.toLocaleDateString('en-US', {
-                                weekday: 'short', 
-                                day: 'numeric'
-                            });
-                        },
-                        label: (ctx) => {
-                            if (ctx.raw.change !== undefined) {
-                                return `Change: ${ctx.raw.change > 0 ? '+' : ''}${ctx.raw.change}`;
-                            }
-                            return `Final: ${ctx.raw.y}`;
-                        },
-                        footer: (items) => {
-                            if (items[0].raw.position) {
-                                return `Action ${items[0].raw.position}`;
-                            }
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => formatDate(items[0].raw.x),
+                            label: (ctx) => `Final: ${ctx.raw.y}`,
+                            footer: (items) => items[0].raw.position ? `Action ${items[0].raw.position}` : ''
                         }
                     }
                 }
             }
-        }
+        });
     });
-});
-{% endif %}
-</script>
+    {% endif %}
+    </script>
 
 
 <style>
@@ -239,48 +280,172 @@ document.addEventListener('DOMContentLoaded', function() {
         margin: 0 auto;
     }
 
+    /* Header Styles */
     .task-header {
-        margin-bottom: 2rem;
+        margin: 1.5rem 0 2.5rem;
         backdrop-filter: blur(16px);
         background: var(--glass-bg);
         border-radius: 1.5rem;
-        padding: 2rem;
+        padding: 1.5rem 2rem;
         box-shadow: var(--shadow);
         border: var(--glass-border);
         margin-top: 80px;
     }
-
-    .task-title {
-        font-size: 2.5rem;
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
-        font-weight: 700;
-    }
-
-    .task-meta {
+    
+    .title-row {
         display: flex;
-        gap: 1rem;
+        flex-wrap: wrap;
         align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
     }
-
-    .badge {
-        padding: 0.5rem 1rem;
-        border-radius: 2rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        text-transform: capitalize;
+    
+    .task-title {
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        color: var(--text-primary);
+        margin: 0;
+        font-weight: 700;
+        line-height: 1.2;
     }
-
-    .priority-low { background: #d1fae5; color: #065f46; }
-    .priority-medium { background: #fef3c7; color: #92400e; }
-    .priority-high { background: #fee2e2; color: #991b1b; }
-
-    .deadline {
+    
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .deadline-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: rgba(255,255,255,0.1);
+        padding: 0.75rem 1.25rem;
+        border-radius: 1rem;
+        border-left: 3px solid var(--accent-color);
+    }
+    
+    .icon-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        color: var(--accent-color);
+        font-size: 1.1rem;
+    }
+    
+    .deadline-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .deadline-date {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+    
+    .time-remaining {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        font-size: 0.85rem;
         color: var(--text-secondary);
-        font-size: 0.875rem;
+    }
+    
+    .time-remaining i {
+        color: var(--accent-color);
+    }
+    
+    .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .status-completed {
+        background: rgba(74, 222, 128, 0.15);
+        color: #16a34a;
+    }
+    
+    .status-in-progress {
+        background: rgba(250, 204, 21, 0.15);
+        color: #d97706;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-pending {
+        background: rgba(148, 163, 184, 0.15);
+        color: #64748b;
+    }
+    
+    /* Priority Badges with Icons */
+    .badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .priority-critical { 
+        background: rgba(220, 38, 38, 0.1);
+        color: #dc2626;
+        border-left: 3px solid #dc2626;
+    }
+    
+    .priority-highpriority { 
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-left: 3px solid #ef4444;
+    }
+    
+    .priority-mediumpriority { 
+        background: rgba(234, 179, 8, 0.1);
+        color: #eab308;
+        border-left: 3px solid #eab308;
+    }
+    
+    .priority-lowpriority { 
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border-left: 3px solid #22c55e;
+    }
+    
+    .priority-optional { 
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border-left: 3px solid #3b82f6;
+    }
+    
+    /* Animation for in-progress status */
+    @keyframes pulse {
+        0% { opacity: 0.8; }
+        50% { opacity: 1; }
+        100% { opacity: 0.8; }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .meta-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .deadline-card {
+            width: 100%;
+        }
     }
 
     .task-layout {

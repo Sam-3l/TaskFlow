@@ -155,7 +155,7 @@ def projects():
 @main.route("/dashboard/projects/new")
 @login_required
 def create_projects():
-    return render_template("projects.html", user=current_user, active_page="projects")
+    return render_template("new_project.html", user=current_user, active_page="projects")
 
 @main.route("/profile")
 @login_required
