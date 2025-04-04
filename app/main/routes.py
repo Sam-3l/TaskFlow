@@ -83,15 +83,18 @@ def dashboard():
 
     # Get the three most recent tasks assigned to the user
     recent_tasks = (
-        Task.query.filter_by(assigned_to_user_id=current_user.id)
+        Task.query.filter(Task.assigned_users.any(id=current_user.id))
         .order_by(Task.updated_at.desc())  # Order by most recently updated
         .limit(3)
         .all()
     )
 
     # Filter tasks based on status
-    total_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id).count()
-    completed_tasks = Task.query.filter_by(assigned_to_user_id=current_user.id, status="completed").count()
+    total_tasks = Task.query.filter(Task.assigned_users.any(id=current_user.id)).count()
+    completed_tasks = Task.query.filter(
+                            Task.assigned_users.any(id=current_user.id),
+                            Task.status == "completed"
+                        ).count()
 
     # Count active projects the user is a member of
     active_projects = db.session.query(membership).filter(
@@ -101,7 +104,7 @@ def dashboard():
 
     # Count tasks with deadlines today
     deadlines_today = Task.query.filter(
-        Task.assigned_to_user_id == current_user.id, func.date(Task.deadline) == date.today()
+        Task.assigned_users.any(id=current_user.id), func.date(Task.deadline) == date.today()
     ).all()
 
     # Stats dictionary
@@ -133,7 +136,7 @@ def tasks():
         else_=6
     )
     # Fetch tasks assigned to the current user
-    tasks_query = Task.query.filter_by(assigned_to_user_id=current_user.id)
+    tasks_query = Task.query.filter(Task.assigned_users.any(id=current_user.id))
     tasks = tasks_query.order_by(priority_order, Task.updated_at.desc()).all()
     today = datetime.today().date()
 
@@ -224,7 +227,7 @@ def task(task_id):
 
     if not task:
         return "Not Found", 404
-    if task.assigned_to_user_id != current_user.id:
+    if current_user not in task.assigned_users:
         flash("You don't have the permission to view this task")
         return redirect(url_for("main.dashboard"))
     todos_total = len(task.todos)
