@@ -22,7 +22,13 @@ class User(UserMixin, db.Model):
     date_joined = db.Column(db.DateTime, default=func.current_timestamp())
     password = db.Column(db.String(150), nullable=False)
     profile_img = db.Column(db.String(120), default="default_male.jpg")
-    task = db.relationship("Task", back_populates="user", cascade="all, delete-orphan")
+
+    tasks = db.relationship(
+        "Task",
+        secondary="task_user_association",
+        back_populates="assigned_users"
+    )
+
     task_assignment = db.relationship("TaskAssignment", back_populates="user", cascade="all, delete-orphan")
     
     def __init__(self, gender, *args, **kwargs) -> None:
@@ -38,6 +44,13 @@ class User(UserMixin, db.Model):
     def __repr__(self) -> str:
         return f"<user {self.username}>"
 
+# Association Table for Many to Many Relationship between User and Task
+task_user_association = db.Table(
+    'task_user_association',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id'), primary_key=True)
+)
+
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(60), nullable=False)
@@ -48,11 +61,18 @@ class Task(db.Model):
     deadline = db.Column(db.DateTime, nullable=True)
     priority = db.Column(db.String(30), nullable=True)
     status = db.Column(db.String(30), default="pending")
-    assigned_to_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    user = db.relationship("User", back_populates="task")
+    
+    # User - Task M2M relationship:
+    assigned_users = db.relationship(
+        "User",
+        secondary="task_user_association",
+        back_populates="tasks"
+    )
+
     assignment_id = db.Column(db.Integer, db.ForeignKey("task_assignment.id"))
     assignment = db.relationship("TaskAssignment", back_populates="task")
     task_progress = db.relationship("TaskProgress", back_populates="task", cascade="all, delete-orphan")
+
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
