@@ -117,16 +117,35 @@
                 </div>
             </div>
 
-            <!-- Daily Progress Gauge Card -->
-            <div class="stats-card glass-card">
-                <h3 class="panel-title"><i class="fas fa-tachometer-alt"></i> Today's Progress</h3>
-                <div class="progress-circle" data-progress="{{ daily_percent }}">
-                    <div class="circle-overlay">
-                        <span class="progress-value">{{ daily_percent }}%</span>
+            <!-- Daily Progress Card -->
+            <div class="stats-card glass-card progress-modern light-theme">
+                <div class="progress-header">
+                    <i class="fas fa-fire accent-icon"></i>
+                    <h3 class="panel-title">Today's Momentum</h3>
+                </div>
+                
+                <div class="progress-modern-container">
+                    <div class="progress-bar-modern">
+                        <div class="progress-label">{{ daily_percent|round|int }}% progress made today</div>
                     </div>
                 </div>
-                <p class="chart-caption">{{ "Ahead of schedule" if daily_percent > 70 else "On track" if daily_percent > 30 else "Needs attention" }}</p>
-            </div>
+
+                <br />
+                
+                <div class="progress-status">
+                    <span class="status-badge {{ 'success' if daily_percent|round|int > 70 
+                                              else 'warning' if daily_percent|round|int > 30 
+                                              else 'danger' }}">
+                        {{ "Excellent progress!" if daily_percent|round|int > 70 
+                         else "Steady progress" if daily_percent|round|int > 30 
+                         else "Let's pick up pace" }}
+                    </span>
+                    <small class="progress-comparison">
+                        {{ "+" if daily_percent|round|int > (task|calculate_progress) 
+                         else "" }}{{ (daily_percent|round|int - task|calculate_progress) }}% vs average
+                    </small>
+                </div>
+            </div>            
 
             <!-- Mini Timeline Card -->
             <div class="stats-card glass-card">
@@ -910,6 +929,57 @@ document.addEventListener('DOMContentLoaded', function() {
         background-color: rgba(0,0,0,0.7) !important;
         border-color: var(--accent-color) !important;
         color: white !important;
+    }
+
+    .progress-modern.light-theme .progress-header {
+        color: #333;
+    }
+    
+    .accent-icon {
+        color: #3f51b5 !important; /* Matching accent color */
+    }
+    
+    .progress-bar-modern {
+        height: 12px;
+        border-radius: 6px;
+    }
+    
+    .progress-label {
+        color: #333 !important; /* Dark text */
+        text-shadow: none;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .progress-status {
+        color: #555;
+    }
+    
+    /* Status Badges - Light Theme */
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .status-badge.success {
+        background: #E8F5E9; /* Very light green */
+        color: #2E7D32; /* Dark green */
+    }
+    
+    .status-badge.warning {
+        background: #FFF8E1; /* Very light yellow */
+        color: #FF8F00; /* Dark amber */
+    }
+    
+    .status-badge.danger {
+        background: #FFEBEE; /* Very light red */
+        color: #C62828; /* Dark red */
+    }
+    
+    .progress-comparison {
+        color: #777 !important;
     }
 </style>
 
