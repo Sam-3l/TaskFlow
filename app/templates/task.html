@@ -107,6 +107,7 @@
                 <p class="task-description">{{ task.description or "No description provided" }}</p>
             </div>
             
+            <!-- Progress Gauge Card -->
             <div class="stats-card glass-card">
                 <h3 class="panel-title"><i class="fas fa-chart-pie"></i> Progress</h3>
                 <div class="progress-circle" data-progress="{{ task|calculate_progress }}">
@@ -116,13 +117,29 @@
                 </div>
             </div>
 
-            <div class="calendar-card glass-card">
-                <h3 class="panel-title"><i class="fas fa-chart-pie"></i> Calendar</h3>
-                <div class="progress-circle">
+            <!-- Daily Progress Gauge Card -->
+            <div class="stats-card glass-card">
+                <h3 class="panel-title"><i class="fas fa-tachometer-alt"></i> Today's Progress</h3>
+                <div class="progress-circle" data-progress="{{ daily_percent }}">
                     <div class="circle-overlay">
-                        <span class="progress-value">...</span>
+                        <span class="progress-value">{{ daily_percent }}%</span>
                     </div>
                 </div>
+                <p class="chart-caption">{{ "Ahead of schedule" if daily_percent > 70 else "On track" if daily_percent > 30 else "Needs attention" }}</p>
+            </div>
+
+            <!-- Mini Timeline Card -->
+            <div class="stats-card glass-card">
+                <h3 class="panel-title"><i class="fas fa-chart-line"></i> Progress Trend</h3>
+                <div id="mini-timeline" class="chart-container"></div>
+                <p class="chart-caption">7-day completion trend</p>
+            </div>
+
+            <!-- Activity Heatmap Card -->
+            <div class="stats-card glass-card">
+                <h3 class="panel-title"><i class="fas fa-calendar-alt"></i> Weekly Activity</h3>
+                <div id="activity-heatmap" class="chart-container"></div>
+                <p class="chart-caption">14-day activity heatmap</p>
             </div>
         </div>
     </div>
@@ -131,181 +148,210 @@
 <!-- Hidden Task ID for JS -->
 <input type="hidden" id="task-id" value="{{ task.id }}" />
 
+<!-- Plotly JS -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 <script>
-    {% if has_progress %}
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('pulseChart').getContext('2d');
-        const chartData = {{ chart_data | tojson | safe }};
-        
-        const days = [...new Set(chartData.map(d => d.day))].sort((a,b) => new Date(a) - new Date(b));
-        const dayRanges = days.reduce((acc, day) => {
-            const xValues = chartData.filter(d => d.day === day).map(d => d.x);
-            acc[day] = {
-                minX: Math.min(...xValues),
-                maxX: Math.max(...xValues),
-                // Initialize boundaries
-                startBoundary: null,
-                endBoundary: null
-            };
-            return acc;
-        }, {});
+{% if has_progress %}
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('pulseChart').getContext('2d');
+    const chartData = {{ chart_data | tojson | safe }};
     
-        // Calculate boundaries for each day
-        days.forEach((day, index) => {
-            if (index === 0) {
-                // First day: start at minX, end at maxX
-                dayRanges[day].startBoundary = dayRanges[day].minX;
-                dayRanges[day].endBoundary = dayRanges[day].maxX;
-            } else {
-                // Subsequent days: start at previous day's end, end at current day's maxX
-                const prevDay = days[index - 1];
-                dayRanges[day].startBoundary = dayRanges[prevDay].endBoundary;
-                dayRanges[day].endBoundary = dayRanges[day].maxX;
-            }
-        });
-    
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+    const days = [...new Set(chartData.map(d => d.day))].sort((a,b) => new Date(a) - new Date(b));
+    const dayRanges = days.reduce((acc, day) => {
+        const xValues = chartData.filter(d => d.day === day).map(d => d.x);
+        acc[day] = {
+            minX: Math.min(...xValues),
+            maxX: Math.max(...xValues),
+            // Initialize boundaries
+            startBoundary: null,
+            endBoundary: null
+        };
+        return acc;
+    }, {});
+
+    // Calculate boundaries for each day
+    days.forEach((day, index) => {
+        if (index === 0) {
+            // First day: start at minX, end at maxX
+            dayRanges[day].startBoundary = dayRanges[day].minX;
+            dayRanges[day].endBoundary = dayRanges[day].maxX;
+        } else {
+            // Subsequent days: start at previous day's end, end at current day's maxX
+            const prevDay = days[index - 1];
+            dayRanges[day].startBoundary = dayRanges[prevDay].endBoundary;
+            dayRanges[day].endBoundary = dayRanges[day].maxX;
         }
-    
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: chartData.map(d => d.x),
-                datasets: [{
-                    label: 'Progress Pulse',
-                    data: chartData.map(d => ({ x: d.x, y: d.y })),
-                    borderColor: '#0d6efd',
-                    tension: 0,
-                    borderWidth: 2,
-                    pointRadius: 2
-                }, {
-                    type: 'line',
-                    label: 'Total Todos',
-                    data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
-                    borderColor: '#28a745',
-                    borderWidth: 1,
-                    pointRadius: 0
-                }{% if deadline %}, {
-                    type: 'line',
-                    label: 'Deadline',
-                    data: (() => {
-                        const deadlineDay = days.find(d => d === '{{ deadline }}');
-                        if (!deadlineDay) return [];
-                        const prevDayIndex = days.indexOf(deadlineDay) - 1;
-                        let verticalLineX;
-                        if (prevDayIndex >= 0) {
-                            verticalLineX = dayRanges[days[prevDayIndex]].endBoundary;
-                        } else {
-                            verticalLineX = dayRanges[deadlineDay].startBoundary;
-                        }
-                        return [
-                            { x: verticalLineX, y: 0 },
-                            { x: verticalLineX, y: {{ max_value }} }
-                        ];
-                    })(),
-                    borderColor: '#dc3545',
-                    borderWidth: 2,
-                    pointRadius: 0
-                }{% endif %}]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Weekdays',
-                            font: {
-                                weight: 'bold',
-                                size: 12
-                            },
-                            padding: {top: 10}
+    });
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+    }
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.map(d => d.x),
+            datasets: [{
+                label: 'Progress Pulse',
+                data: chartData.map(d => ({ x: d.x, y: d.y })),
+                borderColor: '#0d6efd',
+                tension: 0,
+                borderWidth: 2,
+                pointRadius: 2
+            }, {
+                type: 'line',
+                label: 'Total Todos',
+                data: chartData.map(d => ({x: d.x, y: {{ todos_total }} })),
+                borderColor: '#28a745',
+                borderWidth: 1,
+                pointRadius: 0
+            }{% if deadline %}, {
+                type: 'line',
+                label: 'Deadline',
+                data: (() => {
+                    const deadlineDay = days.find(d => d === '{{ deadline }}');
+                    if (!deadlineDay) return [];
+                    const prevDayIndex = days.indexOf(deadlineDay) - 1;
+                    let verticalLineX;
+                    if (prevDayIndex >= 0) {
+                        verticalLineX = dayRanges[days[prevDayIndex]].endBoundary;
+                    } else {
+                        verticalLineX = dayRanges[deadlineDay].startBoundary;
+                    }
+                    return [
+                        { x: verticalLineX, y: 0 },
+                        { x: verticalLineX, y: {{ max_value }} }
+                    ];
+                })(),
+                borderColor: '#dc3545',
+                borderWidth: 2,
+                pointRadius: 0
+            }{% endif %}]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Weekdays',
+                        font: {
+                            weight: 'bold',
+                            size: 12
                         },
-                        type: 'linear',
-                        ticks: {
-                            callback: function(value) {
-                                // Find the day whose midpoint matches the tick value
-                                const day = days.find(d => {
-                                    const range = dayRanges[d];
-                                    const midpoint = (range.startBoundary + range.endBoundary) / 2;
-                                    return Math.abs(value - midpoint) < 0.01;
-                                });
-                                return day ? formatDate(day) : '';
-                            },
-                            autoSkip: false
-                        },
-                        afterBuildTicks: function(axis) {
-                            const ticks = new Set();
-                            days.forEach(day => {
-                                const range = dayRanges[day];
-                                // Vertical lines at boundaries
-                                ticks.add(range.startBoundary);
-                                ticks.add(range.endBoundary);
-                                // Midpoint for label
-                                ticks.add((range.startBoundary + range.endBoundary) / 2);
-                            });
-                            axis.ticks = Array.from(ticks).sort((a,b) => a-b).map(v => ({ value: v }));
-                        },
-                        grid: {
-                            color: ctx => {
-                                const tickValue = ctx.tick.value;
-                                // Show grid lines only at boundaries (not midpoints)
-                                return days.some(d => 
-                                    dayRanges[d].startBoundary === tickValue || 
-                                    dayRanges[d].endBoundary === tickValue
-                                ) ? '#ddd' : 'transparent';
-                            }
-                        }
+                        padding: {top: 10}
                     },
-                    y: {
-                        min: 0,
-                        max: {{ max_value }},
-                        ticks: {
-                            stepSize: 1
+                    type: 'linear',
+                    ticks: {
+                        callback: function(value) {
+                            // Find the day whose midpoint matches the tick value
+                            const day = days.find(d => {
+                                const range = dayRanges[d];
+                                const midpoint = (range.startBoundary + range.endBoundary) / 2;
+                                return Math.abs(value - midpoint) < 0.01;
+                            });
+                            return day ? formatDate(day) : '';
                         },
-                        title: {
-                            display: true,
-                            text: 'Todos',
-                            font: {
-                                weight: 'bold',
-                                size: 12
-                            },
-                            padding: {bottom: 10}
+                        autoSkip: false
+                    },
+                    afterBuildTicks: function(axis) {
+                        const ticks = new Set();
+                        days.forEach(day => {
+                            const range = dayRanges[day];
+                            // Vertical lines at boundaries
+                            ticks.add(range.startBoundary);
+                            ticks.add(range.endBoundary);
+                            // Midpoint for label
+                            ticks.add((range.startBoundary + range.endBoundary) / 2);
+                        });
+                        axis.ticks = Array.from(ticks).sort((a,b) => a-b).map(v => ({ value: v }));
+                    },
+                    grid: {
+                        color: ctx => {
+                            const tickValue = ctx.tick.value;
+                            // Show grid lines only at boundaries (not midpoints)
+                            return days.some(d => 
+                                dayRanges[d].startBoundary === tickValue || 
+                                dayRanges[d].endBoundary === tickValue
+                            ) ? '#ddd' : 'transparent';
                         }
                     }
                 },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            title: (items) => {
-                                const date = new Date(items[0].raw.x);
-                                return date.toLocaleDateString('en-US', {
-                                    weekday: 'short', 
-                                    day: 'numeric'
-                                });
-                            },
-                            label: (ctx) => {
-                                if (ctx.raw.change !== undefined) {
-                                    return `Change: ${ctx.raw.change > 0 ? '+' : ''}${ctx.raw.change}`;
-                                }
-                                return `Final: ${ctx.raw.y}`;
-                            },
-                            footer: (items) => {
-                                if (items[0].raw.position) {
-                                    return `Action ${items[0].raw.position}`;
-                                }
+                y: {
+                    min: 0,
+                    max: {{ max_value }},
+                    ticks: {
+                        stepSize: 1
+                    },
+                    title: {
+                        display: true,
+                        text: 'Todos',
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        },
+                        padding: {bottom: 10}
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: (items) => {
+                            const date = new Date(items[0].raw.x);
+                            return date.toLocaleDateString('en-US', {
+                                weekday: 'short', 
+                                day: 'numeric'
+                            });
+                        },
+                        label: (ctx) => {
+                            if (ctx.raw.change !== undefined) {
+                                return `Change: ${ctx.raw.change > 0 ? '+' : ''}${ctx.raw.change}`;
+                            }
+                            return `Final: ${ctx.raw.y}`;
+                        },
+                        footer: (items) => {
+                            if (items[0].raw.position) {
+                                return `Action ${items[0].raw.position}`;
                             }
                         }
                     }
                 }
             }
-        });
+        }
     });
-    {% endif %}
-    </script>
+});
+{% endif %}
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Mini Timeline
+    const timelineData = JSON.parse('{{ timeline_json | safe }}');
+    Plotly.newPlot('mini-timeline', 
+        timelineData.data, 
+        timelineData.layout,
+        {displayModeBar: false}
+    );
+
+    // Activity Heatmap
+    const heatmapData = JSON.parse('{{ heatmap_json | safe }}');
+    Plotly.newPlot('activity-heatmap', 
+        heatmapData.data, 
+        heatmapData.layout,
+        {displayModeBar: false}
+    );
+    
+    // Make charts responsive
+    window.addEventListener('resize', function() {
+        Plotly.Plots.resize('mini-timeline');
+        Plotly.Plots.resize('activity-heatmap');
+    });
+});
+
+</script>
 
 <style>
     :root {
@@ -844,6 +890,26 @@
     .text-muted-extra {
         color: #adb5bd;
         font-size: 0.85rem;
+    }
+
+    /* Chart styling */
+    .chart-container {
+        height: 200px;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    /* Make Plotly charts transparent */
+    .js-plotly-plot .plotly, 
+    .js-plotly-plot .plotly div {
+        background: transparent !important;
+    }
+
+    /* Tooltip styling */
+    .js-plotly-plot .hovertext {
+        background-color: rgba(0,0,0,0.7) !important;
+        border-color: var(--accent-color) !important;
+        color: white !important;
     }
 </style>
 

@@ -8,6 +8,10 @@ from wtforms import ValidationError
 from sqlalchemy.sql import func
 from sqlalchemy import case
 
+import plotly
+import plotly.graph_objs as go
+import pandas as pd
+import json
 
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership
 from app.forms import CreateTask
@@ -326,6 +330,86 @@ def task(task_id):
         advice = "Stay productive at your own pace. Small steps add up!"
     
     info = {'total': len(task.todos), 'advice': advice}
+
+    # Other visualizations
+
+    # 1. Prepare Daily Gauge Data
+    today = datetime.today().date()
+    today_progress = TaskProgress.query.filter(
+        TaskProgress.task_id == task_id,
+        func.date(TaskProgress.date_made) == today
+    ).first()
+    
+    daily_percent = 0
+    if today_progress and task.todos:
+        daily_changes = sum(today_progress.progress)
+        total_todos = len(task.todos)
+        daily_percent = min(100, max(0, (daily_changes / total_todos) * 100))
+    
+    # 2. Create Mini Timeline Plot
+    timeline_dates = []
+    timeline_values = []
+    for i in range(7, 0, -1):  # Last 7 days
+        date = datetime.today() - timedelta(days=i)
+        progress = TaskProgress.query.filter(
+            TaskProgress.task_id == task_id,
+            func.date(TaskProgress.date_made) == date.date()
+        ).first()
+        
+        timeline_dates.append(date.strftime('%b %d'))
+        timeline_values.append(sum(progress.progress) if progress else 0)
+    
+    timeline_fig = go.Figure(
+        go.Scatter(
+            x=timeline_dates,
+            y=timeline_values,
+            line=dict(color='#4e79a7', width=3, shape='spline'),
+            marker=dict(size=8, color='#4e79a7'),
+            fill='tozeroy',
+            fillcolor='rgba(78, 121, 167, 0.2)'
+        )
+    )
+    timeline_fig.update_layout(
+        margin=dict(t=0, b=30, l=40, r=20),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(showgrid=False),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.1)')
+    )
+    timeline_json = json.dumps(timeline_fig, cls=plotly.utils.PlotlyJSONEncoder)
+    
+    # 3. Create Heatmap Plot
+    heatmap_dates = []
+    heatmap_values = []
+    for i in range(14, 0, -1):  # Last 14 days
+        date = datetime.today() - timedelta(days=i)
+        progress = TaskProgress.query.filter(
+            TaskProgress.task_id == task_id,
+            func.date(TaskProgress.date_made) == date.date()
+        ).first()
+        
+        heatmap_dates.append(date.strftime('%b %d'))
+        heatmap_values.append(sum(progress.progress) if progress else 0)
+    
+    heatmap_fig = go.Figure(
+        go.Heatmap(
+            x=heatmap_dates,
+            y=['Activity'],
+            z=[heatmap_values],
+            colorscale=[
+                [0, 'rgba(255,255,255,0.1)'],
+                [0.5, 'rgba(100, 200, 255, 0.5)'],
+                [1, '#4e79a7']
+            ],
+            showscale=False
+        )
+    )
+    heatmap_fig.update_layout(
+        margin=dict(t=0, b=30, l=20, r=20),
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    heatmap_json = json.dumps(heatmap_fig, cls=plotly.utils.PlotlyJSONEncoder)
+
     return render_template("task.html", 
                             user=current_user, 
                             task=task, 
@@ -337,6 +421,9 @@ def task(task_id):
                             todos_total=todos_total,
                             max_value=max(max_value, todos_total),
                             has_progress=has_progress,
+                            daily_percent=daily_percent,
+                            timeline_json=timeline_json,
+                            heatmap_json=heatmap_json,
                             deadline=deadline_date if (deadline_date and start_date <= deadline_date <= today) else None
                         )
 
