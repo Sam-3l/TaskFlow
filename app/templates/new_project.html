@@ -1,8 +1,363 @@
 {% extends 'parents/auth_base.html' %}
-{% block title %}{{ user["fname"] }} | Projects{% endblock %}
+{% block title %}{{ user["fname"] }} | Create Project{% endblock %}
 
 {% block content %}
+<div class="create-task-container">
+    <!-- Left Decorative Panel -->
+    <div class="design-panel">
+        <div class="gradient-mesh"></div>
+        <div class="animated-checkmark">
+            <!-- Animated SVG Checkmark -->
+            <svg viewBox="0 0 100 100" class="checkmark">
+                <path d="M20,50 L40,70 L80,30" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="8" 
+                      stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100"/>
+            </svg>
+        </div>
+        <div class="inspiration-text">
+            <h2>Organize Your Success</h2>
+            <p>"Productivity is never an accident. It's always the result of a commitment to excellence, intelligent planning, and focused effort."</p>
+        </div>
+    </div>
 
-Create Project
+    <!-- Form Section -->
+    <div class="form-section">
+        <!-- Back Button with improved interaction -->
+        <div class="back-button" onclick="window.history.back();">
+            <svg width="40" height="40" viewBox="0 0 1024 1024">
+                <path fill="currentColor" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"/>
+                <path fill="currentColor" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"/>
+            </svg>
+            <span class="back-text">Back</span>
+        </div>
 
+        <!-- Form Container -->
+        <div class="form-wrapper">
+            <h1 class="form-title">Create Your Project</h1>
+            <form class="task-form" method="post">
+                {{ form.hidden_tag() }}
+
+                <!-- Title Field -->
+                <div class="form-group floating">
+                    {{ form.title(class='form-input', placeholder=' ', autocomplete='off') }}
+                    {{ form.title.label(class='form-label') }}
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-group floating">
+                    {{ form.description(class='form-input textarea', placeholder=' ', rows='3') }}
+                    {{ form.description.label(class='form-label') }}
+                    {% if form.description.errors %}
+                        <span class="error-message">{{ form.description.errors[0] }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <!-- Priority Field -->
+                    <div class="form-group floating">
+                        {{ form.priority(class='form-input select') }}
+                        {{ form.priority.label(class='form-label') }}
+                    </div>
+
+                    <!-- Deadline Field -->
+                    <div class="form-group floating">
+                        {{ form.deadline(class='form-input date') }}
+                        {{ form.deadline.label(class='form-label') }}
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    {{ form.submit(class='submit-button') }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-blue: #0d6efd;
+        --secondary-color: #6c757d;
+        --background: #cfdeeed5;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        --text-dark: #2d3748;
+        --magic-gradient: linear-gradient(45deg, var(--primary-blue), var(--secondary-color));
+    }
+
+    /* Base Styles */
+    .create-task-container {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        background: var(--background);
+        position: relative;
+        overflow: hidden;
+        margin-top: 60px;
+    }
+
+    /* Left Design Panel */
+    .design-panel {
+        flex: 1;
+        position: relative;
+        padding: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: linear-gradient(45deg, rgba(13,110,253,0.05) 0%, rgba(108,117,125,0.05) 100%);
+    }
+
+    .gradient-mesh {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 20%, rgba(13,110,253,0.1) 0%, transparent 30%),
+            radial-gradient(circle at 80% 80%, rgba(108,117,125,0.1) 0%, transparent 30%);
+        opacity: 0.1;
+        animation: gradientMove 20s ease infinite;
+    }
+
+    .animated-checkmark {
+        position: relative;
+        height: 200px;
+    }
+
+    .checkmark {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: draw 3s ease-in-out infinite;
+    }
+
+    .checkmark path {
+        stroke: var(--primary-blue);
+        opacity: 0.3;
+        filter: drop-shadow(0 0 4px rgba(13,110,253,0.2));
+    }
+
+    .inspiration-text {
+        color: var(--text-dark);
+        max-width: 400px;
+    }
+
+    .inspiration-text h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, var(--primary-blue) 0%, var(--secondary-color) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: textGlow 2s ease-in-out infinite alternate;
+    }
+
+    /* Form Section */
+    .form-section {
+        width: 45%;
+        min-width: 600px;
+        background: linear-gradient(to right bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+        backdrop-filter: blur(16px) saturate(180%);
+        padding: 4rem;
+        position: relative;
+        transform: translateZ(0);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .form-wrapper {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .form-title {
+        color: var(--text-dark);
+        text-align: center;
+        margin-bottom: 3rem;
+        font-size: 2.5rem;
+        position: relative;
+    }
+
+    .form-title::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: var(--primary-blue);
+        margin: 1rem auto;
+        border-radius: 2px;
+        animation: underlinePulse 2s ease infinite;
+    }
+
+    /* Floating Labels */
+    .form-group.floating {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1.25rem;
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 8px;
+        background: var(--glass-bg);
+        color: var(--text-dark);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-label {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(0,0,0,0.6);
+        pointer-events: none;
+        transition: all 0.3s ease;
+        background: transparent;
+        padding: 0 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-input:focus ~ .form-label,
+    .form-input:not(:placeholder-shown) ~ .form-label {
+        top: 0;
+        font-size: 0.8rem;
+        color: var(--primary-blue);
+        background: var(--background);
+        text-shadow: 0 2px 6px rgba(13,110,253,0.2);
+    }
+
+    /* Interactive Elements */
+    .form-input:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15),
+                    0 4px 12px rgba(13, 110, 253, 0.1);
+    }
+
+    .select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background: var(--glass-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232d3748'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat;
+        background-position: right 1rem center;
+        background-size: 16px;
+        padding-right: 2.5rem !important;
+        cursor: pointer;
+    }
+
+    .select option {
+        background: #ffffff;
+        color: var(--text-dark);
+        padding: 0.75rem;
+        margin: 0.25rem 0;
+    }
+
+    .submit-button {
+        background: var(--magic-gradient);
+        border: none;
+        padding: 1.25rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        transition: all 0.4s ease;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(13,110,253,0.2);
+    }
+
+    .submit-button::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 25%, rgba(255,255,255,0.2) 50%, transparent 75%);
+        animation: buttonShine 3s infinite linear;
+    }
+
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(13,110,253,0.3);
+    }
+
+    /* Back Button */
+    .back-button {
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-dark);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .back-button svg {
+        transition: transform 0.3s ease;
+        fill: currentColor;
+    }
+
+    .back-button:hover {
+        color: var(--primary-blue);
+    }
+
+    .back-button:hover svg {
+        transform: translateX(-5px);
+    }
+
+    .back-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .back-button:hover .back-text {
+        opacity: 1;
+    }
+
+    /* Animations */
+    @keyframes draw {
+        0% { stroke-dashoffset: 100; }
+        50% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: -100; }
+    }
+
+    @keyframes gradientMove {
+        0% { transform: translate(0, 0); }
+        33% { transform: translate(-5%, 5%); }
+        66% { transform: translate(5%, -5%); }
+        100% { transform: translate(0, 0); }
+    }
+
+    @keyframes textGlow {
+        from { text-shadow: 0 0 8px rgba(13,110,253,0); }
+        to { text-shadow: 0 0 12px rgba(13,110,253,0.15); }
+    }
+
+    @keyframes buttonShine {
+        from { transform: translateX(-50%) rotate(45deg); }
+        to { transform: translateX(50%) rotate(45deg); }
+    }
+
+    @keyframes underlinePulse {
+        0% { width: 60px; opacity: 1; }
+        50% { width: 80px; opacity: 0.8; }
+        100% { width: 60px; opacity: 1; }
+    }
+
+    @media (max-width: 1200px) {
+        .design-panel { display: none; }
+        .form-section {
+            width: 100%;
+            min-width: auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .form-section { padding: 2rem; }
+        .form-title { font-size: 2rem; }
+        .inspiration-text h2 { font-size: 2rem; }
+    }
+</style>
 {% endblock %}
