@@ -278,8 +278,8 @@ def task(task_id):
     # Get all progress entries
     progress_entries = TaskProgress.query.filter(
         TaskProgress.task_id == task_id,
-        TaskProgress.date_made.between(start_date, today+timedelta(days=1))
-    ).order_by(TaskProgress.date_made).all()
+        TaskProgress.made_at.between(start_date, today+timedelta(days=1))
+    ).order_by(TaskProgress.made_at).all()
 
     # Structure data for chart
     max_value = 0
@@ -291,7 +291,7 @@ def task(task_id):
         # Get all progress changes for this date
         daily_changes = []
         for entry in progress_entries:
-            if entry.date_made.date() == date:
+            if entry.made_at.date() == date:
                 daily_changes.extend(entry.progress)
 
         if not daily_changes:
@@ -363,7 +363,7 @@ def task(task_id):
     today = datetime.today().date()
     today_progress = TaskProgress.query.filter(
         TaskProgress.task_id == task_id,
-        func.date(TaskProgress.date_made) == today
+        func.date(TaskProgress.made_at) == today
     ).first()
     
     daily_percent = 0
@@ -379,7 +379,7 @@ def task(task_id):
         date = datetime.today() - timedelta(days=i)
         progress = TaskProgress.query.filter(
             TaskProgress.task_id == task_id,
-            func.date(TaskProgress.date_made) == date.date()
+            func.date(TaskProgress.made_at) == date.date()
         ).first()
         
         timeline_dates.append(date.strftime('%b %d'))
@@ -411,7 +411,7 @@ def task(task_id):
         date = datetime.today() - timedelta(days=i)
         progress = TaskProgress.query.filter(
             TaskProgress.task_id == task_id,
-            func.date(TaskProgress.date_made) == date.date()
+            func.date(TaskProgress.made_at) == date.date()
         ).first()
         
         heatmap_dates.append(date.strftime('%b %d'))
