@@ -13,8 +13,8 @@ import plotly.graph_objs as go
 import pandas as pd
 import json
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership
-from app.forms import CreateTask
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project
+from app.forms import CreateTask, CreateProject
 
 from datetime import datetime, date, timedelta
 
@@ -159,10 +159,36 @@ def tasks():
 def projects():
     return render_template("projects.html", user=current_user, active_page="projects")
 
-@main.route("/dashboard/projects/new")
+@main.route("/dashboard/projects/new", methods=['GET', 'POST'])
 @login_required
 def create_projects():
-    return render_template("new_project.html", user=current_user, active_page="projects")
+    from app import db
+    
+    form = CreateProject()
+    if form.validate_on_submit():
+        form_data = form.data
+        form_data.pop("submit", None)
+        form_data.pop("csrf_token", None)
+        
+        # Create the project
+        project = Project(**form_data)
+        db.session.add(project)
+        
+        # Add the creator as a project manager
+        db.session.execute(
+            membership.insert().values(
+                project_id=project.id,
+                user_id=current_user.id,
+                role="project_manager",
+                status="active"
+            )
+        )
+        
+        db.session.commit()
+        flash("Project created successfully", "success")
+        return redirect(url_for("main.projects"))
+        
+    return render_template("new_project.html", user=current_user, active_page="projects", form=form)
 
 @main.route("/profile")
 @login_required

@@ -46,4 +46,14 @@ class CreateTask(FlaskForm):
     priority = SelectField("Priority:", validators=[DataRequired(), Length(min=2, max=150),], choices=[("critical", "Critical"), ("high-priority", "High priority"), ("medium-priority", "Medium priority"), ("low-priority", "Low priority"), ("optional", "Optional")])
     deadline = MyDateField("Deadline date:", validators=[Optional()])
     submit = SubmitField("Create Task")
+
+class CreateProject(FlaskForm):
+    title = StringField("Title:", validators=[DataRequired(), Length(min=3, max=60),], render_kw={"placeholder":"Name your project"})
+    description = TextAreaField("Description:", validators=[DataRequired(), Length(min=4, max=255),], render_kw={"placeholder":"Describe your project"})
+    type = SelectField("Project Type:", validators=[DataRequired()], choices=[
+        ("private", "Private - Only manager can add members"),
+        ("public", "Public - Anyone can request to join")
+    ])
+    project_links = StringField("Project Links:", validators=[Optional(), Length(max=255)], render_kw={"placeholder":"Add relevant links (comma-separated)"})
+    submit = SubmitField("Create Project")
     

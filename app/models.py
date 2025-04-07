@@ -124,12 +124,11 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(60), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    type = db.Column(db.String(10), default="private")
+    type = db.Column(db.String(10), default="closed")
     project_links = db.Column(db.String(255), nullable=True)
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
     members = db.relationship("User", secondary=membership, backref="member_to")
     upvotes = db.relationship("User", secondary=upvotes, backref="upvote_to")
-    discussions = db.relationship("ProjectDiscussion", backref="project", lazy=True)
 
 class TaskAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

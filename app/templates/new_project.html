@@ -14,8 +14,8 @@
             </svg>
         </div>
         <div class="inspiration-text">
-            <h2>Organize Your Success</h2>
-            <p>"Productivity is never an accident. It's always the result of a commitment to excellence, intelligent planning, and focused effort."</p>
+            <h2>Start Your Project</h2>
+            <p>"Every great project begins with a clear vision and a well-defined structure. Let's create something amazing together."</p>
         </div>
     </div>
 
@@ -32,14 +32,17 @@
 
         <!-- Form Container -->
         <div class="form-wrapper">
-            <h1 class="form-title">Create Your Project</h1>
-            <form class="task-form" method="post">
+            <h1 class="form-title">Create New Project</h1>
+            <form class="project-form" method="post">
                 {{ form.hidden_tag() }}
 
                 <!-- Title Field -->
                 <div class="form-group floating">
                     {{ form.title(class='form-input', placeholder=' ', autocomplete='off') }}
                     {{ form.title.label(class='form-label') }}
+                    {% if form.title.errors %}
+                        <span class="error-message">{{ form.title.errors[0] }}</span>
+                    {% endif %}
                 </div>
 
                 <!-- Description Field -->
@@ -51,18 +54,22 @@
                     {% endif %}
                 </div>
 
-                <div class="form-row">
-                    <!-- Priority Field -->
-                    <div class="form-group floating">
-                        {{ form.priority(class='form-input select') }}
-                        {{ form.priority.label(class='form-label') }}
-                    </div>
+                <!-- Project Type Field -->
+                <div class="form-group floating">
+                    {{ form.type(class='form-input select') }}
+                    {{ form.type.label(class='form-label') }}
+                    {% if form.type.errors %}
+                        <span class="error-message">{{ form.type.errors[0] }}</span>
+                    {% endif %}
+                </div>
 
-                    <!-- Deadline Field -->
-                    <div class="form-group floating">
-                        {{ form.deadline(class='form-input date') }}
-                        {{ form.deadline.label(class='form-label') }}
-                    </div>
+                <!-- Project Links Field -->
+                <div class="form-group floating">
+                    {{ form.project_links(class='form-input', placeholder=' ') }}
+                    {{ form.project_links.label(class='form-label') }}
+                    {% if form.project_links.errors %}
+                        <span class="error-message">{{ form.project_links.errors[0] }}</span>
+                    {% endif %}
                 </div>
 
                 <!-- Submit Button -->
@@ -85,7 +92,7 @@
     }
 
     /* Base Styles */
-    .create-task-container {
+    .create-project-container {
         display: flex;
         min-height: calc(100vh - 60px);
         background: var(--background);
@@ -248,116 +255,89 @@
     .select option {
         background: #ffffff;
         color: var(--text-dark);
-        padding: 0.75rem;
-        margin: 0.25rem 0;
+        padding: 0.5rem;
+    }
+
+    .textarea {
+        min-height: 100px;
+        resize: vertical;
     }
 
     .submit-button {
+        width: 100%;
+        padding: 1rem;
         background: var(--magic-gradient);
-        border: none;
-        padding: 1.25rem;
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
-        transition: all 0.4s ease;
         color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 15px rgba(13,110,253,0.2);
-    }
-
-    .submit-button::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent 25%, rgba(255,255,255,0.2) 50%, transparent 75%);
-        animation: buttonShine 3s infinite linear;
     }
 
     .submit-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(13,110,253,0.3);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+    }
+
+    .submit-button:active {
+        transform: translateY(0);
+    }
+
+    /* Error Messages */
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
     }
 
     /* Back Button */
     .back-button {
-        position: absolute;
-        top: 2rem;
-        left: 2rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        color: var(--text-dark);
         cursor: pointer;
+        color: var(--text-dark);
         transition: all 0.3s ease;
-    }
-
-    .back-button svg {
-        transition: transform 0.3s ease;
-        fill: currentColor;
+        margin-bottom: 2rem;
     }
 
     .back-button:hover {
         color: var(--primary-blue);
-    }
-
-    .back-button:hover svg {
         transform: translateX(-5px);
     }
 
     .back-text {
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .back-button:hover .back-text {
-        opacity: 1;
+        font-size: 1.1rem;
+        font-weight: 500;
     }
 
     /* Animations */
+    @keyframes gradientMove {
+        0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+        100% { background-position: 0% 0%; }
+    }
+
     @keyframes draw {
         0% { stroke-dashoffset: 100; }
         50% { stroke-dashoffset: 0; }
-        100% { stroke-dashoffset: -100; }
-    }
-
-    @keyframes gradientMove {
-        0% { transform: translate(0, 0); }
-        33% { transform: translate(-5%, 5%); }
-        66% { transform: translate(5%, -5%); }
-        100% { transform: translate(0, 0); }
+        100% { stroke-dashoffset: 100; }
     }
 
     @keyframes textGlow {
-        from { text-shadow: 0 0 8px rgba(13,110,253,0); }
-        to { text-shadow: 0 0 12px rgba(13,110,253,0.15); }
-    }
-
-    @keyframes buttonShine {
-        from { transform: translateX(-50%) rotate(45deg); }
-        to { transform: translateX(50%) rotate(45deg); }
+        from { text-shadow: 0 0 10px rgba(13,110,253,0.2); }
+        to { text-shadow: 0 0 20px rgba(13,110,253,0.4); }
     }
 
     @keyframes underlinePulse {
-        0% { width: 60px; opacity: 1; }
-        50% { width: 80px; opacity: 0.8; }
-        100% { width: 60px; opacity: 1; }
-    }
-
-    @media (max-width: 1200px) {
-        .design-panel { display: none; }
-        .form-section {
-            width: 100%;
-            min-width: auto;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .form-section { padding: 2rem; }
-        .form-title { font-size: 2rem; }
-        .inspiration-text h2 { font-size: 2rem; }
+        0% { width: 60px; }
+        50% { width: 80px; }
+        100% { width: 60px; }
     }
 </style>
 {% endblock %}
