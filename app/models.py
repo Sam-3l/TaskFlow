@@ -124,7 +124,7 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(60), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    type = db.Column(db.String(10), default="closed")
+    type = db.Column(db.String(10), default="private")
     project_links = db.Column(db.String(255), nullable=True)
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
     members = db.relationship("User", secondary=membership, backref="member_to")
