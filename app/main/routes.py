@@ -170,21 +170,26 @@ def create_projects():
         form_data.pop("submit", None)
         form_data.pop("csrf_token", None)
         
+        # Handle empty project_links
+        if not form_data.get('project_links', '').strip():
+            form_data['project_links'] = None
+        
         # Create the project
         project = Project(**form_data)
         db.session.add(project)
+        db.session.commit()  # Commit first to get project.id
         
         # Add the creator as a project manager
         db.session.execute(
             membership.insert().values(
-                project_id=project.id,
+                project_id=project.id,  # Now we have the project.id
                 user_id=current_user.id,
                 role="project_manager",
                 status="active"
             )
         )
-        
         db.session.commit()
+        
         flash("Project created successfully", "success")
         return redirect(url_for("main.projects"))
         
