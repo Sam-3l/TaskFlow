@@ -227,12 +227,19 @@ def create_task():
         form_data = form.data
         form_data.pop("submit", None)
         form_data.pop("csrf_token", None)
+        
+        # Create the task
         task = Task(**form_data)
-        task.user = current_user
+        
+        # Create the task assignment
         assignment = TaskAssignment()
         assignment.title = "Self Assigned Task"
         assignment.task.append(task)
         assignment.user = current_user
+        
+        # Add the current user to the task's assigned users
+        task.assigned_users.append(current_user)
+        
         db.session.add_all([task, assignment])
         db.session.commit()
         flash("Task created successfully", "success")
