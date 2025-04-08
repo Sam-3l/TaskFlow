@@ -114,6 +114,26 @@
     {% endif %}
 </div>
 
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages() %}
+    {% for message in messages %}
+        {% if message %}
+          <div id="flash-message" class="flash-message">
+            <span>
+                {{ message }}
+            </span>
+            <button id="close-btn" class="close-btn">&times;</button>
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              flash();
+            });
+          </script>
+        {% endif %}
+    {% endfor %}
+{% endwith %}
+
+
 <style>
     .tasks{
         margin-top: 100px;

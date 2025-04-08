@@ -3,178 +3,280 @@
 {% block title %}TaskFlow - Organize & Manage Tasks Effortlessly{% endblock %}
 
 {% block content %}
-<!-- Hero Section with Background Image -->
-<div class="hero-section position-relative text-white text-center d-flex align-items-center" 
-     style="background: url('{{ url_for('static', filename='images/landing_page.jpg') }}') no-repeat center center/cover;
-            height: 100vh;">
-    <div class="overlay position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.6);"></div>
-    <div class="container position-relative">
-        <h1 class="fw-bold display-4">Stay Organized, Stay Productive!</h1>
-        <p class="lead">Seamlessly manage your tasks, collaborate with your team, and hit deadlines effortlessly.</p>
-        <a href="auth/signup" class="btn btn-primary btn-lg me-2">Get Started</a>
-        <a href="about/" class="btn btn-outline-light btn-lg">Learn More</a>
+<!-- Loading Screen -->
+<div id="loading-screen" class="loading-screen">
+    <div class="loader">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading TaskFlow...</div>
+        </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<section class="container py-5 text-center text-dark">
-    <h2 class="fw-bold">Why Choose TaskFlow?</h2>
-    <p class="text-muted">Designed to boost your productivity with powerful features.</p>
-
-    <div class="row mt-4 g-4">
-        <!-- Card 1 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card border-0 shadow-lg h-100">
-                <img src="{{ url_for('static', filename='images/automation.jpeg') }}" class="card-img-top fixed-card-img" alt="Task Automation">
-                <div class="card-body text-center text-dark">
-                    <h4 class="mt-3">Task Automation</h4>
-                    <p>Automate recurring tasks and save time.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card border-0 shadow-lg h-100">
-                <img src="{{ url_for('static', filename='images/team_collaboration.jpg') }}" class="card-img-top fixed-card-img" alt="Team Collaboration">
-                <div class="card-body text-center text-dark">
-                    <h4 class="mt-3">Team Collaboration</h4>
-                    <p>Work together effortlessly with real-time updates.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card border-0 shadow-lg h-100">
-                <img src="{{ url_for('static', filename='images/progress_analytics.jpg') }}" class="card-img-top fixed-card-img" alt="Progress Tracking">
-                <div class="card-body text-center text-dark">
-                    <h4 class="mt-3">Progress Tracking</h4>
-                    <p>Monitor task completion with analytics.</p>
-                </div>
-            </div>
+<!-- Main Content (Initially Hidden) -->
+<div id="main-content" class="main-content" style="display: none;">
+    <!-- Hero Section with Background Image -->
+    <div class="hero-section position-relative text-white text-center d-flex align-items-center" 
+         style="background: url('{{ url_for('static', filename='images/landing_page.jpg') }}') no-repeat center center/cover;
+                height: 100vh;">
+        <div class="overlay position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.6);"></div>
+        <div class="container position-relative">
+            <h1 class="fw-bold display-4">Stay Organized, Stay Productive!</h1>
+            <p class="lead">Seamlessly manage your tasks, collaborate with your team, and hit deadlines effortlessly.</p>
+            <a href="auth/signup" class="btn btn-primary btn-lg me-2">Get Started</a>
+            <a href="about/" class="btn btn-outline-light btn-lg">Learn More</a>
         </div>
     </div>
-</section>
 
-<hr class="m-5">
+    <!-- Features Section -->
+    <section class="container py-5 text-center text-dark">
+        <h2 class="fw-bold">Why Choose TaskFlow?</h2>
+        <p class="text-muted">Designed to boost your productivity with powerful features.</p>
 
-<!-- How It Works Section -->
-<section class="bg-light py-5">
-    <div class="container text-center text-dark">
-        <h2 class="fw-bold">How It Works</h2>
         <div class="row mt-4 g-4">
-            <!-- Step 1 -->
+            <!-- Card 1 -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card border-0 shadow-lg h-100">
+                    <img src="{{ url_for('static', filename='images/automation.jpeg') }}" class="card-img-top fixed-card-img" alt="Task Automation">
+                    <div class="card-body text-center text-dark">
+                        <h4 class="mt-3">Task Automation</h4>
+                        <p>Automate recurring tasks and save time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card border-0 shadow-lg h-100">
+                    <img src="{{ url_for('static', filename='images/team_collaboration.jpg') }}" class="card-img-top fixed-card-img" alt="Team Collaboration">
+                    <div class="card-body text-center text-dark">
+                        <h4 class="mt-3">Team Collaboration</h4>
+                        <p>Work together effortlessly with real-time updates.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card border-0 shadow-lg h-100">
+                    <img src="{{ url_for('static', filename='images/progress_analytics.jpg') }}" class="card-img-top fixed-card-img" alt="Progress Tracking">
+                    <div class="card-body text-center text-dark">
+                        <h4 class="mt-3">Progress Tracking</h4>
+                        <p>Monitor task completion with analytics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="m-5">
+
+    <!-- How It Works Section -->
+    <section class="bg-light py-5">
+        <div class="container text-center text-dark">
+            <h2 class="fw-bold">How It Works</h2>
+            <div class="row mt-4 g-4">
+                <!-- Step 1 -->
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="p-4 border rounded shadow-sm h-100">
+                        <i class="bi bi-pencil-square display-4 text-primary"></i>
+                        <h4 class="mt-3">Create Tasks</h4>
+                        <p>Define your goals and break them into manageable tasks.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="p-4 border rounded shadow-sm h-100">
+                        <i class="bi bi-clock-history display-4 text-success"></i>
+                        <h4 class="mt-3">Set Deadlines</h4>
+                        <p>Stay on track by setting due dates for each task.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-12 col-sm-6 col-lg-4 mx-auto">
+                    <div class="p-4 border rounded shadow-sm h-100">
+                        <i class="bi bi-check-lg display-4 text-warning"></i>
+                        <h4 class="mt-3">Complete & Track</h4>
+                        <p>Monitor progress and celebrate achievements!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <br><br><br>
+
+    <!-- Carousel Section -->
+    <section class="container-fluid px-0 text-center text-dark">
+        <div id="taskflowCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <img src="{{ url_for('static', filename='images/todo_list.jpg') }}" class="d-block w-100 carousel-img" alt="To-Do List">
+                    <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
+                        <h4 class="fs-5 fs-md-4">Smart To-Do Lists</h4>
+                        <p class="fs-6 fs-md-5">Create, manage, and track your tasks with ease.</p>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='images/deadline.jpg') }}" class="d-block w-100 carousel-img" alt="Deadline Reminder">
+                    <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
+                        <h4 class="fs-5 fs-md-4">Deadline Reminders</h4>
+                        <p class="fs-6 fs-md-5">Get notified before your tasks are due.</p>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='images/team_collaboration.jpg') }}" class="d-block w-100 carousel-img" alt="Team Collaboration">
+                    <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
+                        <h4 class="fs-5 fs-md-4">Seamless Team Collaboration</h4>
+                        <p class="fs-6 fs-md-5">Assign tasks and work together effortlessly.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Carousel Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#taskflowCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#taskflowCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="container py-5 text-center text-dark">
+        <h2 class="fw-bold">What Users Say</h2>
+        <div class="row mt-4 g-4">
+            <!-- Testimonial 1 -->
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="p-4 border rounded shadow-sm h-100">
-                    <i class="bi bi-pencil-square display-4 text-primary"></i>
-                    <h4 class="mt-3">Create Tasks</h4>
-                    <p>Define your goals and break them into manageable tasks.</p>
+                    <p>"TaskFlow transformed how I work. My productivity skyrocketed!"</p>
+                    <h5 class="fw-bold mt-3">- Alex B.</h5>
                 </div>
             </div>
-
-            <!-- Step 2 -->
+            
+            <!-- Testimonial 2 -->
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="p-4 border rounded shadow-sm h-100">
-                    <i class="bi bi-clock-history display-4 text-success"></i>
-                    <h4 class="mt-3">Set Deadlines</h4>
-                    <p>Stay on track by setting due dates for each task.</p>
+                    <p>"Managing tasks with my team has never been easier. Highly recommend!"</p>
+                    <h5 class="fw-bold mt-3">- Sophia R.</h5>
                 </div>
             </div>
-
-            <!-- Step 3 -->
-            <div class="col-12 col-sm-6 col-lg-4 mx-auto">
+            
+            <!-- Testimonial 3 -->
+            <div class="col-12 col-sm-6 col-lg-4">
                 <div class="p-4 border rounded shadow-sm h-100">
-                    <i class="bi bi-check-lg display-4 text-warning"></i>
-                    <h4 class="mt-3">Complete & Track</h4>
-                    <p>Monitor progress and celebrate achievements!</p>
+                    <p>"A game-changer for freelancers. I never miss deadlines anymore!"</p>
+                    <h5 class="fw-bold mt-3">- Mark W.</h5>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<br><br><br>
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4">
+        <p>&copy; 2025 TaskFlow. All Rights Reserved.</p>
+    </footer>
+</div>
 
-<!-- Carousel Section -->
-<section class="container-fluid px-0 text-center text-dark">
-    <div id="taskflowCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
+<style>
+/* Loading Screen Styles */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out;
+}
 
-            <!-- Slide 1 -->
-            <div class="carousel-item active">
-                <img src="{{ url_for('static', filename='images/todo_list.jpg') }}" class="d-block w-100 carousel-img" alt="To-Do List">
-                <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
-                    <h4 class="fs-5 fs-md-4">Smart To-Do Lists</h4>
-                    <p class="fs-6 fs-md-5">Create, manage, and track your tasks with ease.</p>
-                </div>
-            </div>
+.loader {
+    text-align: center;
+}
 
-            <!-- Slide 2 -->
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='images/deadline.jpg') }}" class="d-block w-100 carousel-img" alt="Deadline Reminder">
-                <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
-                    <h4 class="fs-5 fs-md-4">Deadline Reminders</h4>
-                    <p class="fs-6 fs-md-5">Get notified before your tasks are due.</p>
-                </div>
-            </div>
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
 
-            <!-- Slide 3 -->
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='images/team_collaboration.jpg') }}" class="d-block w-100 carousel-img" alt="Team Collaboration">
-                <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
-                    <h4 class="fs-5 fs-md-4">Seamless Team Collaboration</h4>
-                    <p class="fs-6 fs-md-5">Assign tasks and work together effortlessly.</p>
-                </div>
-            </div>
+.spinner {
+    width: 80px;
+    height: 80px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: #0d6efd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
 
-        </div>
+.loading-text {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
 
-        <!-- Carousel Controls -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#taskflowCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#taskflowCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-</section>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-<!-- Testimonials Section -->
-<section class="container py-5 text-center text-dark">
-    <h2 class="fw-bold">What Users Say</h2>
-    <div class="row mt-4 g-4">
-        <!-- Testimonial 1 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="p-4 border rounded shadow-sm h-100">
-                <p>"TaskFlow transformed how I work. My productivity skyrocketed!"</p>
-                <h5 class="fw-bold mt-3">- Alex B.</h5>
-            </div>
-        </div>
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Main Content Transition */
+.main-content {
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.main-content.visible {
+    opacity: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide loading screen and show main content after a delay
+    setTimeout(function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const mainContent = document.getElementById('main-content');
         
-        <!-- Testimonial 2 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="p-4 border rounded shadow-sm h-100">
-                <p>"Managing tasks with my team has never been easier. Highly recommend!"</p>
-                <h5 class="fw-bold mt-3">- Sophia R.</h5>
-            </div>
-        </div>
+        // Fade out loading screen
+        loadingScreen.style.opacity = '0';
         
-        <!-- Testimonial 3 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="p-4 border rounded shadow-sm h-100">
-                <p>"A game-changer for freelancers. I never miss deadlines anymore!"</p>
-                <h5 class="fw-bold mt-3">- Mark W.</h5>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Footer -->
-<footer class="bg-dark text-white text-center py-4">
-    <p>&copy; 2025 TaskFlow. All Rights Reserved.</p>
-</footer>
-
+        // Show and fade in main content
+        mainContent.style.display = 'block';
+        setTimeout(() => {
+            mainContent.classList.add('visible');
+        }, 50);
+        
+        // Remove loading screen from DOM after transition
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 500);
+    }, 1500); // Adjust this delay as needed (currently 1.5 seconds)
+});
+</script>
 {% endblock %}
