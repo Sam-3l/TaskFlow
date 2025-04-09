@@ -7,11 +7,19 @@
     <div class="task-header">
         <div class="header-content">
             <div class="title-row">
-                <h1 class="task-title">{{ task.title }}</h1>
+                <h1 class="task-title">
+                    <span id="task-title-text">{{ task.title }}</span>
+                    <button class="btn-edit-title" title="Edit title">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </h1>
                 &nbsp;
-                <span class="badge priority-{{ task.priority|lower|replace('-', '') }}">
+                <span class="badge priority-{{ task.priority|lower|replace('-', '') }}" id="priority-badge">
                     <i class="fas fa-{% if task.priority == 'critical' %}exclamation-triangle{% elif task.priority == 'high-priority' %}arrow-up{% elif task.priority == 'medium-priority' %}equals{% elif task.priority == 'low-priority' %}arrow-down{% else %}circle{% endif %}"></i>
                     {{ task.priority|replace('-', ' ')|title }}
+                    <button class="btn-edit-priority" title="Change priority">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </span>
             </div>
             
@@ -21,11 +29,17 @@
                         <i class="fas fa-calendar-day"></i>
                     </div>
                     <div class="deadline-details">
-                        <span class="deadline-date">{{ task.deadline | datetime_format }}</span>
+                        <span class="deadline-date" id="deadline-text">{{ task.deadline | datetime_format if task.deadline else 'No deadline' }}
+                        <button class="btn-edit-deadline" title="Edit deadline">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        </span>
+                        {% if task.status != 'completed' and task.deadline %}
                         <span class="time-remaining">
                             <i class="fas fa-hourglass-half"></i>
-                            {{ task.deadline_from_now|deadline_display if task.deadline and task.status != 'completed' }}
+                            {{ task.deadline_from_now|deadline_display }}
                         </span>
+                        {% endif %}
                     </div>
                 </div>
                 
@@ -103,8 +117,16 @@
         <!-- Side Panel (Description & Stats) -->
         <div class="side-panel">
             <div class="description-card glass-card">
-                <h3 class="panel-title"><i class="fas fa-align-left"></i> Description</h3>
-                <p class="task-description">{{ task.description or "No description provided" }}</p>
+                <h3 class="panel-title">
+                    <i class="fas fa-align-left"></i> Description
+                    <button class="btn-edit-description" title="Edit description">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </h3>
+                <div class="description-content">
+                    <p class="task-description" id="task-description">{{ task.description or "No description provided" }}</p>
+                    <textarea class="description-edit" id="description-edit" style="display: none;">{{ task.description or "" }}</textarea>
+                </div>
             </div>
             
             <!-- Progress Gauge Card -->
@@ -370,6 +392,203 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Description editing
+    const descriptionEdit = document.getElementById('description-edit');
+    const taskDescription = document.getElementById('task-description');
+    const btnEditDescription = document.querySelector('.btn-edit-description');
+
+    btnEditDescription.addEventListener('click', function() {
+        taskDescription.style.display = 'none';
+        descriptionEdit.style.display = 'block';
+        descriptionEdit.focus();
+    });
+
+    descriptionEdit.addEventListener('blur', function() {
+        const newDescription = descriptionEdit.value.trim();
+        if (newDescription !== taskDescription.textContent.trim()) {
+            updateTaskDescription(newDescription);
+        }
+        taskDescription.style.display = 'block';
+        descriptionEdit.style.display = 'none';
+    });
+
+    // Priority editing with enhanced UI
+    const priorityBadge = document.getElementById('priority-badge');
+    const btnEditPriority = document.querySelector('.btn-edit-priority');
+    
+    btnEditPriority.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const priorities = ['critical', 'high-priority', 'medium-priority', 'low-priority', 'optional'];
+        const priorityIcons = {
+            'critical': 'exclamation-triangle',
+            'high-priority': 'arrow-up',
+            'medium-priority': 'equals',
+            'low-priority': 'arrow-down',
+            'optional': 'circle'
+        };
+        
+        let dropdown = document.querySelector('.priority-dropdown');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.className = 'priority-dropdown';
+            priorities.forEach(priority => {
+                const option = document.createElement('div');
+                option.className = 'priority-option';
+                option.innerHTML = `
+                    <i class="fas fa-${priorityIcons[priority]}"></i>
+                    <span>${priority.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                `;
+                option.dataset.priority = priority;
+                option.addEventListener('click', function() {
+                    updateTaskPriority(priority);
+                    dropdown.style.display = 'none';
+                });
+                dropdown.appendChild(option);
+            });
+            priorityBadge.appendChild(dropdown);
+        }
+        
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.priority-dropdown') && !e.target.closest('.btn-edit-priority')) {
+            const dropdown = document.querySelector('.priority-dropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+    });
+
+    // Deadline editing with enhanced UI
+    const deadlineText = document.getElementById('deadline-text');
+    const btnEditDeadline = document.querySelector('.btn-edit-deadline');
+    
+    btnEditDeadline.addEventListener('click', function() {
+        const currentDate = '{{ task.deadline.strftime("%Y-%m-%d") if task.deadline else "" }}';
+        const deadlineEdit = document.createElement('div');
+        deadlineEdit.className = 'deadline-edit';
+        deadlineEdit.innerHTML = `
+            <input type="date" value="${currentDate}" class="form-control">
+            <button class="btn btn-primary btn-sm">Save</button>
+            <button class="btn btn-outline-secondary btn-sm">Clear</button>
+        `;
+        
+        deadlineText.replaceWith(deadlineEdit);
+        
+        const saveBtn = deadlineEdit.querySelector('.btn-primary');
+        const clearBtn = deadlineEdit.querySelector('.btn-outline-secondary');
+        const dateInput = deadlineEdit.querySelector('input[type="date"]');
+        
+        saveBtn.addEventListener('click', function() {
+            updateTaskDeadline(dateInput.value);
+            deadlineEdit.replaceWith(deadlineText);
+        });
+        
+        clearBtn.addEventListener('click', function() {
+            updateTaskDeadline(null);
+            deadlineEdit.replaceWith(deadlineText);
+        });
+    });
+
+    // Title editing with enhanced UI
+    const taskTitleText = document.getElementById('task-title-text');
+    const btnEditTitle = document.querySelector('.btn-edit-title');
+    
+    btnEditTitle.addEventListener('click', function() {
+        const titleEdit = document.createElement('input');
+        titleEdit.type = 'text';
+        titleEdit.className = 'title-edit';
+        titleEdit.value = taskTitleText.textContent.trim();
+        
+        taskTitleText.replaceWith(titleEdit);
+        titleEdit.style.display = 'block';
+        titleEdit.focus();
+        
+        titleEdit.addEventListener('blur', function() {
+            const newTitle = titleEdit.value.trim();
+            if (newTitle && newTitle !== taskTitleText.textContent.trim()) {
+                updateTaskTitle(newTitle);
+            }
+            titleEdit.replaceWith(taskTitleText);
+        });
+    });
+});
+
+// API functions
+function updateTaskDescription(description) {
+    const taskId = document.getElementById('task-id').value;
+    fetch(`/tasks/${taskId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.getElementById('csrf-token').value
+        },
+        body: JSON.stringify({ description })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('task-description').textContent = description || 'No description provided';
+        }
+    });
+}
+
+function updateTaskPriority(priority) {
+    const taskId = document.getElementById('task-id').value;
+    fetch(`/tasks/${taskId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.getElementById('csrf-token').value
+        },
+        body: JSON.stringify({ priority })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Reload to update the UI with new priority
+        }
+    });
+}
+
+function updateTaskDeadline(deadline) {
+    const taskId = document.getElementById('task-id').value;
+    fetch(`/tasks/${taskId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.getElementById('csrf-token').value
+        },
+        body: JSON.stringify({ deadline })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Reload to update the UI with new deadline
+        }
+    });
+}
+
+function updateTaskTitle(title) {
+    const taskId = document.getElementById('task-id').value;
+    fetch(`/tasks/${taskId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.getElementById('csrf-token').value
+        },
+        body: JSON.stringify({ title })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('task-title-text').textContent = title;
+        }
+    });
+}
 </script>
 
 <style>
@@ -980,6 +1199,188 @@ document.addEventListener('DOMContentLoaded', function() {
     
     .progress-comparison {
         color: #777 !important;
+    }
+
+    /* Add these styles to your existing CSS */
+    .btn-edit-title, .btn-edit-priority, .btn-edit-deadline, .btn-edit-description {
+        background: none;
+        border: none;
+        color: #6c757d;
+        padding: 4px 8px;
+        margin-left: 0px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: 0;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    /* Show edit buttons on hover */
+    .task-title:hover .btn-edit-title,
+    #priority-badge:hover .btn-edit-priority,
+    .deadline-details:hover .btn-edit-deadline,
+    .panel-title:hover .btn-edit-description {
+        opacity: 0.6;
+    }
+
+    .btn-edit-title:hover, .btn-edit-priority:hover, .btn-edit-deadline:hover, .btn-edit-description:hover {
+        opacity: 1;
+        color: black;
+    }
+
+    .description-edit {
+        width: 100%;
+        min-height: 120px;
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-top: 12px;
+        font-family: inherit;
+        resize: vertical;
+        transition: all 0.2s ease;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .description-edit:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        background-color: #fff;
+    }
+
+    .priority-dropdown {
+        position: absolute;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: none;
+        z-index: 1000;
+        min-width: 180px;
+        overflow: hidden;
+        animation: dropdownFade 0.2s ease;
+    }
+
+    @keyframes dropdownFade {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .priority-option {
+        padding: 10px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .priority-option:hover {
+        background-color: #f8f9fa;
+    }
+
+    .priority-option i {
+        width: 16px;
+        text-align: center;
+    }
+
+    .deadline-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .deadline-edit input[type="date"] {
+        padding: 6px 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .deadline-edit input[type="date"]:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    }
+
+    .deadline-edit .btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .title-edit {
+        display: none;
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .title-edit:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        background-color: #fff;
+    }
+
+    /* Enhance existing elements */
+    .task-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .priority-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .deadline-details {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    /* Add smooth transitions for all interactive elements */
+    .task-card, .btn, .badge, .form-control {
+        transition: all 0.2s ease;
+    }
+
+    /* Enhance focus states */
+    .btn:focus, .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
     }
 </style>
 

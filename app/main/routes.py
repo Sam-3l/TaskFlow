@@ -599,3 +599,40 @@ def delete_todo(todo_id):
     db.session.commit()
 
     return jsonify({'message': 'Todo deleted'}), 200
+
+@main.route("/tasks/<int:task_id>/update", methods=["POST"])
+@login_required
+def update_task(task_id):
+    from app import db
+    
+    try:
+        # Validate CSRF token
+        validate_csrf(request.headers.get('X-CSRFToken'))
+    except ValidationError:
+        return jsonify({"error": "Invalid CSRF token"}), 400
+
+    task = Task.query.get_or_404(task_id)
+    
+    # Check if user has permission to edit this task
+    if current_user not in task.assigned_users:
+        return jsonify({"error": "You don't have permission to edit this task"}), 403
+
+    data = request.get_json()
+    
+    # Update task fields if they are present in the request
+    if 'title' in data:
+        task.title = data['title']
+    if 'description' in data:
+        task.description = data['description']
+    if 'priority' in data:
+        task.priority = data['priority']
+    if 'deadline' in data:
+        if data['deadline']:
+            task.deadline = datetime.strptime(data['deadline'], '%Y-%m-%d')
+        else:
+            task.deadline = None
+    
+    task.updated_at = func.now()
+    db.session.commit()
+
+    return jsonify({"success": True}), 200
