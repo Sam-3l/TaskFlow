@@ -40,7 +40,7 @@
     <!-- Projects Grid -->
     <div class="row g-4">
         {% for project in projects %}
-        <div class="col-md-6 col-lg-4" data-aos="fade-up">
+        <div class="col-md-6 col-lg-4">
             <div class="card project-card h-100 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -197,14 +197,4 @@
         border-radius: 10px;
     }
 </style>
-
-<!-- AOS Library & JS -->
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-<script>
-    AOS.init({
-        duration: 1000,
-        easing: 'ease-in-out',
-        once: true
-    });
-</script>
 {% endblock %}
