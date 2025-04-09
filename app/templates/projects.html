@@ -37,34 +37,6 @@
         </div>
     </div>
 
-    <!-- Project Stats -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3" data-aos="fade-up">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Total Projects</h5>
-                <h2 class="fw-bold text-primary">{{ stats.total_projects }}</h2>
-            </div>
-        </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Active Projects</h5>
-                <h2 class="fw-bold text-success">{{ stats.active_projects }}</h2>
-            </div>
-        </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Total Tasks</h5>
-                <h2 class="fw-bold text-warning">{{ stats.total_tasks }}</h2>
-            </div>
-        </div>
-        <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
-            <div class="card p-3 text-center shadow-sm equal-height">
-                <h5 class="text-muted">Team Members</h5>
-                <h2 class="fw-bold text-info">{{ stats.total_members }}</h2>
-            </div>
-        </div>
-    </div>
-
     <!-- Projects Grid -->
     <div class="row g-4">
         {% for project in projects %}
@@ -97,7 +69,7 @@
                         <div class="d-flex align-items-center">
                             {% for member in project.members[:3] %}
                             <div class="avatar-circle" title="{{ member.fname }} {{ member.lname }}">
-                                <img src="{{ url_for('static', filename='profile_images/' + member.profile_img) }}" alt="{{ member.fname }}">
+                                <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" alt="{{ member.fname }}">
                             </div>
                             {% endfor %}
                             {% if project.members|length > 3 %}
