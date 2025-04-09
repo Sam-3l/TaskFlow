@@ -157,7 +157,36 @@ def tasks():
 @main.route("/dashboard/projects")
 @login_required
 def projects():
-    return render_template("projects.html", user=current_user, active_page="projects")
+    # Get all projects where the user is a member
+    user_projects = Project.query.filter(Project.members.any(id=current_user.id)).all()
+    
+    # Calculate project statistics
+    stats = {
+        "total_projects": len(user_projects),
+        "active_projects": len([p for p in user_projects if p.task_assignment]),
+        "total_tasks": sum(len(p.task_assignment) for p in user_projects),
+        "total_members": sum(len(p.members) for p in user_projects)
+    }
+    
+    # Add progress and task count to each project
+    for project in user_projects:
+        # Calculate project progress based on completed tasks
+        total_tasks = len(project.task_assignment)
+        completed_tasks = len([t for t in project.task_assignment if t.status == "completed"])
+        project.progress = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
+        project.task_count = total_tasks
+        
+        # Format deadline if exists
+        if hasattr(project, 'deadline') and project.deadline:
+            project.deadline = project.deadline.strftime("%b %d, %Y")
+        else:
+            project.deadline = "No deadline"
+    
+    return render_template("projects.html", 
+                         user=current_user, 
+                         active_page="projects",
+                         projects=user_projects,
+                         stats=stats)
 
 @main.route("/dashboard/projects/new", methods=['GET', 'POST'])
 @login_required

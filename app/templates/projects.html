@@ -2,39 +2,137 @@
 {% block title %}{{ user["fname"] }} | Projects{% endblock %}
 
 {% block content %}
-
-<div class="container-fluid projects">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 text-dark mb-0">Your Projects</h1>
-        <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
-                Sort by
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Priority</a></li>
-                <li><a class="dropdown-item" href="#">Deadline</a></li>
-                <li><a class="dropdown-item" href="#">Last Modified & Status</a></li>
-            </ul>
+<div class="container-fluid projects px-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-dark mb-0">Your Projects</h1>
+                    <p class="text-muted">Manage and track your project progress</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-sort"></i> Sort by
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-star"></i> Priority</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-clock"></i> Deadline</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sync"></i> Last Modified</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock"></i> Private</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-globe"></i> Public</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-check-circle"></i> Active</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <p>Coming soon</p>
-    Project page in development
-    
-<div>
+    <!-- Project Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3" data-aos="fade-up">
+            <div class="card p-3 text-center shadow-sm equal-height">
+                <h5 class="text-muted">Total Projects</h5>
+                <h2 class="fw-bold text-primary">{{ stats.total_projects }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="card p-3 text-center shadow-sm equal-height">
+                <h5 class="text-muted">Active Projects</h5>
+                <h2 class="fw-bold text-success">{{ stats.active_projects }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="card p-3 text-center shadow-sm equal-height">
+                <h5 class="text-muted">Total Tasks</h5>
+                <h2 class="fw-bold text-warning">{{ stats.total_tasks }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+            <div class="card p-3 text-center shadow-sm equal-height">
+                <h5 class="text-muted">Team Members</h5>
+                <h2 class="fw-bold text-info">{{ stats.total_members }}</h2>
+            </div>
+        </div>
+    </div>
 
-<a href="/dashboard/projects/new" class="btn btn-primary btn-lg floating-action-button shadow">
-    <i class="fas fa-plus"></i>
-</a>
+    <!-- Projects Grid -->
+    <div class="row g-4">
+        {% for project in projects %}
+        <div class="col-md-6 col-lg-4" data-aos="fade-up">
+            <div class="card project-card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">{{ project.title }}</h5>
+                            <span class="badge {% if project.type == 'private' %}bg-secondary{% else %}bg-primary{% endif %}">
+                                {{ project.type|title }}
+                            </span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Edit</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-users"></i> Manage Members</a></li>
+                                <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash"></i> Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted mb-3">{{ project.description }}</p>
+                    <div class="progress mb-3" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ project.progress }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            {% for member in project.members[:3] %}
+                            <div class="avatar-circle" title="{{ member.fname }} {{ member.lname }}">
+                                <img src="{{ url_for('static', filename='profile_images/' + member.profile_img) }}" alt="{{ member.fname }}">
+                            </div>
+                            {% endfor %}
+                            {% if project.members|length > 3 %}
+                            <div class="avatar-circle more-members" title="More members">
+                                +{{ project.members|length - 3 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-tasks"></i> {{ project.task_count }} tasks
+                            </span>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-calendar"></i> {{ project.deadline }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Floating Action Button -->
+    <a href="/dashboard/projects/new" class="btn btn-primary btn-lg floating-action-button shadow">
+        <i class="fas fa-plus"></i>
+    </a>
+</div>
 
 <!-- Flash Messages -->
 {% with messages = get_flashed_messages() %}
     {% for message in messages %}
         {% if message %}
           <div id="flash-message" class="flash-message">
-            <span>
-                {{ message }}
-            </span>
+            <span>{{ message }}</span>
             <button id="close-btn" class="close-btn">&times;</button>
           </div>
           <script>
@@ -47,11 +145,94 @@
 {% endwith %}
 
 <style>
-    .projects{
-        margin-top: 100px;
-        padding-left: 3rem;
-        padding-right: 3rem;
+    .projects {
+        margin-top: 70px;
+        padding: 2rem;
+    }
+
+    .project-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 12px;
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-left: -10px;
+        border: 2px solid #fff;
+    }
+
+    .avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .more-members {
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .floating-action-button {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .floating-action-button:hover {
+        transform: scale(1.1);
+    }
+
+    .equal-height {
+        height: 100%;
+    }
+
+    .dropdown-item i {
+        width: 20px;
+        margin-right: 8px;
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.8em;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 10px;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
     }
 </style>
 
+<!-- AOS Library & JS -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1000,
+        easing: 'ease-in-out',
+        once: true
+    });
+</script>
 {% endblock %}
