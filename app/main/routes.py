@@ -175,12 +175,6 @@ def projects():
         completed_tasks = len([t for t in project.task_assignment if t.status == "completed"])
         project.progress = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
         project.task_count = total_tasks
-        
-        # Format deadline if exists
-        if hasattr(project, 'deadline') and project.deadline:
-            project.deadline = project.deadline.strftime("%b %d, %Y")
-        else:
-            project.deadline = "No deadline"
     
     return render_template("projects.html", 
                          user=current_user, 
