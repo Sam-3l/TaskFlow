@@ -86,10 +86,10 @@
                             {% endif %}
                         </div>
                         <div class="d-flex gap-2">
-                            <span class="badge bg-light text-dark">
+                            <span class="badge text-dark">
                                 <i class="fas fa-tasks"></i> {{ project.task_count }} tasks
                             </span>
-                            <span class="badge bg-light text-dark">
+                            <span class="badge text-dark">
                                 <i class="fas fa-thumbs-up"></i> {{ project.upvotes|length }} upvotes
                             </span>
                         </div>
@@ -133,6 +133,8 @@
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         border: none;
         border-radius: 12px;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .project-card:hover {
