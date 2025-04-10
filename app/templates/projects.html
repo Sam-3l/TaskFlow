@@ -45,10 +45,17 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h5 class="card-title mb-1">{{ project.title }}</h5>
-                            <span class="badge {% if project.type == 'private' %}bg-secondary{% else %}bg-primary{% endif %}">
-                                {{ project.type|title }}
-                            </span>
+                            <h5 class="card-title mb-3">{{ project.title }}</h5>
+                            <div class="d-flex gap-2">
+                                <span class="badge {% if project.type == 'private' %}bg-secondary{% else %}bg-primary{% endif %}">
+                                    {{ project.type|title }}
+                                </span>
+                                <span class="badge {% if project.user_role == 'project_manager' %}bg-primary
+                                                  {% elif project.user_role == 'task_coordinator' %}bg-info
+                                                  {% else %}bg-secondary{% endif %}">
+                                    {{ project.user_role.replace('_', ' ')|title }}
+                                </span>
+                            </div>
                         </div>
                         <div class="dropdown">
                             <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
