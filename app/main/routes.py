@@ -188,20 +188,23 @@ def projects():
 @main.route("/dashboard/projects/new", methods=['GET', 'POST'])
 @login_required
 def create_projects():
-    # Ensure upload directories exist
-    project_covers_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'project_covers')
-    os.makedirs(project_covers_dir, exist_ok=True)
-    
     from app import db
     
     form = CreateProject()
     if form.validate_on_submit():
-        project = Project(
-            title=form.title.data,
-            description=form.description.data,
-            type=form.type.data,
-            project_links=form.project_links.data
-        )
+        form_data = form.data
+        form_data.pop("submit", None)
+        form_data.pop("csrf_token", None)
+        
+        # Handle empty project_links
+        if not form_data.get('project_links', '').strip():
+            form_data['project_links'] = None
+            
+        # Remove cover_image from form_data as we'll handle it separately
+        form_data.pop("cover_image", None)
+        
+        # Create the project
+        project = Project(**form_data)
         
         # Handle cover image upload
         if form.cover_image.data:
@@ -211,25 +214,31 @@ def create_projects():
                 # Generate unique filename
                 base, ext = os.path.splitext(filename)
                 filename = f"{base}_{int(time.time())}{ext}"
-                file.save(os.path.join(project_covers_dir, filename))
+                # Ensure the upload directory exists
+                upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'project_covers')
+                os.makedirs(upload_dir, exist_ok=True)
+                # Save the file
+                file.save(os.path.join(upload_dir, filename))
                 project.cover_image = filename
         
         db.session.add(project)
-        db.session.commit()
+        db.session.commit()  # Commit first to get project.id
         
-        # Add creator as project manager
-        membership_record = membership.insert().values(
-            project_id=project.id,
-            user_id=current_user.id,
-            role="project_manager",
-            status="active"
+        # Add the creator as a project manager
+        db.session.execute(
+            membership.insert().values(
+                project_id=project.id,  # Now we have the project.id
+                user_id=current_user.id,
+                role="project_manager",
+                status="active"
+            )
         )
-        db.session.execute(membership_record)
         db.session.commit()
         
-        flash("Project created successfully!", "success")
+        flash("Project created successfully", "success")
         return redirect(url_for("main.projects"))
-    return render_template("new_project.html", form=form, user=current_user, active_page="projects")
+        
+    return render_template("new_project.html", user=current_user, active_page="projects", form=form)
 
 @main.route("/profile")
 @login_required
