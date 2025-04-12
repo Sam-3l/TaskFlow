@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login.login_manager import LoginManager
 import os
-from config import DevelopmentConfig, TestingConfig, DeploymentConfig
+from config import DevelopmentConfig, DeploymentConfig
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -16,14 +16,11 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__)
     
-    # Determine which config to use based on environment
-    env = os.environ.get('FLASK_ENV', 'development')
-    if env == 'production':
-        app.config.from_object(DeploymentConfig)
-    elif env == 'testing':
-        app.config.from_object(TestingConfig)
-    else:
+    # Determine which config to use based on DEBUG setting
+    if os.environ.get('DEBUG', 'True').lower() == 'true':
         app.config.from_object(DevelopmentConfig)
+    else:
+        app.config.from_object(DeploymentConfig)
 
     # Ensure upload directories exist
     upload_dirs = [
@@ -37,7 +34,6 @@ def create_app():
     # Create subdirectories
     for directory in upload_dirs:
         os.makedirs(directory, exist_ok=True)
-        print(f"Created directory: {directory}")  # Debug print
 
     csrf.init_app(app)
     db.init_app(app)

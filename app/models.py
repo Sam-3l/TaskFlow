@@ -4,6 +4,7 @@ from . import db
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
+import random
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -126,7 +127,7 @@ class Project(db.Model):
     description = db.Column(db.String(255), nullable=False)
     type = db.Column(db.String(10), default="private")
     project_links = db.Column(db.String(255), nullable=True)
-    cover_image = db.Column(db.String(255), nullable=True, default="default_project.jpg")
+    cover_image = db.Column(db.String(255), nullable=True, default=lambda: f"default_project{random.randint(1, 3)}.jpg")
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
     members = db.relationship("User", secondary=membership, backref="member_to")
     upvotes = db.relationship("User", secondary=upvotes, backref="upvote_to")
