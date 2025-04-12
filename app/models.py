@@ -126,6 +126,7 @@ class Project(db.Model):
     description = db.Column(db.String(255), nullable=False)
     type = db.Column(db.String(10), default="private")
     project_links = db.Column(db.String(255), nullable=True)
+    cover_image = db.Column(db.String(255), nullable=True, default="default_project.jpg")
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
     members = db.relationship("User", secondary=membership, backref="member_to")
     upvotes = db.relationship("User", secondary=upvotes, backref="upvote_to")

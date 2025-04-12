@@ -63,6 +63,16 @@
                     {% endif %}
                 </div>
 
+                <!-- Cover Image Field -->
+                <div class="form-group floating">
+                    {{ form.cover_image(class='form-input file-input', accept='image/*') }}
+                    {{ form.cover_image.label(class='form-label') }}
+                    {% if form.cover_image.errors %}
+                        <span class="error-message">{{ form.cover_image.errors[0] }}</span>
+                    {% endif %}
+                    <div class="image-preview" id="imagePreview"></div>
+                </div>
+
                 <!-- Project Links Field -->
                 <div class="form-group floating">
                     {{ form.project_links(class='form-input', placeholder=' ') }}
@@ -339,5 +349,52 @@
         50% { width: 80px; }
         100% { width: 60px; }
     }
+
+    /* Add to existing styles */
+    .file-input {
+        padding: 0.5rem;
+        border: 1px dashed rgba(0,0,0,0.2);
+        border-radius: 8px;
+        background: var(--glass-bg);
+        cursor: pointer;
+    }
+
+    .file-input:hover {
+        border-color: var(--primary-blue);
+    }
+
+    .image-preview {
+        margin-top: 1rem;
+        max-width: 100%;
+        height: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: none;
+    }
+
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 </style>
+
+<script>
+    // Add to existing scripts
+    document.getElementById('cover_image').addEventListener('change', function(e) {
+        const preview = document.getElementById('imagePreview');
+        const file = e.target.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.style.display = 'block';
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+</script>
 {% endblock %}

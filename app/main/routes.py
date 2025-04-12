@@ -1,6 +1,6 @@
 import math
 from flask.helpers import flash
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
@@ -12,6 +12,9 @@ import plotly
 import plotly.graph_objs as go
 import pandas as pd
 import json
+import os
+from werkzeug.utils import secure_filename
+import time
 
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project
 from app.forms import CreateTask, CreateProject
@@ -185,38 +188,48 @@ def projects():
 @main.route("/dashboard/projects/new", methods=['GET', 'POST'])
 @login_required
 def create_projects():
+    # Ensure upload directories exist
+    project_covers_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'project_covers')
+    os.makedirs(project_covers_dir, exist_ok=True)
+    
     from app import db
     
     form = CreateProject()
     if form.validate_on_submit():
-        form_data = form.data
-        form_data.pop("submit", None)
-        form_data.pop("csrf_token", None)
-        
-        # Handle empty project_links
-        if not form_data.get('project_links', '').strip():
-            form_data['project_links'] = None
-        
-        # Create the project
-        project = Project(**form_data)
-        db.session.add(project)
-        db.session.commit()  # Commit first to get project.id
-        
-        # Add the creator as a project manager
-        db.session.execute(
-            membership.insert().values(
-                project_id=project.id,  # Now we have the project.id
-                user_id=current_user.id,
-                role="project_manager",
-                status="active"
-            )
+        project = Project(
+            title=form.title.data,
+            description=form.description.data,
+            type=form.type.data,
+            project_links=form.project_links.data
         )
+        
+        # Handle cover image upload
+        if form.cover_image.data:
+            file = form.cover_image.data
+            if file:
+                filename = secure_filename(file.filename)
+                # Generate unique filename
+                base, ext = os.path.splitext(filename)
+                filename = f"{base}_{int(time.time())}{ext}"
+                file.save(os.path.join(project_covers_dir, filename))
+                project.cover_image = filename
+        
+        db.session.add(project)
         db.session.commit()
         
-        flash("Project created successfully", "success")
-        return redirect(url_for("main.projects"))
+        # Add creator as project manager
+        membership_record = membership.insert().values(
+            project_id=project.id,
+            user_id=current_user.id,
+            role="project_manager",
+            status="active"
+        )
+        db.session.execute(membership_record)
+        db.session.commit()
         
-    return render_template("new_project.html", user=current_user, active_page="projects", form=form)
+        flash("Project created successfully!", "success")
+        return redirect(url_for("main.projects"))
+    return render_template("new_project.html", form=form, user=current_user, active_page="projects")
 
 @main.route("/profile")
 @login_required

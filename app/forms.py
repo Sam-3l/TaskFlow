@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import SelectField, StringField, DateField, EmailField, TelField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Optional
 
@@ -55,5 +56,9 @@ class CreateProject(FlaskForm):
         ("public", "Public - Anyone can request to join")
     ])
     project_links = StringField("Project Links:", validators=[Optional(), Length(max=255)], render_kw={"placeholder":"Add relevant links (comma-separated)"})
+    cover_image = FileField("Cover Image:", validators=[
+        Optional(),
+        FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')
+    ])
     submit = SubmitField("Create Project")
     
