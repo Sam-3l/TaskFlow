@@ -249,6 +249,66 @@ def profile():
     dates = {'joined': formatted_date_joined, 'birth': formatted_dob}
     return render_template("profile.html", user=current_user, user_profile_info=current_user, active_page=None, dates=dates)
 
+@main.route('/update_profile', methods=['POST'])
+def update_profile():
+    from app import db
+
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+            
+            # Update user profile in database
+            # Example (adjust according to your ORM):
+            user = User.query.get(current_user.id)
+            user.fname = data.get('fname', user.fname)
+            user.lname = data.get('lname', user.lname)
+            user.bio = data.get('bio', user.bio)
+            user.phone = data.get('phone', user.phone)
+            user.dob = data.get('dob', user.dob)  # Ensure proper date parsing
+            user.address = data.get('address', user.address)
+            user.city = data.get('city', user.city)
+            user.state = data.get('state', user.state)
+            user.zip = data.get('zip', user.zip)
+            
+            db.session.commit()
+            return jsonify({'success': True}), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 400
+
+@main.route('/update_profile_image', methods=['POST'])
+def update_profile_image():
+    from app import db
+
+    if 'profile_image' not in request.files:
+        return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+    
+    file = request.files['profile_image']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'No selected file'}), 400
+    
+    if file:
+        try:
+            # Secure filename and save to profile images directory
+            filename = secure_filename(f"{current_user.id}_{file.filename}")
+            profile_img_path = os.path.join(main.config['UPLOAD_FOLDER'], 'profile', filename)
+            
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(profile_img_path), exist_ok=True)
+            file.save(profile_img_path)
+            
+            # Update user profile image in database
+            user = User.query.get(current_user.id)
+            user.profile_img = filename
+            db.session.commit()
+            
+            return jsonify({'success': True}), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+
 @main.route("/profile/edit")
 @login_required
 def edit_profile():
