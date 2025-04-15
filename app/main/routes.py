@@ -244,7 +244,7 @@ def create_projects():
 @login_required
 def profile():
     user = current_user
-    formatted_date_joined = format_date(user.date_joined.date() if isinstance(user.date_joined, datetime) else user.date_joined)
+    formatted_date_joined = format_date(user.joined_at.date() if isinstance(user.joined_at, datetime) else user.joined_at)
     formatted_dob = format_date(user.dob.date() if isinstance(user.dob, datetime) else user.dob)
     dates = {'joined': formatted_date_joined, 'birth': formatted_dob}
     return render_template("profile.html", user=current_user, user_profile_info=current_user, active_page=None, dates=dates)
@@ -262,8 +262,8 @@ def user(user_id):
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return "Not found. Check your url", 404
-    formatted_date_joined = format_date(user.date_joined)
-    formatted_dob = format_date(user.dob)
+    formatted_date_joined = format_date(user.joined_at.date() if isinstance(user.joined_at, datetime) else user.joined_at)
+    formatted_dob = format_date(user.dob.date() if isinstance(user.dob, datetime) else user.dob)
     dates = {'joined': formatted_date_joined, 'birth': formatted_dob}
     return render_template("profile.html", user=current_user, user_profile_info=user, active_page=None, dates=dates)
 
