@@ -250,6 +250,7 @@ def profile():
     return render_template("profile.html", user=current_user, user_profile_info=current_user, active_page=None, dates=dates)
 
 @main.route('/update_profile', methods=['POST'])
+@login_required
 def update_profile():
     from app import db
 
@@ -278,6 +279,7 @@ def update_profile():
             return jsonify({'success': False, 'error': str(e)}), 400
 
 @main.route('/update_profile_image', methods=['POST'])
+@login_required
 def update_profile_image():
     from app import db
 
@@ -290,15 +292,17 @@ def update_profile_image():
     
     if file:
         try:
-            # Secure filename and save to profile images directory
-            filename = secure_filename(f"{current_user.id}_{file.filename}")
-            profile_img_path = os.path.join(main.config['UPLOAD_FOLDER'], 'profile', filename)
+            # Generate filename
+            filename = f"profile_{current_user.id}.jpg"
+            save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'profile_img', filename)
             
             # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(profile_img_path), exist_ok=True)
-            file.save(profile_img_path)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
             
-            # Update user profile image in database
+            # Save the file
+            file.save(save_path)
+            
+            # Update database
             user = User.query.get(current_user.id)
             user.profile_img = filename
             db.session.commit()
@@ -308,11 +312,6 @@ def update_profile_image():
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
-
-@main.route("/profile/edit")
-@login_required
-def edit_profile():
-    pass
 
 @main.route("/user/<int:user_id>/profile")
 @login_required
