@@ -1,0 +1,49 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}{{ user_profile.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Profile Card -->
+    <div class="card shadow-sm">
+        <!-- Profile Header -->
+        <div class="position-relative">
+            <div class="profile-cover" style="height: 200px; background: linear-gradient(135deg, #6e8efb, #a777e3);"></div>
+            <div class="position-absolute" style="bottom: -75px; left: 30px;">
+                <img src="{{ url_for('static', filename='img/profile/' + user_profile.profile_img) }}" 
+                     class="rounded-circle border border-4 border-white shadow" 
+                     width="150" height="150" alt="Profile Picture">
+            </div>
+        </div>
+
+        <!-- Profile Body -->
+        <div class="card-body pt-5 mt-4">
+            <div class="mb-4">
+                <h1 class="h2 mb-1">{{ user_profile.fname }} {{ user_profile.lname }}</h1>
+                <p class="text-muted mb-0">@{{ user_profile.username }}</p>
+            </div>
+
+            <!-- Bio Section -->
+            <div class="mb-5">
+                <h3 class="h5 text-muted text-uppercase mb-3">About</h3>
+                <p class="text-muted">{{ user_profile.bio or "This user hasn't written a bio yet." }}</p>
+            </div>
+
+            <!-- Info Sections -->
+            <div class="row">
+                <!-- Public Info -->
+                <div class="col-md-6">
+                    <h3 class="h5 text-muted text-uppercase mb-3">Public Information</h3>
+                    <ul class="list-unstyled">
+                        {% if user_profile.joined_at %}
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-calendar-check text-primary me-3 mt-1"></i>
+                            <span>Joined {{ user_profile.joined_at.strftime('%B %Y') }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

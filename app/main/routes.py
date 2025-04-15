@@ -312,19 +312,17 @@ def update_profile_image():
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
-
-@main.route("/user/<int:user_id>/profile")
-@login_required
-def user(user_id):
-    if current_user.id == user_id:
-        return redirect(url_for("main.profile"))
-    user = User.query.filter_by(id=user_id).first()
-    if not user:
-        return "Not found. Check your url", 404
-    formatted_date_joined = format_date(user.joined_at.date() if isinstance(user.joined_at, datetime) else user.joined_at)
-    formatted_dob = format_date(user.dob.date() if isinstance(user.dob, datetime) else user.dob)
-    dates = {'joined': formatted_date_joined, 'birth': formatted_dob}
-    return render_template("profile.html", user=current_user, user_profile_info=user, active_page=None, dates=dates)
+        
+@main.route('/user/<username>')
+def public_profile(username):
+    # Check if user is viewing their own profile
+    if current_user.is_authenticated and current_user.username == username:
+        return redirect(url_for('main.profile'))
+    
+    # Get the requested user's profile
+    user_profile = User.query.filter_by(username=username).first_or_404()
+    
+    return render_template('public_profile.html', user_profile=user_profile)
 
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required
