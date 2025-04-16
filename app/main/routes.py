@@ -383,13 +383,14 @@ def connections():
     return render_template('connections.html', 
                          connections=connections,
                          followers=followers,
-                         user=current_user)
+                         user=current_user,
+                         active_page="connections")
 
 @main.route('/explore')
 @login_required
 def explore():
     from app import db
-    
+
     page = request.args.get('page', 1, type=int)
     query = request.args.get('q', '')
 
