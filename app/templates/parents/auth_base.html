@@ -63,12 +63,14 @@
                         Projects
                     </a></li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'people' %} active {% endif %}" href="/dashboard/people" id="people-link">
-                            <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg">
-                                <path d="m5.5 0c-.51 0-.95.35-1.22.88.45.54.72 1.28.72 2.13 0 .29-.03.55-.09.81.19.11.38.19.59.19.83 0 1.5-.9 1.5-2s-.67-2-1.5-2zm-3 1c-.83 0-1.5.9-1.5 2s.67 2 1.5 2 1.5-.9 1.5-2-.67-2-1.5-2zm4.75 3.16c-.43.51-1.02.82-1.69.84.27.38.44.84.44 1.34v.66h2v-1.66c0-.52-.31-.97-.75-1.19zm-6.5 1c-.44.22-.75.67-.75 1.19v1.66h5v-1.66c0-.52-.31-.97-.75-1.19-.45.53-1.06.84-1.75.84s-1.3-.32-1.75-.84z"/>
-                            </svg>&nbsp;
-                            People
-                    </a></li>
+                        <a class="nav-link {% if active_page == 'people' %} active {% endif %}" href={{ url_for('main.connections') }} id="people-link">
+                            <i class="bi bi-people"></i>&nbsp; Connections
+                                {% if current_user.get_connections().count() > 0 %}
+                                <span class="badge bg-primary rounded-pill ms-1">
+                                    {{ current_user.get_connections().count() }}
+                                </span>
+                                {% endif %}
+                        </a></li>
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'notif' %} active {% endif %}" href="/dashboard/notifications" id="notif-link">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">

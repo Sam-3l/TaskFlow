@@ -388,13 +388,35 @@ def connections():
 @main.route('/explore')
 @login_required
 def explore():
-    # Get users not yet connected (excluding self)
-    users = User.query.filter(
+    from app import db
+    
+    page = request.args.get('page', 1, type=int)
+    query = request.args.get('q', '')
+
+    # Base query - exclude current user and existing connections
+    users_query = User.query.filter(
         User.id != current_user.id,
         ~User.followers.any(id=current_user.id)
-    ).limit(50).all()
-    
-    return render_template('explore.html', users=users, user=current_user)
+    )
+
+    # Apply search filter if query exists
+    if query:
+        users_query = users_query.filter(
+            db.or_(
+                User.username.ilike(f'%{query}%'),
+                User.fname.ilike(f'%{query}%'),
+                User.lname.ilike(f'%{query}%')
+            )
+        )
+
+    # Paginate results (20 per page)
+    pagination = users_query.paginate(page=page, per_page=20, error_out=False)
+    users = pagination.items
+
+    return render_template('explore.html', 
+                         users=users,
+                         pagination=pagination,
+                         user=current_user)
 
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required

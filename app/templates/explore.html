@@ -1,0 +1,160 @@
+{% extends 'parents/auth_base.html' %}
+
+{% block title %}Explore Users{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="margin-top: 50px;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="bi bi-compass text-primary me-2"></i>
+                    Explore Users
+                </h2>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('main.connections') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-people-fill"></i> My Connections
+                        <span class="badge bg-primary ms-1">{{ current_user.get_connections().count() }}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Search Bar -->
+            <div class="mb-4">
+                <form class="d-flex" method="GET" action="{{ url_for('main.explore') }}">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control" placeholder="Search users..." 
+                               value="{{ request.args.get('q', '') }}">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Users Grid -->
+            {% if users %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for user in users %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
+                                 class="rounded-circle mb-3" width="100" height="100" alt="{{ user.username }}">
+                            <h5 class="card-title">{{ user.fname }} {{ user.lname }}</h5>
+                            <p class="text-muted mb-2">@{{ user.username }}</p>
+                            
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="{{ url_for('main.public_profile', username=user.username) }}" 
+                                   class="btn btn-sm btn-outline-primary flex-grow-1">
+                                    <i class="bi bi-person"></i> View
+                                </a>
+                                
+                                {% if not current_user.is_connected(user) %}
+                                <button class="btn btn-sm btn-primary flex-grow-1 connect-btn" 
+                                        data-user-id="{{ user.id }}">
+                                    <i class="bi bi-person-plus"></i> Connect
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-secondary flex-grow-1" disabled>
+                                    <i class="bi bi-check"></i> Connected
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.explore', page=pagination.prev_num, q=request.args.get('q', '')) }}">
+                            &laquo; Previous
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages() %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('main.explore', page=page_num, q=request.args.get('q', '')) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.explore', page=pagination.next_num, q=request.args.get('q', '')) }}">
+                            Next &raquo;
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people display-5 text-muted mb-3"></i>
+                <h4>No users found</h4>
+                <p class="text-muted">Try adjusting your search or invite others to join</p>
+                <a href="{{ url_for('main.connections') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Connections
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Connection Management JavaScript -->
+<script>
+$(document).ready(function() {
+    // Handle connect buttons
+    $('.connect-btn').click(function() {
+        const userId = $(this).data('user-id');
+        const card = $(this).closest('.col');
+        
+        $.ajax({
+            url: `/connect/${userId}`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    card.fadeOut(300, function() {
+                        $(this).remove();
+                        // Update connections count in navbar
+                        const connCount = parseInt($('#navConnectionsCount').text());
+                        $('#navConnectionsCount').text(connCount + 1);
+                    });
+                }
+            }
+        });
+    });
+});
+</script>
+
+<style>
+    .user-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #6e8efb;
+        border-color: #6e8efb;
+    }
+    .pagination .page-link {
+        color: #6e8efb;
+    }
+</style>
+{% endblock %}
