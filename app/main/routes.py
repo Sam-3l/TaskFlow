@@ -441,6 +441,53 @@ def search():
                          tasks=tasks,
                          user=current_user,)
 
+@main.route('/search/suggest')
+@login_required
+def search_suggest():
+    from app import db
+    
+    query = request.args.get('q', '').strip()
+    results = []
+    
+    if len(query) >= 2:  # Only search if query has at least 2 characters
+        # Users
+        users = User.query.filter(
+            User.id != current_user.id,
+            db.or_(
+                User.username.ilike(f'%{query}%'),
+                User.fname.ilike(f'%{query}%'),
+                User.lname.ilike(f'%{query}%')
+            )
+        ).limit(3).all()
+        
+        # Projects (user is member or public)
+        projects = Project.query.filter(
+            db.or_(
+                Project.title.ilike(f'%{query}%'),
+                Project.description.ilike(f'%{query}%')
+            ),
+            db.or_(
+                Project.type == 'public',
+                Project.members.any(id=current_user.id)
+            )
+        ).limit(3).all()
+        
+        # Format results
+        results = [
+            *[{
+                'type': 'user',
+                'name': f"{u.fname} {u.lname} (@{u.username})",
+                'username': u.username
+            } for u in users],
+            *[{
+                'type': 'project', 
+                'name': p.title,
+                'id': p.id
+            } for p in projects]
+        ]
+    
+    return jsonify(results)
+
 @main.route('/explore')
 @login_required
 def explore():
