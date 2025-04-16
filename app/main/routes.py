@@ -322,7 +322,7 @@ def public_profile(username):
     # Get the requested user's profile
     user_profile = User.query.filter_by(username=username).first_or_404()
     
-    return render_template('public_profile.html', user_profile=user_profile)
+    return render_template('public_profile.html', user_profile=user_profile, user=current_user)
 
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required

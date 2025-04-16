@@ -2,14 +2,14 @@
 {% block title %}{{ user_profile.username }}'s Profile{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5 profile">
     <!-- Profile Card -->
     <div class="card shadow-sm">
         <!-- Profile Header -->
         <div class="position-relative">
             <div class="profile-cover" style="height: 200px; background: linear-gradient(135deg, #6e8efb, #a777e3);"></div>
             <div class="position-absolute" style="bottom: -75px; left: 30px;">
-                <img src="{{ url_for('static', filename='img/profile/' + user_profile.profile_img) }}" 
+                <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user_profile.profile_img) }}" 
                      class="rounded-circle border border-4 border-white shadow" 
                      width="150" height="150" alt="Profile Picture">
             </div>
@@ -18,7 +18,7 @@
         <!-- Profile Body -->
         <div class="card-body pt-5 mt-4">
             <div class="mb-4">
-                <h1 class="h2 mb-1">{{ user_profile.fname }} {{ user_profile.lname }}</h1>
+                <h1 class="h2 mb-1 mt-2">{{ user_profile.fname }} {{ user_profile.lname }}</h1>
                 <p class="text-muted mb-0">@{{ user_profile.username }}</p>
             </div>
 
@@ -46,4 +46,14 @@
         </div>
     </div>
 </div>
+
+<style>
+    .profile{
+        margin-top: 60px;
+    }
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
 {% endblock %}

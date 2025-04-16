@@ -65,3 +65,7 @@ ehthumbs.db
 
 # Virtual environment
 pip-wheel-metadata/
+
+# static uploads directory
+/app/static/images/uploads/profile_img/
+/app/static/images/uploads/project_covers/
