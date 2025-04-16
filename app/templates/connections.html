@@ -1,0 +1,198 @@
+{% extends 'parents/auth_base.html' %}
+
+{% block title %}My Connections{% endblock %}
+
+{% block content %}
+<div class="container py-5 connections">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="bi bi-people-fill text-primary me-2"></i>
+                    My Connections
+                </h2>
+                <span class="badge bg-primary">
+                    {{ connections|length }} connection{% if connections|length != 1 %}s{% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Connection Tabs -->
+            <ul class="nav nav-tabs mb-4" id="connectionsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link con-nav-link active" id="connections-tab" data-bs-toggle="tab" 
+                            data-bs-target="#connections" type="button" role="tab">
+                        My Connections
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link con-nav-link" id="followers-tab" data-bs-toggle="tab" 
+                            data-bs-target="#followers" type="button" role="tab">
+                        Followers
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="connectionsTabContent">
+                <!-- My Connections Tab -->
+                <div class="tab-pane fade show active" id="connections" role="tabpanel">
+                    {% if connections %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for user in connections %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
+                                         class="rounded-circle mb-3" width="100" height="100">
+                                    <h5 class="card-title">{{ user.fname }} {{ user.lname }}</h5>
+                                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('main.public_profile', username=user.username) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            View Profile
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger disconnect-btn" 
+                                                data-user-id="{{ user.id }}">
+                                            Disconnect
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people display-5 text-muted mb-3"></i>
+                        <h4>No connections yet</h4>
+                        <p class="text-muted">Connect with other users to see them here</p>
+                        <a href="{{ url_for('main.explore') }}" class="btn btn-primary">
+                            <i class="bi bi-compass"></i> Explore Users
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Followers Tab -->
+                <div class="tab-pane fade" id="followers" role="tabpanel">
+                    {% if followers %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for user in followers %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
+                                         class="rounded-circle mb-3" width="100" height="100">
+                                    <h5 class="card-title">{{ user.fname }} {{ user.lname }}</h5>
+                                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('main.public_profile', username=user.username) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            View Profile
+                                        </a>
+                                        {% if not current_user.is_connected(user) %}
+                                        <button class="btn btn-sm btn-primary connect-btn" 
+                                                data-user-id="{{ user.id }}">
+                                            Connect Back
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-heart display-5 text-muted mb-3"></i>
+                        <h4>No followers yet</h4>
+                        <p class="text-muted">When someone connects with you, they'll appear here</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Connection Management JavaScript -->
+<script>
+$(document).ready(function() {
+    // Handle disconnect buttons
+    $('.disconnect-btn').click(function() {
+        const userId = $(this).data('user-id');
+        const card = $(this).closest('.col');
+        
+        $.ajax({
+            url: `/disconnect/${userId}`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    card.fadeOut(300, function() {
+                        $(this).remove();
+                        updateConnectionCount(-1);
+                    });
+                }
+            }
+        });
+    });
+    
+    // Handle connect buttons in followers tab
+    $('.connect-btn').click(function() {
+        const userId = $(this).data('user-id');
+        const card = $(this).closest('.col');
+        
+        $.ajax({
+            url: `/connect/${userId}`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    card.fadeOut(300, function() {
+                        $(this).remove();
+                        updateConnectionCount(1);
+                    });
+                }
+            }
+        });
+    });
+    
+    function updateConnectionCount(change) {
+        const badge = $('.nav-link.active .badge');
+        const current = parseInt(badge.text());
+        badge.text(current + change);
+    }
+});
+</script>
+
+<style>
+    .connections{
+        margin-top: 60px;
+    }
+    .connection-card {
+        transition: all 0.3s ease;
+    }
+    .connection-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .nav-tabs .nav-link {
+        font-weight: 500;
+    }
+    .con-nav-link {
+        color: rgba(0,0,0,0.8) !important;
+        transition: background 0.3s ease;
+    }
+    
+    .con-nav-link.active {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

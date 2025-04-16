@@ -58,7 +58,7 @@ class CreateProject(FlaskForm):
     project_links = StringField("Project Links:", validators=[Optional(), Length(max=255)], render_kw={"placeholder":"Add relevant links (comma-separated)"})
     cover_image = FileField("Cover Image:", validators=[
         Optional(),
-        FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')
+        FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'svg', 'bmp', 'tiff'], 'Images only!')
     ])
     submit = SubmitField("Create Project")
     

@@ -4,6 +4,12 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 import random
 
+connections = db.Table('user_connections',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('timestamp', db.DateTime, default=func.current_timestamp())
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(150), nullable=False)
@@ -29,6 +35,31 @@ class User(UserMixin, db.Model):
     )
 
     task_assignment = db.relationship("TaskAssignment", back_populates="user", cascade="all, delete-orphan")
+
+    followed = db.relationship(
+        'User', secondary=connections,
+        primaryjoin=(connections.c.follower_id == id),
+        secondaryjoin=(connections.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+    
+    def connect(self, user):
+        if not self.is_connected(user):
+            self.followed.append(user)
+            return self
+    
+    def disconnect(self, user):
+        if self.is_connected(user):
+            self.followed.remove(user)
+            return self
+    
+    def is_connected(self, user):
+        return self.followed.filter(
+            connections.c.followed_id == user.id).count() > 0
+    
+    def get_connections(self):
+        return User.query.join(
+            connections, (connections.c.followed_id == User.id)).filter(
+                connections.c.follower_id == self.id)
     
     def __init__(self, gender, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -42,7 +73,7 @@ class User(UserMixin, db.Model):
     
     def __repr__(self) -> str:
         return f"<user {self.username}>"
-
+    
 # Association Table for Many to Many Relationship between User and Task
 task_user_association = db.Table(
     'task_user_association',

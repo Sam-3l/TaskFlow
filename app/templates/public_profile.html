@@ -1,4 +1,9 @@
-{% extends 'parents/auth_base.html' %}
+{% if user.is_authenticated %}
+    {% extends 'parents/auth_base.html' %}
+{% else %}
+    {% extends 'parents/base.html' %}
+{% endif %}
+
 {% block title %}{{ user_profile.username }}'s Profile{% endblock %}
 
 {% block content %}
@@ -20,6 +25,36 @@
             <div class="mb-4">
                 <h1 class="h2 mb-1 mt-2">{{ user_profile.fname }} {{ user_profile.lname }}</h1>
                 <p class="text-muted mb-0">@{{ user_profile.username }}</p>
+            </div>
+
+            <!-- Connections Section -->
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="d-flex gap-2 align-items-stretch"> <!-- Changed to align-items-stretch -->
+                    {% if current_user.is_authenticated and current_user.id != user_profile.id %}
+                        {% if current_user.is_connected(user_profile) %}
+                            <button class="btn btn-outline-danger" id="disconnectBtn">
+                                <i class="bi bi-person-dash"></i> Disconnect
+                            </button>
+                        {% else %}
+                            <button class="btn btn-primary" id="connectBtn">
+                                <i class="bi bi-person-plus"></i> Connect
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Updated badge with matching height -->
+                    <span class="badge bg-secondary d-flex align-items-center px-3" style="height: 38px">
+                        <i class="bi bi-people me-1"></i> 
+                        <span id="connectionCount">{{ user_profile.followers.count() }}</span>
+                    </span>
+                </div>
+
+                <!-- Updated connections link button -->
+                <a href="{{ url_for('main.connections', username=user_profile.username) }}" 
+                class="btn btn-outline-secondary d-flex align-items-center" style="height: 38px">
+                    <i class="bi bi-people me-1"></i> Connections
+                    <span class="badge bg-secondary ms-2">{{ user_profile.get_connections().count() }}</span>
+                </a>
             </div>
 
             <!-- Bio Section -->
@@ -56,4 +91,59 @@
         overflow: hidden;
     }
 </style>
+
+<script>
+$(document).ready(function() {
+    // Handle connect button
+    $('#connectBtn').click(function() {
+        $.ajax({
+            url: "{{ url_for('main.connect_user', username=user_profile.username) }}",
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    $('#connectBtn').replaceWith(`
+                        <button class="btn btn-outline-danger" id="disconnectBtn">
+                            <i class="bi bi-person-dash"></i> Disconnect
+                        </button>
+                    `);
+                    $('#connectionCount').text(response.new_count);
+                    setupDisconnectHandler();
+                }
+            }
+        });
+    });
+
+    // Handle disconnect button
+    function setupDisconnectHandler() {
+        $('#disconnectBtn').click(function() {
+            $.ajax({
+                url: "{{ url_for('main.disconnect_user', username=user_profile.username) }}",
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if(response.success) {
+                        $('#disconnectBtn').replaceWith(`
+                            <button class="btn btn-primary" id="connectBtn">
+                                <i class="bi bi-person-plus"></i> Connect
+                            </button>
+                        `);
+                        $('#connectionCount').text(response.new_count);
+                        $('#connectBtn').click(setupConnectHandler);
+                    }
+                }
+            });
+        });
+    }
+
+    // Initial setup
+    {% if current_user.is_authenticated and current_user.is_connected(user_profile) %}
+        setupDisconnectHandler();
+    {% endif %}
+});
+</script>
 {% endblock %}

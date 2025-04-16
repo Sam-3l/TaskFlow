@@ -315,6 +315,8 @@ def update_profile_image():
         
 @main.route('/user/<username>')
 def public_profile(username):
+    from app import db
+    
     # Check if user is viewing their own profile
     if current_user.is_authenticated and current_user.username == username:
         return redirect(url_for('main.profile'))
@@ -322,7 +324,77 @@ def public_profile(username):
     # Get the requested user's profile
     user_profile = User.query.filter_by(username=username).first_or_404()
     
-    return render_template('public_profile.html', user_profile=user_profile, user=current_user)
+    # Get projects where the user is a member
+    user_projects = Project.query.filter(Project.members.any(id=user_profile.id)).all()
+    
+    for project in user_projects:
+        # Calculate project progress based on completed tasks
+        total_tasks = len(project.task_assignment)
+        project.task_count = total_tasks
+        
+        # Get user's role in this project
+        membership_record = db.session.query(membership).filter(
+            membership.c.project_id == project.id,
+            membership.c.user_id == user_profile.id
+        ).first()
+        project.user_role = membership_record.role if membership_record else None
+
+    return render_template('public_profile.html', user_profile=user_profile, user=current_user, projects=user_projects)
+
+@main.route('/connect/<username>', methods=['POST'])
+@login_required
+def connect_user(username):
+    from app import db
+
+    user = User.query.filter_by(username=username).first_or_404()
+    if current_user.is_connected(user):
+        return jsonify({'success': False, 'error': 'Already connected'})
+    
+    current_user.connect(user)
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'new_count': user.followers.count()
+    })
+
+@main.route('/disconnect/<username>', methods=['POST'])
+@login_required
+def disconnect_user(username):
+    from app import db
+    
+    user = User.query.filter_by(username=username).first_or_404()
+    if not current_user.is_connected(user):
+        return jsonify({'success': False, 'error': 'Not connected'})
+    
+    current_user.disconnect(user)
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'new_count': user.followers.count()
+    })
+
+@main.route('/connections')
+@login_required
+def connections():
+    # Get both users you're connected with and your followers
+    connections = current_user.get_connections().all()
+    followers = current_user.followers.all()
+    
+    return render_template('connections.html', 
+                         connections=connections,
+                         followers=followers,
+                         user=current_user)
+
+@main.route('/explore')
+@login_required
+def explore():
+    # Get users not yet connected (excluding self)
+    users = User.query.filter(
+        User.id != current_user.id,
+        ~User.followers.any(id=current_user.id)
+    ).limit(50).all()
+    
+    return render_template('explore.html', users=users, user=current_user)
 
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required
