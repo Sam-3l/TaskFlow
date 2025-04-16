@@ -90,8 +90,14 @@
 
                 <!-- Search and Profile -->
                 <div class="d-flex align-items-center">
-                    <form class="d-flex me-3 on-sm-grow" action="#" method="post">
-                        <input class="form-control search me-2" type="search" placeholder="Search" aria-label="Search">
+                    <form class="d-flex d-flex me-3 on-sm-grow" action="{{ url_for('main.search') }}" method="GET">
+                        <div class="input-group">
+                            <input type="search" name="q" class="form-control search" placeholder="Search users, projects, tasks..." 
+                                   aria-label="Search" value="{{ request.args.get('q', '') }}">
+                            <button class="btn btn-outline-light" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
                     </form>
                     <div class="nav-link" onclick="toggleMenu()">
                         <img src="{{ url_for('static', filename='images/uploads/profile_img/'+user['profile_img']) }}" alt="Profile Image" class="profile-img">

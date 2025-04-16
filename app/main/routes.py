@@ -16,7 +16,7 @@ import os
 from werkzeug.utils import secure_filename
 import time
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association
 from app.forms import CreateTask, CreateProject
 
 from datetime import datetime, date, timedelta
@@ -240,6 +240,11 @@ def create_projects():
         
     return render_template("new_project.html", user=current_user, active_page="projects", form=form)
 
+@main.route("/dashboard/projects/<int:project_id>")
+@login_required
+def project(project_id):
+    return None
+
 @main.route("/profile")
 @login_required
 def profile():
@@ -385,6 +390,56 @@ def connections():
                          followers=followers,
                          user=current_user,
                          active_page="connections")
+
+@main.route('/search')
+@login_required
+def search():
+    from app import db
+
+    query = request.args.get('q', '').strip()
+    if not query:
+        return redirect(request.referrer or url_for('main.index'))
+
+    # Search Users (public)
+    users = User.query.filter(
+        User.id != current_user.id,
+        db.or_(
+            User.username.ilike(f'%{query}%'),
+            User.fname.ilike(f'%{query}%'),
+            User.lname.ilike(f'%{query}%')
+        )
+    ).limit(5).all()
+
+    # Search Projects (user is member or public projects)
+    projects = Project.query.filter(
+        db.or_(
+            Project.title.ilike(f'%{query}%'),
+            Project.description.ilike(f'%{query}%')
+        ),
+        db.or_(
+            Project.type == 'public',
+            Project.members.any(id=current_user.id)
+        )
+    ).limit(5).all()
+
+    # Search Tasks (only tasks assigned to current user)
+    tasks = Task.query.join(
+        task_user_association,
+        (task_user_association.c.task_id == Task.id)
+    ).filter(
+        task_user_association.c.user_id == current_user.id,
+        db.or_(
+            Task.title.ilike(f'%{query}%'),
+            Task.description.ilike(f'%{query}%')
+        )
+    ).limit(5).all()
+
+    return render_template('search_results.html',
+                         query=query,
+                         users=users,
+                         projects=projects,
+                         tasks=tasks,
+                         user=current_user,)
 
 @main.route('/explore')
 @login_required
