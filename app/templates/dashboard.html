@@ -121,8 +121,9 @@
                 </ul>
             </div>
         </div>
+
         <!-- Progress Bar Animation -->
-        <div class="col-md-6" data-aos="fade-right">
+        <div class="col-md-6" data-aos="fade-left">
             <div class="card p-4 shadow-sm equal-height">
                 <h5 class="fw-bold mb-4 text-dark">📊 Productivity Insights - hardcoded</h5>
                 <p class="text-muted">You're on a 3-day productivity streak! Keep going!</p>
@@ -131,6 +132,19 @@
                 </div>
                 <div class="text-center">
                     <button class="btn btn-outline-primary">View Full Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4" data-aos="fade-right">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-compass display-4 text-primary mb-3"></i>
+                    <h3>Discover New Connections</h3>
+                    <p class="text-muted">Find collaborators for your next project</p>
+                    <a href="{{ url_for('main.explore') }}" class="btn btn-primary mt-2">
+                        Explore Users
+                    </a>
                 </div>
             </div>
         </div>
