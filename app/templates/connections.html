@@ -54,7 +54,7 @@
                                             View Profile
                                         </a>
                                         <button class="btn btn-sm btn-outline-danger disconnect-btn" 
-                                                data-user-id="{{ user.id }}">
+                                                data-username="{{ user.username }}">
                                             Disconnect
                                         </button>
                                     </div>
@@ -94,7 +94,7 @@
                                         </a>
                                         {% if not current_user.is_connected(user) %}
                                         <button class="btn btn-sm btn-primary connect-btn" 
-                                                data-user-id="{{ user.id }}">
+                                                data-username="{{ user.username }}">
                                             Connect Back
                                         </button>
                                         {% endif %}
@@ -122,11 +122,11 @@
 $(document).ready(function() {
     // Handle disconnect buttons
     $('.disconnect-btn').click(function() {
-        const userId = $(this).data('user-id');
+        const userName = $(this).data('username');
         const card = $(this).closest('.col');
         
         $.ajax({
-            url: `/disconnect/${userId}`,
+            url: `/disconnect/${userName}`,
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token() }}'
@@ -144,11 +144,11 @@ $(document).ready(function() {
     
     // Handle connect buttons in followers tab
     $('.connect-btn').click(function() {
-        const userId = $(this).data('user-id');
+        const userName = $(this).data('username');
         const card = $(this).closest('.col');
         
         $.ajax({
-            url: `/connect/${userId}`,
+            url: `/connect/${userName}`,
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token() }}'
