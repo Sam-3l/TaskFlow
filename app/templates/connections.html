@@ -115,6 +115,52 @@
             </div>
         </div>
     </div>
+
+    {% if suggested_users %}
+    <div class="card mt-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0">
+                <i class="bi bi-lightbulb text-warning me-2"></i>
+                Suggested Connections
+            </h4>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">People you might know based on your network</p>
+            
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for user in suggested_users %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
+                                class="rounded-circle mb-3" width="100" height="100">
+                            <h5 class="card-title">{{ user.fname }} {{ user.lname }}</h5>
+                            <p class="text-muted mb-2">@{{ user.username }}</p>
+                            
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ url_for('main.public_profile', username=user.username) }}" 
+                                class="btn btn-sm btn-outline-primary">
+                                    View Profile
+                                </a>
+                                <button class="btn btn-sm btn-primary connect-btn" 
+                                        data-username="{{ user.username }}">
+                                    Connect
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('main.explore') }}" class="btn btn-warning">
+                    <i class="bi bi-compass"></i> Explore More Users
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Connection Management JavaScript -->
@@ -136,16 +182,31 @@ $(document).ready(function() {
                     card.fadeOut(300, function() {
                         $(this).remove();
                         updateConnectionCount(-1);
+                        
+                        // Show empty state if no connections left
+                        if ($('#connections .col').length === 0) {
+                            $('#connections').html(`
+                                <div class="text-center py-5">
+                                    <i class="bi bi-people display-5 text-muted mb-3"></i>
+                                    <h4>No connections yet</h4>
+                                    <p class="text-muted">Connect with other users to see them here</p>
+                                    <a href="{{ url_for('main.explore') }}" class="btn btn-primary">
+                                        <i class="bi bi-compass"></i> Explore Users
+                                    </a>
+                                </div>
+                            `);
+                        }
                     });
                 }
             }
         });
     });
     
-    // Handle connect buttons in followers tab
+    // Handle connect buttons (in followers tab and suggestions)
     $('.connect-btn').click(function() {
         const userName = $(this).data('username');
         const card = $(this).closest('.col');
+        const btn = $(this);
         
         $.ajax({
             url: `/connect/${userName}`,
@@ -155,10 +216,22 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if(response.success) {
-                    card.fadeOut(300, function() {
-                        $(this).remove();
+                    // If in followers tab, just remove the button
+                    if (btn.closest('#followers').length) {
+                        btn.replaceWith(`
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <i class="bi bi-check"></i> Connected
+                            </button>
+                        `);
                         updateConnectionCount(1);
-                    });
+                    } 
+                    // If in suggestions, remove the whole card
+                    else {
+                        card.fadeOut(300, function() {
+                            $(this).remove();
+                            updateConnectionCount(1);
+                        });
+                    }
                 }
             }
         });
@@ -168,6 +241,11 @@ $(document).ready(function() {
         const badge = $('.con-nav-link.active .badge');
         const current = parseInt(badge.text());
         badge.text(current + change);
+        
+        // Update all connection counts in the UI
+        $('.connection-count').each(function() {
+            $(this).text(parseInt($(this).text()) + change);
+        });
     }
 });
 </script>

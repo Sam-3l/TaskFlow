@@ -66,11 +66,6 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'connections' %} active {% endif %}" href={{ url_for('main.connections') }} id="people-link">
                             <i class="bi bi-people"></i>&nbsp; Connections
-                                {% if current_user.get_connections().count() > 0 %}
-                                <span class="badge bg-primary rounded-pill ms-1">
-                                    {{ current_user.get_connections().count() }}
-                                </span>
-                                {% endif %}
                         </a></li>
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'notif' %} active {% endif %}" href="/dashboard/notifications" id="notif-link">

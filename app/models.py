@@ -3,6 +3,7 @@ from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 import random
+from flask import current_app
 
 connections = db.Table('user_connections',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -53,13 +54,103 @@ class User(UserMixin, db.Model):
             return self
     
     def is_connected(self, user):
-        return self.followed.filter(
-            connections.c.followed_id == user.id).count() > 0
+        try:
+            return db.session.query(
+                connections.c.followed_id
+            ).filter(
+                connections.c.follower_id == self.id,
+                connections.c.followed_id == user.id
+            ).count() > 0
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Connection check failed: {str(e)}")
+            return False
+
     
     def get_connections(self):
+        try:
+            return User.query.join(
+                connections, (connections.c.followed_id == User.id)
+            ).filter(
+                connections.c.follower_id == self.id
+            )
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Failed to get connections: {str(e)}")
+            return User.query.filter(False)  # Return empty queryset
+
+    
+    def get_suggested_users(self, limit=6, exclude_ids=None):
+        """Smart algorithm with multiple fallback strategies"""
+        if exclude_ids is None:
+            exclude_ids = []
+        exclude_ids.append(self.id)
+        
+        suggestions = []
+        
+        # Try different strategies in order of preference
+        strategies = [
+            self._get_same_project_users,
+            self._get_second_degree_connections,
+            self._get_new_active_users,
+            self._get_random_active_users  # Final fallback
+        ]
+        
+        for strategy in strategies:
+            if len(suggestions) >= limit:
+                break
+            try:
+                new_suggestions = strategy(exclude_ids, limit - len(suggestions))
+                for user in new_suggestions:
+                    if user.id not in exclude_ids and not self.is_connected(user):
+                        suggestions.append(user)
+                        exclude_ids.append(user.id)
+            except Exception as e:
+                current_app.logger.error(f"Suggestion strategy failed: {str(e)}")
+        
+        return suggestions[:limit]
+
+    def _get_same_project_users(self, exclude_ids, limit):
+        """Users from same projects (strongest signal)"""
         return User.query.join(
-            connections, (connections.c.followed_id == User.id)).filter(
-                connections.c.follower_id == self.id)
+            membership, (membership.c.user_id == User.id)
+        ).join(
+            Project, (Project.id == membership.c.project_id)
+        ).filter(
+            Project.id.in_([p.id for p in self.member_to]),
+            ~User.id.in_(exclude_ids)
+        ).order_by(
+            User.joined_at.desc()  # Prefer newer members
+        ).distinct().limit(limit).all()
+
+    def _get_second_degree_connections(self, exclude_ids, limit):
+        """Connections of connections"""
+        return User.query.join(
+            connections, (connections.c.followed_id == User.id)
+        ).filter(
+            connections.c.follower_id.in_([u.id for u in self.get_connections().all()]),
+            ~User.id.in_(exclude_ids)
+        ).order_by(
+            db.func.random()  # Mix up the order
+        ).distinct().limit(limit).all()
+
+    def _get_new_active_users(self, exclude_ids, limit):
+        """Recently joined active users"""
+        return User.query.filter(
+            User.id != self.id,
+            ~User.id.in_(exclude_ids)
+        ).order_by(
+            User.joined_at.desc()
+        ).limit(limit).all()
+
+    def _get_random_active_users(self, exclude_ids, limit):
+        """Final fallback - random active users"""
+        return User.query.filter(
+            User.id != self.id,
+            ~User.id.in_(exclude_ids)
+        ).order_by(
+            db.func.random()
+        ).limit(limit).all()
     
     def __init__(self, gender, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

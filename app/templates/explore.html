@@ -117,11 +117,11 @@
 $(document).ready(function() {
     // Handle connect buttons
     $('.connect-btn').click(function() {
-        const userId = $(this).data('user-id');
+        const userName = $(this).data('username');
         const card = $(this).closest('.col');
         
         $.ajax({
-            url: `/connect/${userId}`,
+            url: `/connect/${userName}`,
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token() }}'
@@ -130,9 +130,10 @@ $(document).ready(function() {
                 if(response.success) {
                     card.fadeOut(300, function() {
                         $(this).remove();
-                        // Update connections count in navbar
-                        const connCount = parseInt($('#navConnectionsCount').text());
-                        $('#navConnectionsCount').text(connCount + 1);
+                        // Update connections count everywhere
+                        $('.connection-count').each(function() {
+                            $(this).text(parseInt($(this).text()) + 1);
+                        });
                     });
                 }
             }

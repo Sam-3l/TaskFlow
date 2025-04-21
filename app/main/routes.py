@@ -381,15 +381,27 @@ def disconnect_user(username):
 @main.route('/connections')
 @login_required
 def connections():
-    # Get both users you're connected with and your followers
-    connections = current_user.get_connections().all()
-    followers = current_user.followers.all()
+    from app import db
+
+    try:
+        connections = current_user.get_connections().all()
+        followers = current_user.followers.all()
+        
+        # Get suggestions in same transaction
+        suggested_users = current_user.get_suggested_users(limit=6)
+        
+        return render_template('connections.html',
+                            connections=connections,
+                            followers=followers,
+                            suggested_users=suggested_users,
+                            user=current_user,
+                            active_page="connections")
     
-    return render_template('connections.html', 
-                         connections=connections,
-                         followers=followers,
-                         user=current_user,
-                         active_page="connections")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Connections page error: {str(e)}")
+        flash("An error occurred while loading connections", "error")
+        return redirect(url_for('main.dashboard'))
 
 @main.route('/search')
 @login_required
@@ -445,7 +457,7 @@ def search():
 @login_required
 def search_suggest():
     from app import db
-    
+
     query = request.args.get('q', '').strip()
     results = []
     
@@ -492,31 +504,43 @@ def search_suggest():
 @login_required
 def explore():
     from app import db
-
+    
     page = request.args.get('page', 1, type=int)
     query = request.args.get('q', '')
-
-    # Base query - exclude current user and existing connections
-    users_query = User.query.filter(
-        User.id != current_user.id,
-        ~User.followers.any(id=current_user.id)
-    )
-
-    # Apply search filter if query exists
+    
     if query:
-        users_query = users_query.filter(
+        # Existing search logic
+        users_query = User.query.filter(
+            User.id != current_user.id,
+            ~User.followers.any(id=current_user.id),
             db.or_(
                 User.username.ilike(f'%{query}%'),
                 User.fname.ilike(f'%{query}%'),
                 User.lname.ilike(f'%{query}%')
             )
         )
-
-    # Paginate results (20 per page)
+    else:
+        # Enhanced discovery with fallbacks
+        users_query = User.query.filter(
+            User.id != current_user.id,
+            ~User.followers.any(id=current_user.id)
+        ).order_by(
+            db.case(
+                [
+                    # Boost users from same projects
+                    (User.id.in_([u.id for u in current_user._get_same_project_users([], 100)]), 0),
+                    # Then second-degree connections
+                    (User.id.in_([u.id for u in current_user._get_second_degree_connections([], 100)]), 1),
+                ],
+                else_=2  # All others
+            ),
+            db.func.random()  # Randomize within tiers
+        )
+    
     pagination = users_query.paginate(page=page, per_page=20, error_out=False)
     users = pagination.items
-
-    return render_template('explore.html', 
+    
+    return render_template('explore.html',
                          users=users,
                          pagination=pagination,
                          user=current_user)
