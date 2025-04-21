@@ -21,13 +21,13 @@
             <!-- Connection Tabs -->
             <ul class="nav nav-tabs mb-4" id="connectionsTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link con-nav-link active" id="connections-tab" data-bs-toggle="tab" 
+                    <button class="con-nav-link nav-link active" id="connections-tab" data-bs-toggle="tab" 
                             data-bs-target="#connections" type="button" role="tab">
                         My Connections
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link con-nav-link" id="followers-tab" data-bs-toggle="tab" 
+                    <button class="con-nav-link nav-link" id="followers-tab" data-bs-toggle="tab" 
                             data-bs-target="#followers" type="button" role="tab">
                         Followers
                     </button>
@@ -165,7 +165,7 @@ $(document).ready(function() {
     });
     
     function updateConnectionCount(change) {
-        const badge = $('.nav-link.active .badge');
+        const badge = $('.con-nav-link.active .badge');
         const current = parseInt(badge.text());
         badge.text(current + change);
     }
@@ -183,7 +183,7 @@ $(document).ready(function() {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
-    .nav-tabs .nav-link {
+    .nav-tabs .con-nav-link {
         font-weight: 500;
     }
     .con-nav-link {
