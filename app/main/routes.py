@@ -507,12 +507,16 @@ def explore():
     
     page = request.args.get('page', 1, type=int)
     query = request.args.get('q', '')
+
+    # Base query with proper exclusions
+    users_query = User.query.filter(
+        User.id != current_user.id,
+        ~User.followers.any(id=current_user.id)
+    )
     
     if query:
-        # Existing search logic
-        users_query = User.query.filter(
-            User.id != current_user.id,
-            ~User.followers.any(id=current_user.id),
+        # Search logic
+        users_query = users_query.filter(
             db.or_(
                 User.username.ilike(f'%{query}%'),
                 User.fname.ilike(f'%{query}%'),
@@ -521,20 +525,15 @@ def explore():
         )
     else:
         # Enhanced discovery with fallbacks
-        users_query = User.query.filter(
-            User.id != current_user.id,
-            ~User.followers.any(id=current_user.id)
-        ).order_by(
+        users_query = users_query.order_by(
             db.case(
-                [
-                    # Boost users from same projects
-                    (User.id.in_([u.id for u in current_user._get_same_project_users([], 100)]), 0),
-                    # Then second-degree connections
-                    (User.id.in_([u.id for u in current_user._get_second_degree_connections([], 100)]), 1),
-                ],
-                else_=2  # All others
+                # Boost users from same projects
+                (User.id.in_([u.id for u in current_user._get_same_project_users([], 100)]), 0),
+                # Then second-degree connections
+                (User.id.in_([u.id for u in current_user._get_second_degree_connections([], 100)]), 1),
+                else_=2
             ),
-            db.func.random()  # Randomize within tiers
+            User.joined_at.desc()  # Secondary ordering
         )
     
     pagination = users_query.paginate(page=page, per_page=20, error_out=False)

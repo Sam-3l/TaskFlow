@@ -125,13 +125,21 @@ class User(UserMixin, db.Model):
 
     def _get_second_degree_connections(self, exclude_ids, limit):
         """Connections of connections"""
+        # First get the IDs of your connections
+        your_connections_ids = [u.id for u in self.get_connections().all()]
+        
+        if not your_connections_ids:
+            return []
+        
+        # Then find who they're connected to
         return User.query.join(
             connections, (connections.c.followed_id == User.id)
         ).filter(
-            connections.c.follower_id.in_([u.id for u in self.get_connections().all()]),
-            ~User.id.in_(exclude_ids)
+            connections.c.follower_id.in_(your_connections_ids),
+            ~User.id.in_(exclude_ids),
+            User.id != self.id
         ).order_by(
-            db.func.random()  # Mix up the order
+            User.joined_at.desc()  # Changed from random() to a column that exists in SELECT
         ).distinct().limit(limit).all()
 
     def _get_new_active_users(self, exclude_ids, limit):
@@ -145,11 +153,12 @@ class User(UserMixin, db.Model):
 
     def _get_random_active_users(self, exclude_ids, limit):
         """Final fallback - random active users"""
+        # For PostgreSQL, we need to use a different approach for random
         return User.query.filter(
             User.id != self.id,
             ~User.id.in_(exclude_ids)
         ).order_by(
-            db.func.random()
+            User.joined_at.desc()  # Can't use random() with DISTINCT
         ).limit(limit).all()
     
     def __init__(self, gender, *args, **kwargs) -> None:
