@@ -1,242 +1,1242 @@
 {% extends 'parents/base.html' %}
 
-{% block title %}TaskFlow - Organize & Manage Tasks Effortlessly{% endblock %}
+{% block title %}TaskFlow - AI-Powered Productivity Platform{% endblock %}
 
 {% block content %}
-<!-- Loading Screen -->
+<!-- Loading Screen (Only shows if content isn't ready) -->
 <div id="loading-screen" class="loading-screen">
     <div class="loader">
-        <div class="loader-content">
-            <div class="spinner"></div>
-            <div class="loading-text">Loading TaskFlow...</div>
+        <div class="logo-loader">
+            <svg viewBox="0 0 100 100" class="logo-spinner">
+                <path d="M50 10 L90 50 L50 90 L10 50 Z" class="logo-path"/>
+            </svg>
         </div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="loading-message">Preparing your productivity suite...</div>
     </div>
 </div>
 
-<!-- Main Content (Initially Hidden) -->
-<div id="main-content" class="main-content" style="display: none;">
-    <!-- Hero Section with Background Image -->
-    <div class="hero-section position-relative text-white text-center d-flex align-items-center" 
-         style="background: url('{{ url_for('static', filename='images/landing_page.jpg') }}') no-repeat center center/cover;
-                height: 100vh;">
-        <div class="overlay position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 0, 0, 0.6);"></div>
-        <div class="container position-relative">
-            <h1 class="fw-bold display-4">Stay Organized, Stay Productive!</h1>
-            <p class="lead">Seamlessly manage your tasks, collaborate with your team, and hit deadlines effortlessly.</p>
-            <a href="auth/signup" class="btn btn-primary btn-lg me-2">Get Started</a>
-            <a href="about/" class="btn btn-outline-light btn-lg">Learn More</a>
+<!-- Main Content -->
+<main id="main-content">
+    <!-- Animated Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background">
+            <div class="particles" id="particles-js"></div>
+            <div class="gradient-overlay"></div>
+        </div>
+        
+        <div class="container hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="badge-wrapper">
+                        <span class="badge pulse">NEW: AI Task Assistant</span>
+                    </div>
+                    <h1 class="hero-title">
+                        <span class="text-gradient">Work Smarter</span> 
+                        <span class="typing-animation"></span>
+                    </h1>
+                    <p class="hero-subtitle">TaskFlow's AI-powered platform helps individuals and teams achieve more with less effort through intelligent task automation and analytics.</p>
+                    
+                    <div class="cta-buttons">
+                        <a href="auth/signup" class="btn btn-primary btn-3d">
+                            <span>Get Started Free</span>
+                            <div class="btn-hover"></div>
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-video">
+                            <i class="bi bi-play-circle"></i> Watch Demo
+                        </a>
+                    </div>
+                    
+                    <div class="trust-badges">
+                        <div class="trust-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>No credit card required</span>
+                        </div>
+                        <div class="trust-item">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Trusted by 50,000+ teams</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 hero-image-col">
+                    <div class="hero-image-wrapper">
+                        <img src="{{ url_for('static', filename='images/hero-dashboard.webp') }}" 
+                             alt="TaskFlow Dashboard" 
+                             class="hero-image"
+                             loading="eager">
+                        <div class="floating-card card-1">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Task completed</span>
+                        </div>
+                        <div class="floating-card card-2">
+                            <i class="bi bi-lightning-charge-fill text-warning"></i>
+                            <span>AI suggestion</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Client Logos Marquee -->
+    <section class="clients-section py-4 bg-light">
+        <div class="container">
+            <p class="text-center text-muted mb-3">TRUSTED BY INNOVATIVE TEAMS WORLDWIDE</p>
+            <div class="marquee">
+                <div class="marquee-content">
+                    <img src="{{ url_for('static', filename='images/logos/logo1.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo2.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo3.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo4.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo5.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo6.svg') }}" alt="Client Logo">
+                    <!-- Duplicate for seamless loop -->
+                    <img src="{{ url_for('static', filename='images/logos/logo1.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo2.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo3.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo4.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo5.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo6.svg') }}" alt="Client Logo">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition -->
+    <section class="value-proposition py-6">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="sticky-video">
+                        <div class="video-wrapper">
+                            <div class="video-placeholder">
+                                <button class="play-button">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="ps-lg-5">
+                        <span class="section-badge">POWERFUL YET SIMPLE</span>
+                        <h2 class="section-title">The Complete Productivity <span class="text-gradient">Solution</span></h2>
+                        
+                        <div class="value-item">
+                            <div class="value-icon">
+                                <i class="bi bi-magic"></i>
+                            </div>
+                            <div>
+                                <h3>AI-Powered Automation</h3>
+                                <p>Our intelligent system learns your work patterns to suggest optimal task scheduling, priority adjustments, and even auto-generates subtasks.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="value-item">
+                            <div class="value-icon">
+                                <i class="bi bi-bar-chart-steps"></i>
+                            </div>
+                            <div>
+                                <h3>Real-Time Analytics</h3>
+                                <p>Visual dashboards show your productivity trends, time allocation, and potential bottlenecks with actionable insights.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="value-item">
+                            <div class="value-icon">
+                                <i class="bi bi-shield-lock"></i>
+                            </div>
+                            <div>
+                                <h3>Enterprise-Grade Security</h3>
+                                <p>Bank-level encryption and compliance with industry standards to keep your data protected at all times.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section id="features" class="features-section py-6 bg-light">
+        <div class="container">
+            <div class="text-center mb-6">
+                <span class="section-badge">CORE FEATURES</span>
+                <h2 class="section-title">Everything You Need to <span class="text-gradient">Excel</span></h2>
+                <p class="section-subtitle">Designed for individuals and teams who demand peak performance</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h3>AI Task Assistant</h3>
+                        <p>Natural language processing lets you create and manage tasks through conversation.</p>
+                        <div class="feature-badge">AI-Powered</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-kanban"></i>
+                        </div>
+                        <h3>Smart Kanban</h3>
+                        <p>Visual workflow management with auto-categorization and predictive column limits.</p>
+                        <div class="feature-badge">NEW</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h3>Progress Analytics</h3>
+                        <p>Detailed reports on completion rates, time tracking, and productivity trends.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <h3>Time Blocking</h3>
+                        <p>Schedule tasks directly on your calendar with smart time estimation.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h3>Team Collaboration</h3>
+                        <p>Real-time task assignment, comments, and file sharing for seamless teamwork.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <h3>Smart Reminders</h3>
+                        <p>Context-aware notifications based on your location, schedule, and habits.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="/features" class="btn btn-outline-primary">
+                    Explore All Features <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Spotlight Section -->
+    <section class="ai-section py-6">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="ai-image-wrapper">
+                        <img src="{{ url_for('static', filename='images/ai-interface.webp') }}" 
+                             alt="TaskFlow AI Interface" 
+                             class="ai-image"
+                             loading="lazy">
+                        <div class="ai-highlight"></div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <span class="section-badge">AI REVOLUTION</span>
+                    <h2 class="section-title">Your Intelligent <span class="text-gradient">Productivity Partner</span></h2>
+                    <p class="mb-4">TaskFlow's AI continuously learns from your work patterns to provide personalized recommendations, automate routine tasks, and surface insights that help you focus on what matters most.</p>
+                    
+                    <div class="ai-features">
+                        <div class="ai-feature">
+                            <i class="bi bi-lightbulb"></i>
+                            <div>
+                                <h4>Smart Suggestions</h4>
+                                <p>Automatically recommends optimal times for deep work based on your habits.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-feature">
+                            <i class="bi bi-stopwatch"></i>
+                            <div>
+                                <h4>Time Prediction</h4>
+                                <p>Accurately estimates task duration based on your historical data.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-feature">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <div>
+                                <h4>Risk Detection</h4>
+                                <p>Flags potential deadline conflicts before they become problems.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="btn btn-primary mt-3">
+                        Learn About Our AI <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials-section py-6 bg-dark text-white">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-badge">USER STORIES</span>
+                <h2 class="section-title">Trusted by <span class="text-gradient">Visionaries</span></h2>
+            </div>
+            
+            <div class="testimonial-slider">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">
+                            <i class="bi bi-quote"></i>
+                        </div>
+                        <p class="testimonial-text">TaskFlow's AI features saved our team 15+ hours per week by automating routine task assignments and predicting realistic deadlines. The analytics helped us identify workflow bottlenecks we didn't even know existed!</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="{{ url_for('static', filename='images/testimonials/user1.jpg') }}" 
+                             alt="Sarah Johnson" 
+                             class="author-avatar">
+                        <div>
+                            <h4>Sarah Johnson</h4>
+                            <p>CTO at TechNova</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">
+                            <i class="bi bi-quote"></i>
+                        </div>
+                        <p class="testimonial-text">As a solopreneur, TaskFlow has been game-changing. The AI assistant helps me stay on top of everything without the overhead of complex project management tools. It's like having a personal productivity coach.</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="{{ url_for('static', filename='images/testimonials/user2.jpg') }}" 
+                             alt="Michael Chen" 
+                             class="author-avatar">
+                        <div>
+                            <h4>Michael Chen</h4>
+                            <p>Founder of CreativeMinds</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">
+                            <i class="bi bi-quote"></i>
+                        </div>
+                        <p class="testimonial-text">We evaluated over 20 task management solutions before choosing TaskFlow. The combination of powerful features and intuitive design made it the clear winner for our 150-person remote team.</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="{{ url_for('static', filename='images/testimonials/user3.jpg') }}" 
+                             alt="David Rodriguez" 
+                             class="author-avatar">
+                        <div>
+                            <h4>David Rodriguez</h4>
+                            <p>VP Operations at GlobalSoft</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing CTA -->
+    <section class="pricing-cta py-6">
+        <div class="container">
+            <div class="cta-card">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h2>Ready to Transform Your Productivity?</h2>
+                        <p>Join thousands of professionals and teams who achieve more with TaskFlow.</p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <a href="/pricing" class="btn btn-primary btn-lg me-2">View Plans</a>
+                        <a href="/demo" class="btn btn-outline-primary btn-lg">Live Demo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="footer bg-dark text-white py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="footer-logo mb-3">
+                    <img src="{{ url_for('static', filename='images/logo-white.svg') }}" 
+                         alt="TaskFlow" 
+                         width="120">
+                </div>
+                <p>The intelligent task management platform that helps you work smarter, not harder.</p>
+                <div class="social-links mt-4">
+                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-6 col-md-3 col-lg-2">
+                <h5>Product</h5>
+                <ul class="footer-links">
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Integrations</a></li>
+                    <li><a href="#">Updates</a></li>
+                    <li><a href="#">Roadmap</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-6 col-md-3 col-lg-2">
+                <h5>Resources</h5>
+                <ul class="footer-links">
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Guides</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Webinars</a></li>
+                    <li><a href="#">API Docs</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-6 col-md-3 col-lg-2">
+                <h5>Company</h5>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Legal</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-6 col-md-3 col-lg-2">
+                <h5>Compare</h5>
+                <ul class="footer-links">
+                    <li><a href="#">vs. Asana</a></li>
+                    <li><a href="#">vs. Trello</a></li>
+                    <li><a href="#">vs. ClickUp</a></li>
+                    <li><a href="#">vs. Monday</a></li>
+                    <li><a href="#">vs. Notion</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <div class="footer-bottom">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-md-0">&copy; 2025 TaskFlow. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <ul class="footer-legal-links">
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Cookies</a></li>
+                        <li><a href="#">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
+</footer>
 
-    <!-- Features Section -->
-    <section class="container py-5 text-center text-dark">
-        <h2 class="fw-bold">Why Choose TaskFlow?</h2>
-        <p class="text-muted">Designed to boost your productivity with powerful features.</p>
-
-        <div class="row mt-4 g-4">
-            <!-- Card 1 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card border-0 shadow-lg h-100">
-                    <img src="{{ url_for('static', filename='images/automation.jpeg') }}" class="card-img-top fixed-card-img" alt="Task Automation">
-                    <div class="card-body text-center text-dark">
-                        <h4 class="mt-3">Task Automation</h4>
-                        <p>Automate recurring tasks and save time.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card border-0 shadow-lg h-100">
-                    <img src="{{ url_for('static', filename='images/team_collaboration.jpg') }}" class="card-img-top fixed-card-img" alt="Team Collaboration">
-                    <div class="card-body text-center text-dark">
-                        <h4 class="mt-3">Team Collaboration</h4>
-                        <p>Work together effortlessly with real-time updates.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card border-0 shadow-lg h-100">
-                    <img src="{{ url_for('static', filename='images/progress_analytics.jpg') }}" class="card-img-top fixed-card-img" alt="Progress Tracking">
-                    <div class="card-body text-center text-dark">
-                        <h4 class="mt-3">Progress Tracking</h4>
-                        <p>Monitor task completion with analytics.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <hr class="m-5">
-
-    <!-- How It Works Section -->
-    <section class="bg-light py-5">
-        <div class="container text-center text-dark">
-            <h2 class="fw-bold">How It Works</h2>
-            <div class="row mt-4 g-4">
-                <!-- Step 1 -->
-                <div class="col-12 col-sm-6 col-lg-4">
-                    <div class="p-4 border rounded shadow-sm h-100">
-                        <i class="bi bi-pencil-square display-4 text-primary"></i>
-                        <h4 class="mt-3">Create Tasks</h4>
-                        <p>Define your goals and break them into manageable tasks.</p>
-                    </div>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="col-12 col-sm-6 col-lg-4">
-                    <div class="p-4 border rounded shadow-sm h-100">
-                        <i class="bi bi-clock-history display-4 text-success"></i>
-                        <h4 class="mt-3">Set Deadlines</h4>
-                        <p>Stay on track by setting due dates for each task.</p>
-                    </div>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="col-12 col-sm-6 col-lg-4 mx-auto">
-                    <div class="p-4 border rounded shadow-sm h-100">
-                        <i class="bi bi-check-lg display-4 text-warning"></i>
-                        <h4 class="mt-3">Complete & Track</h4>
-                        <p>Monitor progress and celebrate achievements!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <br><br><br>
-
-    <!-- Carousel Section -->
-    <section class="container-fluid px-0 text-center text-dark">
-        <div id="taskflowCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-
-                <!-- Slide 1 -->
-                <div class="carousel-item active">
-                    <img src="{{ url_for('static', filename='images/todo_list.jpg') }}" class="d-block w-100 carousel-img" alt="To-Do List">
-                    <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
-                        <h4 class="fs-5 fs-md-4">Smart To-Do Lists</h4>
-                        <p class="fs-6 fs-md-5">Create, manage, and track your tasks with ease.</p>
-                    </div>
-                </div>
-
-                <!-- Slide 2 -->
-                <div class="carousel-item">
-                    <img src="{{ url_for('static', filename='images/deadline.jpg') }}" class="d-block w-100 carousel-img" alt="Deadline Reminder">
-                    <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
-                        <h4 class="fs-5 fs-md-4">Deadline Reminders</h4>
-                        <p class="fs-6 fs-md-5">Get notified before your tasks are due.</p>
-                    </div>
-                </div>
-
-                <!-- Slide 3 -->
-                <div class="carousel-item">
-                    <img src="{{ url_for('static', filename='images/team_collaboration.jpg') }}" class="d-block w-100 carousel-img" alt="Team Collaboration">
-                    <div class="carousel-caption d-block bg-dark bg-opacity-75 p-3 rounded">
-                        <h4 class="fs-5 fs-md-4">Seamless Team Collaboration</h4>
-                        <p class="fs-6 fs-md-5">Assign tasks and work together effortlessly.</p>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Carousel Controls -->
-            <button class="carousel-control-prev" type="button" data-bs-target="#taskflowCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#taskflowCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="container py-5 text-center text-dark">
-        <h2 class="fw-bold">What Users Say</h2>
-        <div class="row mt-4 g-4">
-            <!-- Testimonial 1 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="p-4 border rounded shadow-sm h-100">
-                    <p>"TaskFlow transformed how I work. My productivity skyrocketed!"</p>
-                    <h5 class="fw-bold mt-3">- Alex B.</h5>
-                </div>
-            </div>
-            
-            <!-- Testimonial 2 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="p-4 border rounded shadow-sm h-100">
-                    <p>"Managing tasks with my team has never been easier. Highly recommend!"</p>
-                    <h5 class="fw-bold mt-3">- Sophia R.</h5>
-                </div>
-            </div>
-            
-            <!-- Testimonial 3 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="p-4 border rounded shadow-sm h-100">
-                    <p>"A game-changer for freelancers. I never miss deadlines anymore!"</p>
-                    <h5 class="fw-bold mt-3">- Mark W.</h5>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4">
-        <p>&copy; 2025 TaskFlow. All Rights Reserved.</p>
-    </footer>
-</div>
-
+<!-- Styles -->
 <style>
-/* Loading Screen Styles */
+:root {
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --primary-dark: #4338ca;
+    --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    --dark: #1e293b;
+    --darker: #0f172a;
+    --light: #f8fafc;
+    --gray: #94a3b8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading Screen */
 .loading-screen {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+    background: var(--darker);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    opacity: 1;
     transition: opacity 0.5s ease-out;
 }
 
-.loader {
-    text-align: center;
+.loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
-.loader-content {
+.loader {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 2rem;
 }
 
-.spinner {
+.logo-loader {
     width: 80px;
     height: 80px;
-    border: 4px solid rgba(255, 255, 255, 0.1);
-    border-left-color: #0d6efd;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+    position: relative;
 }
 
-.loading-text {
-    color: #ffffff;
-    font-size: 1.2rem;
-    font-weight: 500;
-    letter-spacing: 2px;
+.logo-spinner {
+    width: 100%;
+    height: 100%;
+    animation: spin 2s linear infinite;
+}
+
+.logo-path {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 5;
+    stroke-dasharray: 150;
+    stroke-dashoffset: 150;
+    animation: dash 3s ease-in-out infinite;
+}
+
+.progress-container {
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--primary);
+    animation: progress 2s ease-in-out infinite;
+}
+
+.loading-message {
+    color: white;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
     animation: pulse 1.5s ease-in-out infinite;
 }
 
+/* Hero Section */
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.gradient-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+}
+
+.badge-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(79, 70, 229, 0.2);
+    color: var(--primary);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.badge.pulse {
+    animation: pulse 2s infinite;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 2rem;
+    max-width: 600px;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-3d {
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+.btn-3d .btn-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.btn-3d:hover .btn-hover {
+    opacity: 1;
+}
+
+.btn-outline-light {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.btn-outline-light:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-video i {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.trust-badges {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.trust-item i {
+    color: var(--primary);
+}
+
+.hero-image-col {
+    position: relative;
+}
+
+.hero-image-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    transform: perspective(1000px) rotateY(-10deg) rotateX(5deg);
+    transition: var(--transition);
+}
+
+.hero-image-wrapper:hover {
+    transform: perspective(1000px) rotateY(-5deg) rotateX(3deg);
+}
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.floating-card {
+    position: absolute;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-card i {
+    font-size: 1rem;
+}
+
+.card-1 {
+    top: 20%;
+    left: -5%;
+    animation-delay: 0s;
+}
+
+.card-2 {
+    bottom: 15%;
+    right: -5%;
+    animation-delay: 1s;
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.mouse {
+    width: 24px;
+    height: 40px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+}
+
+.wheel {
+    width: 4px;
+    height: 8px;
+    background: white;
+    border-radius: 2px;
+    animation: scroll 2s infinite;
+}
+
+/* Marquee */
+.clients-section {
+    overflow: hidden;
+}
+
+.marquee {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.marquee-content {
+    display: flex;
+    animation: scroll 20s linear infinite;
+}
+
+.marquee-content img {
+    height: 40px;
+    margin: 0 2rem;
+    opacity: 0.6;
+    transition: var(--transition);
+}
+
+.marquee-content img:hover {
+    opacity: 1;
+}
+
+/* Value Proposition */
+.value-proposition {
+    position: relative;
+}
+
+.sticky-video {
+    position: sticky;
+    top: 6rem;
+}
+
+.video-wrapper {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.video-placeholder {
+    position: relative;
+    padding-bottom: 56.25%;
+    background: var(--dark);
+}
+
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    border: none;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.play-button:hover {
+    background: var(--primary-dark);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.play-button i {
+    margin-left: 5px;
+}
+
+.section-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--gray);
+    max-width: 700px;
+    margin: 0 auto 3rem;
+}
+
+.value-item {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.value-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.value-item h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.value-item p {
+    color: var(--gray);
+}
+
+/* Features Grid */
+.features-section {
+    position: relative;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: var(--gray);
+    margin-bottom: 1.5rem;
+}
+
+.feature-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* AI Section */
+.ai-section {
+    position: relative;
+}
+
+.ai-image-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.ai-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.ai-highlight {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.4) 0%, rgba(79, 70, 229, 0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.ai-features {
+    margin-top: 2rem;
+}
+
+.ai-feature {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.ai-feature i {
+    width: 50px;
+    height: 50px;
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.ai-feature h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ai-feature p {
+    color: var(--gray);
+}
+
+/* Testimonials */
+.testimonials-section {
+    position: relative;
+}
+
+.testimonial-slider {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scroll-snap-type: x mandatory;
+}
+
+.testimonial-card {
+    min-width: 350px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 2rem;
+    scroll-snap-align: start;
+}
+
+.testimonial-content {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.quote-icon {
+    position: absolute;
+    top: -1rem;
+    left: -1rem;
+    font-size: 3rem;
+    color: rgba(255,255,255,0.1);
+}
+
+.testimonial-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 0;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.testimonial-author h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.testimonial-author p {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* Pricing CTA */
+.pricing-cta {
+    position: relative;
+}
+
+.cta-card {
+    background: var(--gradient);
+    border-radius: 16px;
+    padding: 3rem;
+    color: white;
+}
+
+.cta-card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.cta-card p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+/* Footer */
+.footer {
+    position: relative;
+}
+
+.footer-logo img {
+    height: auto;
+}
+
+.footer p {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1.5rem;
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    color: white;
+    font-size: 1.1rem;
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    background: var(--primary);
+    transform: translateY(-3px);
+}
+
+.footer h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: white;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.footer-links a:hover {
+    color: white;
+    padding-left: 5px;
+}
+
+.footer-legal-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-legal-links a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: var(--transition);
+}
+
+.footer-legal-links a:hover {
+    color: white;
+}
+
+/* Animations */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+    0% { stroke-dashoffset: 150; }
+    50% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -150; }
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 80%; }
+    100% { width: 100%; }
 }
 
 @keyframes pulse {
@@ -245,38 +1245,220 @@
     100% { opacity: 0.6; }
 }
 
-/* Main Content Transition */
-.main-content {
-    opacity: 0;
-    transition: opacity 0.5s ease-in;
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
 }
 
-.main-content.visible {
-    opacity: 1;
+@keyframes scroll {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .hero-title {
+        font-size: 2.8rem;
+    }
+    
+    .hero-image-wrapper {
+        margin-top: 3rem;
+    }
+    
+    .value-item {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+    }
+    
+    .trust-badges {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .cta-card .row {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .cta-card .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .feature-card {
+        padding: 1.5rem;
+    }
 }
 </style>
 
+<!-- Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Hide loading screen and show main content after a delay
-    setTimeout(function() {
-        const loadingScreen = document.getElementById('loading-screen');
-        const mainContent = document.getElementById('main-content');
+    // Typing animation for hero title
+    const typingElement = document.querySelector('.typing-animation');
+    const texts = ["with TaskFlow", "with AI", "Together"];
+    let textIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    
+    function type() {
+        const currentText = texts[textIndex];
         
-        // Fade out loading screen
-        loadingScreen.style.opacity = '0';
+        if (isDeleting) {
+            typingElement.textContent = currentText.substring(0, charIndex - 1);
+            charIndex--;
+        } else {
+            typingElement.textContent = currentText.substring(0, charIndex + 1);
+            charIndex++;
+        }
         
-        // Show and fade in main content
-        mainContent.style.display = 'block';
-        setTimeout(() => {
-            mainContent.classList.add('visible');
-        }, 50);
+        if (!isDeleting && charIndex === currentText.length) {
+            isDeleting = true;
+            setTimeout(type, 1500);
+        } else if (isDeleting && charIndex === 0) {
+            isDeleting = false;
+            textIndex = (textIndex + 1) % texts.length;
+            setTimeout(type, 500);
+        } else {
+            const speed = isDeleting ? 50 : 100;
+            setTimeout(type, speed);
+        }
+    }
+    
+    // Start typing animation
+    setTimeout(type, 1000);
+    
+    // Initialize particles if particles-js is loaded
+    if (typeof particlesJS !== 'undefined') {
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#6366f1" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: "#6366f1", opacity: 0.3, width: 1 },
+                move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out" }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" }
+                }
+            }
+        });
+    }
+    
+    // Enhanced loading system
+    let resourcesLoaded = false;
+    let minimumTimeElapsed = false;
+    
+    // Check if all critical resources are loaded
+    function checkResourcesLoaded() {
+        const images = document.querySelectorAll('img[loading="eager"]');
+        let loadedCount = 0;
         
-        // Remove loading screen from DOM after transition
-        setTimeout(() => {
-            loadingScreen.style.display = 'none';
-        }, 500);
-    }, 1500); // Adjust this delay as needed (currently 1.5 seconds)
+        images.forEach(img => {
+            if (img.complete) loadedCount++;
+        });
+        
+        return loadedCount === images.length;
+    }
+    
+    // Hide loading screen when both conditions are met
+    function hideLoadingScreen() {
+        if (resourcesLoaded && minimumTimeElapsed) {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.classList.add('hidden');
+            
+            // Show any lazy-loaded content
+            document.querySelectorAll('[loading="lazy"]').forEach(el => {
+                el.style.opacity = '1';
+            });
+        }
+    }
+    
+    // Set minimum loading time (1.5 seconds)
+    setTimeout(() => {
+        minimumTimeElapsed = true;
+        hideLoadingScreen();
+    }, 1500);
+    
+    // Check if critical resources are loaded
+    if (checkResourcesLoaded()) {
+        resourcesLoaded = true;
+        hideLoadingScreen();
+    } else {
+        window.addEventListener('load', () => {
+            resourcesLoaded = true;
+            hideLoadingScreen();
+        });
+    }
+    
+    // Testimonial slider functionality
+    const testimonialSlider = document.querySelector('.testimonial-slider');
+    if (testimonialSlider) {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        
+        testimonialSlider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - testimonialSlider.offsetLeft;
+            scrollLeft = testimonialSlider.scrollLeft;
+        });
+        
+        testimonialSlider.addEventListener('mouseleave', () => {
+            isDown = false;
+        });
+        
+        testimonialSlider.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+        
+        testimonialSlider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - testimonialSlider.offsetLeft;
+            const walk = (x - startX) * 2;
+            testimonialSlider.scrollLeft = scrollLeft - walk;
+        });
+    }
 });
 </script>
+
+<!-- Load particles.js if needed -->
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 {% endblock %}
