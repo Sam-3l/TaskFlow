@@ -6,7 +6,7 @@
 <div class="login-container">
   <div class="login-card">
     <div class="login-header">
-      <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="TaskFlow" class="login-logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="TaskFlow" class="login-logo">
       <h1>Welcome Back</h1>
       <p>Log in to continue your productivity journey</p>
     </div>
@@ -28,6 +28,21 @@
         <button class="login-alert-close">&times;</button>
       </div>
     {% endif %}
+
+    <div class="oauth-providers">
+      <a href="" class="oauth-btn google">
+        <img src="{{ url_for('static', filename='images/icons/google.png') }}" alt="Google">
+        Continue with Google
+      </a>
+      <a href="" class="oauth-btn github">
+        <img src="{{ url_for('static', filename='images/icons/github.png') }}" alt="GitHub">
+        Continue with GitHub
+      </a>
+    </div>
+
+    <div class="login-divider">
+      <span>or</span>
+    </div>
 
     <form method="post" action="" class="login-form">
       {{ form.hidden_tag() }}
@@ -82,7 +97,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 40px;
   width: 100%;
-  max-width: 450px;
+  max-width: 600px;
 }
 
 /* Header */
@@ -106,6 +121,76 @@
 .login-header p {
   color: #64748b;
   font-size: 14px;
+}
+
+/* OAuth Providers */
+.oauth-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.oauth-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.oauth-btn.google {
+  background: white;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+}
+
+.oauth-btn.google:hover {
+  background: #f8fafc;
+}
+
+.oauth-btn.github {
+  background: #1e293b;
+  color: white;
+  border: 1px solid #1e293b;
+}
+
+.oauth-btn.github:hover {
+  background: #0f172a;
+}
+
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.login-divider::before {
+  margin-right: 16px;
+}
+
+.login-divider::after {
+  margin-left: 16px;
 }
 
 /* Alerts */

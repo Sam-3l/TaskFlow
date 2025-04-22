@@ -8,7 +8,7 @@
     <div class="auth-card">
       <div class="auth-header">
         <div class="logo-wrapper">
-          <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="TaskFlow" class="auth-logo">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="TaskFlow" class="auth-logo">
         </div>
         <h1>Create Your Account</h1>
         <p>Join thousands of productive teams already using TaskFlow</p>
@@ -16,11 +16,11 @@
 
       <div class="auth-social">
         <button class="social-btn google-btn">
-          <img src="{{ url_for('static', filename='images/icons/google.svg') }}" alt="Google">
+          <img src="{{ url_for('static', filename='images/icons/google.png') }}" alt="Google">
           Sign up with Google
         </button>
         <button class="social-btn github-btn">
-          <img src="{{ url_for('static', filename='images/icons/github.svg') }}" alt="GitHub">
+          <img src="{{ url_for('static', filename='images/icons/github.png') }}" alt="GitHub">
           Sign up with GitHub
         </button>
       </div>
@@ -123,15 +123,15 @@
     </div>
     
     <div class="auth-graphics">
-      <img src="{{ url_for('static', filename='images/auth/signup-illustration.svg') }}" 
+      <img src="{{ url_for('static', filename='images/signup-illustration.png') }}" 
            alt="TaskFlow Productivity" 
-           class="auth-illustration">
+           class="auth-illustration" style="border-radius: 50%; width: 300px; height: 300px;">
       <div class="auth-quote">
         <blockquote>
           "TaskFlow helped our team reduce missed deadlines by 80% through better task visibility."
         </blockquote>
         <div class="quote-author">
-          <img src="{{ url_for('static', filename='images/testimonials/user1.jpg') }}" 
+          <img src="{{ url_for('static', filename='images/testimonials/default.jpg') }}" 
                alt="Sarah Johnson" 
                class="author-avatar">
           <div>
@@ -145,19 +145,22 @@
 </div>
 
 <style>
-/* Auth Container */
+/* Make container take full screen */
 .auth-container {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* align to top to allow margin-top */
+  justify-content: center;
   background-color: #f8fafc;
+  padding-top: 25px;
+  box-sizing: border-box;
 }
 
 .auth-wrapper {
   display: flex;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
+  width: 95%;
+  max-width: 1400px;
+  height: 100%;
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -165,18 +168,18 @@
 }
 
 .auth-card {
-  flex: 1;
+  flex: 4;
   padding: 3rem;
-  max-width: 600px;
 }
 
 .auth-graphics {
-  flex: 1;
+  flex: 3;
   background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
   padding: 3rem;
+  padding-top: 7rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
   color: white;
 }
