@@ -1,67 +1,331 @@
 {% extends 'parents/base.html' %}
 
 {% block title %}TaskFlow | Login{% endblock %}
+
 {% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="TaskFlow" class="login-logo">
+      <h1>Welcome Back</h1>
+      <p>Log in to continue your productivity journey</p>
+    </div>
 
-<div class="login-container mt-4">
-<div class="login-box">
-      <h2>Login</h2>
-      <div id="uname_email_err">
-        {% if form.uname_or_email.data %}
-        <div class="alert alert-danger" role="alert">
-          Invalid credentials. Please try again.
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="login-alert">
+          <i class="bi bi-exclamation-circle"></i>
+          <span>{{ messages[0] }}</span>
+          <button class="login-alert-close">&times;</button>
         </div>
-        {% endif %}
-      </div>
+      {% endif %}
+    {% endwith %}
 
-      <form method="post" action="">
+    {% if form.uname_or_email.data %}
+      <div class="login-alert error">
+        <i class="bi bi-exclamation-circle"></i>
+        <span>Invalid credentials. Please try again.</span>
+        <button class="login-alert-close">&times;</button>
+      </div>
+    {% endif %}
+
+    <form method="post" action="" class="login-form">
       {{ form.hidden_tag() }}
 
-          <div class="mb-3">
-              {{ form.uname_or_email.label(class="form-label") }}
-              {{ form.uname_or_email() }}
-          </div>
-          <div class="mb-3">
-              {{ form.password.label(class="form-label") }}
-              {{ form.password() }}
-          </div>
-          <div class="mb-3">
-            <div class="form-check">
-              {{ form.remember() }}
-              {{ form.remember.label(class="form-check-label") }}
-            </div>  
-          </div>
-          <div class="forgot-password">
-            <a href="#">Forgot password?</a>
-          </div>
-          {{ form.submit() }}
+      <div class="form-group">
+        {{ form.uname_or_email.label(class="form-label") }}
+        {{ form.uname_or_email(class="form-input", placeholder="Enter username or email") }}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label(class="form-label") }}
+        <div class="password-group">
+          {{ form.password(class="form-input", placeholder="Enter your password") }}
+          <button type="button" class="password-toggle">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="form-checkbox">
+          {{ form.remember() }}
+          <span class="checkmark"></span>
+          Remember me
+        </label>
+        <a href="#" class="forgot-password">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="login-button">Log In</button>
+
+      <div class="login-footer">
+        Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a>
+      </div>
     </form>
-    <div class="sign-up">
-        <p>Don't have an account? <a href="/auth/signup">Sign up here</a></p>
-    </div>
-</div>
+  </div>
 </div>
 
-{% with messages = get_flashed_messages() %}
-    {% for message in messages %}
-        {% if message %}
-          <div id="flash-message" class="flash-message">
-            <span>
-                {{ message }}
-            </span>
-            <button id="close-btn" class="close-btn">&times;</button>
-          </div>
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-              flash();
-            });
-          </script>
-        {% endif %}
-    {% endfor %}
-{% endwith %}
+<style>
+/* Base Styles */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 20px;
+}
+
+.login-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+}
+
+/* Header */
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-logo {
+  height: 40px;
+  margin-bottom: 20px;
+}
+
+.login-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.login-header p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* Alerts */
+.login-alert {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.login-alert.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.login-alert i {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.login-alert-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  margin-left: auto;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Form Elements */
+.login-form {
+  margin-top: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.password-group {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.form-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkmark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-right: 8px;
+  position: relative;
+}
+
+.form-checkbox input:checked ~ .checkmark {
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 3px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.form-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.forgot-password {
+  color: #4f46e5;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* Login Button */
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+}
+
+.login-button:hover {
+  background: #4338ca;
+}
+
+/* Footer */
+.login-footer {
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.login-footer a {
+  color: #4f46e5;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 20px;
+  }
+}
+</style>
+
 <script>
-  login_option = document.getElementsByClassName('form2')[0]
-  login_option.style.display = 'none'
-</script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Password toggle functionality
+  const passwordToggle = document.querySelector('.password-toggle');
+  if (passwordToggle) {
+    passwordToggle.addEventListener('click', function() {
+      const input = this.parentElement.querySelector('input');
+      const icon = this.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+      }
+    });
+  }
 
-{% endblock %} 
+  // Close alert functionality
+  const alertCloseButtons = document.querySelectorAll('.login-alert-close');
+  alertCloseButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      this.closest('.login-alert').style.display = 'none';
+    });
+  });
+});
+</script>
+{% endblock %}
