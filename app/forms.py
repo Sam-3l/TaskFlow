@@ -18,7 +18,7 @@ class SignupForm(FlaskForm):
     email = EmailField("Email", validators=[DataRequired(), Length(max=150),], render_kw={"placeholder":"myname@example.com", "class":"form-control", "oninput": "displayoff('email_err')"})
     password = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=150),], render_kw={"placeholder":"Input your password", "class":"form-control"})
     c_pass = PasswordField("Confirm Password", validators=[DataRequired(), Length(min=8, max=150), EqualTo("password"),], render_kw={"placeholder":"Confirm your password", "class":"form-control", "oninput": "displayoff('cpass_err')"})
-    check = BooleanField("I agree to the terms and conitions and privacy policy", validators=[DataRequired(),], render_kw={"class":"form-check-input"})
+    check = BooleanField("", validators=[DataRequired(),], render_kw={"class":"form-check-input"})
     submit = SubmitField("Sign up", render_kw={"class": "btn btn-secondary w-100"})
 
     def validate_username(self, field):

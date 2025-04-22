@@ -93,18 +93,18 @@
             <p class="text-center text-muted mb-3">TRUSTED BY INNOVATIVE TEAMS WORLDWIDE</p>
             <div class="marquee">
                 <div class="marquee-content">
-                    <img src="{{ url_for('static', filename='images/logos/logo1.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo1.png') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo2.svg') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo3.svg') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo4.svg') }}" alt="Client Logo">
-                    <img src="{{ url_for('static', filename='images/logos/logo5.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo5.png') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo6.svg') }}" alt="Client Logo">
                     <!-- Duplicate for seamless loop -->
-                    <img src="{{ url_for('static', filename='images/logos/logo1.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo1.png') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo2.svg') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo3.svg') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo4.svg') }}" alt="Client Logo">
-                    <img src="{{ url_for('static', filename='images/logos/logo5.svg') }}" alt="Client Logo">
+                    <img src="{{ url_for('static', filename='images/logos/logo5.png') }}" alt="Client Logo">
                     <img src="{{ url_for('static', filename='images/logos/logo6.svg') }}" alt="Client Logo">
                 </div>
             </div>
@@ -248,12 +248,12 @@
     </section>
 
     <!-- AI Spotlight Section -->
-    <section class="ai-section py-6">
+    <section class="ai-section py-4">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="ai-image-wrapper">
-                        <img src="{{ url_for('static', filename='images/ai-interface.webp') }}" 
+                        <img src="{{ url_for('static', filename='images/c_sol.jpg') }}" 
                              alt="TaskFlow AI Interface" 
                              class="ai-image"
                              loading="lazy">
@@ -300,10 +300,10 @@
     </section>
 
     <!-- Testimonials -->
-    <section class="testimonials-section py-6 bg-dark text-white">
+    <section class="testimonials-section py-6 text-white" style="background: #313131;">
         <div class="container">
             <div class="text-center mb-5">
-                <span class="section-badge">USER STORIES</span>
+                <span class="section-badge mt-4">USER STORIES</span>
                 <h2 class="section-title">Trusted by <span class="text-gradient">Visionaries</span></h2>
             </div>
             
@@ -316,7 +316,7 @@
                         <p class="testimonial-text">TaskFlow's AI features saved our team 15+ hours per week by automating routine task assignments and predicting realistic deadlines. The analytics helped us identify workflow bottlenecks we didn't even know existed!</p>
                     </div>
                     <div class="testimonial-author">
-                        <img src="{{ url_for('static', filename='images/testimonials/user1.jpg') }}" 
+                        <img src="{{ url_for('static', filename='images/testimonials/default.jpg') }}" 
                              alt="Sarah Johnson" 
                              class="author-avatar">
                         <div>
@@ -334,7 +334,7 @@
                         <p class="testimonial-text">As a solopreneur, TaskFlow has been game-changing. The AI assistant helps me stay on top of everything without the overhead of complex project management tools. It's like having a personal productivity coach.</p>
                     </div>
                     <div class="testimonial-author">
-                        <img src="{{ url_for('static', filename='images/testimonials/user2.jpg') }}" 
+                        <img src="{{ url_for('static', filename='images/testimonials/default.jpg') }}" 
                              alt="Michael Chen" 
                              class="author-avatar">
                         <div>
@@ -352,31 +352,13 @@
                         <p class="testimonial-text">We evaluated over 20 task management solutions before choosing TaskFlow. The combination of powerful features and intuitive design made it the clear winner for our 150-person remote team.</p>
                     </div>
                     <div class="testimonial-author">
-                        <img src="{{ url_for('static', filename='images/testimonials/user3.jpg') }}" 
+                        <img src="{{ url_for('static', filename='images/testimonials/default.jpg') }}" 
                              alt="David Rodriguez" 
                              class="author-avatar">
                         <div>
                             <h4>David Rodriguez</h4>
                             <p>VP Operations at GlobalSoft</p>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing CTA -->
-    <section class="pricing-cta py-6">
-        <div class="container">
-            <div class="cta-card">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <h2>Ready to Transform Your Productivity?</h2>
-                        <p>Join thousands of professionals and teams who achieve more with TaskFlow.</p>
-                    </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <a href="/pricing" class="btn btn-primary btn-lg me-2">View Plans</a>
-                        <a href="/demo" class="btn btn-outline-primary btn-lg">Live Demo</a>
                     </div>
                 </div>
             </div>
@@ -390,13 +372,13 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="footer-logo mb-3">
-                    <img src="{{ url_for('static', filename='images/logo-white.svg') }}" 
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" 
                          alt="TaskFlow" 
                          width="120">
                 </div>
                 <p>The intelligent task management platform that helps you work smarter, not harder.</p>
                 <div class="social-links mt-4">
-                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#"><i class="bi bi-twitter"></i></a>
                     <a href="#"><i class="bi bi-linkedin"></i></a>
                     <a href="#"><i class="bi bi-facebook"></i></a>
                     <a href="#"><i class="bi bi-instagram"></i></a>
