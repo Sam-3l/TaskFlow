@@ -34,7 +34,7 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-primary-soft mb-4">
-                        <img src="https://placehold.co/40/4f46e5/white?icon=checklist" alt="Task Management" class="img-fluid">
+                        <i class="fas fa-tasks fa-2x text-primary"></i>
                     </div>
                     <h3 class="h4 fw-bold">Smart Task Management</h3>
                     <p class="text-muted">Create, organize, and prioritize tasks with AI-powered suggestions and natural language input.</p>
@@ -51,7 +51,7 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-success-soft mb-4">
-                        <img src="https://placehold.co/40/10b981/white?icon=users" alt="Collaboration" class="img-fluid">
+                        <i class="fas fa-users fa-2x text-success"></i>
                     </div>
                     <h3 class="h4 fw-bold">Team Collaboration</h3>
                     <p class="text-muted">Assign tasks, track progress, and communicate seamlessly with built-in project workspaces.</p>
@@ -67,7 +67,7 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-info-soft mb-4">
-                        <img src="https://placehold.co/40/0ea5e9/white?icon=chart" alt="Analytics" class="img-fluid">
+                        <i class="fas fa-chart-line fa-2x text-info"></i>
                     </div>
                     <h3 class="h4 fw-bold">Productivity Analytics</h3>
                     <p class="text-muted">Visual reports and AI-driven insights help you optimize your workflow and identify bottlenecks.</p>
@@ -83,7 +83,7 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-warning-soft mb-4">
-                        <img src="https://placehold.co/40/f59e0b/white?icon=bell" alt="Notifications" class="img-fluid">
+                        <i class="fas fa-bell fa-2x text-warning"></i>
                     </div>
                     <h3 class="h4 fw-bold">Smart Reminders</h3>
                     <p class="text-muted">Context-aware notifications remind you at the optimal time based on your work patterns.</p>
@@ -99,7 +99,7 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-danger-soft mb-4">
-                        <img src="https://placehold.co/40/ef4444/white?icon=robot" alt="AI Assistant" class="img-fluid">
+                        <i class="fas fa-robot fa-2x text-danger"></i>
                     </div>
                     <h3 class="h4 fw-bold">AI Task Assistant</h3>
                     <p class="text-muted">Chat-based interface to create tasks, generate summaries, and get recommendations instantly.</p>
@@ -116,7 +116,7 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-purple-soft mb-4">
-                        <img src="https://placehold.co/40/8b5cf6/white?icon=layers" alt="Workflows" class="img-fluid">
+                        <i class="fas fa-project-diagram fa-2x text-purple"></i>
                     </div>
                     <h3 class="h4 fw-bold">Custom Workflows</h3>
                     <p class="text-muted">Build personalized Kanban boards, lists, or calendars that adapt to your projects.</p>
@@ -134,27 +134,27 @@
     <div class="container py-5">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <img src="https://placehold.co/600x400/e0e7ff/4f46e5?text=AI+Features" alt="AI Features" class="img-fluid rounded-4 shadow">
+                <img src="{{ url_for('static', filename='images/ai_placehold.webp') }}" alt="AI Features" class="img-fluid rounded-4 shadow">
             </div>
             <div class="col-lg-6">
                 <span class="badge bg-primary-soft text-primary mb-3">AI POWERED</span>
                 <h2 class="fw-bold mb-4">Intelligent Features That <span class="text-primary">Learn From You</span></h2>
-                <div class="d-flex mb-4">
-                    <div class="me-4">
+                <div class="d-flex flex-wrap mb-4">
+                    <div class="me-4 mb-3">
                         <div class="bg-white rounded-circle shadow-sm p-3 mb-2" style="width: 60px; height: 60px;">
-                            <img src="https://placehold.co/24/4f46e5/white?icon=clock" alt="Time Tracking" class="img-fluid">
+                            <i class="fas fa-clock fa-lg text-primary"></i>
                         </div>
                         <h4 class="h6 fw-bold mb-0">Time Predictions</h4>
                     </div>
-                    <div class="me-4">
+                    <div class="me-4 mb-3">
                         <div class="bg-white rounded-circle shadow-sm p-3 mb-2" style="width: 60px; height: 60px;">
-                            <img src="https://placehold.co/24/4f46e5/white?icon=wand" alt="Auto Scheduling" class="img-fluid">
+                            <i class="fas fa-magic fa-lg text-primary"></i>
                         </div>
                         <h4 class="h6 fw-bold mb-0">Auto Scheduling</h4>
                     </div>
-                    <div>
+                    <div class="mb-3">
                         <div class="bg-white rounded-circle shadow-sm p-3 mb-2" style="width: 60px; height: 60px;">
-                            <img src="https://placehold.co/24/4f46e5/white?icon=message" alt="Chat Assistant" class="img-fluid">
+                            <i class="fas fa-comments fa-lg text-primary"></i>
                         </div>
                         <h4 class="h6 fw-bold mb-0">Chat Assistant</h4>
                     </div>
@@ -178,7 +178,7 @@
             <div class="card border-0 shadow-lg">
                 <div class="card-body p-5">
                     <div class="d-flex align-items-center mb-4">
-                        <img src="https://placehold.co/80/4f46e5/white?text=TS" alt="User" class="rounded-circle me-3">
+                        <img src="https://ui-avatars.com/api/?name=Taylor+Smith&background=4f46e5&color=fff" alt="User" class="rounded-circle me-3" width="80">
                         <div>
                             <h4 class="mb-0">Taylor Smith</h4>
                             <p class="text-muted mb-0">Project Manager @TechCorp</p>
@@ -186,7 +186,11 @@
                     </div>
                     <p class="lead mb-4">"TaskFlow's AI features saved our team 10+ hours weekly by automating task assignments and predicting deadlines. The analytics helped us identify workflow bottlenecks we didn't even know existed!"</p>
                     <div class="text-warning mb-3">
-                        ★ ★ ★ ★ ★
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
                     </div>
                 </div>
             </div>
@@ -197,10 +201,16 @@
 <!-- CTA -->
 <section class="bg-primary text-white py-5">
     <div class="container py-4 text-center">
-        <h2 class="fw-bold mb-4">Ready to Transform Your Productivity?</h2>
-        <p class="lead mb-5">Join TaskFlow today and experience the future of task management</p>
-        <a href="/auth/signup" class="btn btn-light btn-lg px-5 me-3">Get Started Free</a>
-        <a href="#" class="btn btn-outline-light btn-lg px-5">See Pricing</a>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="fw-bold mb-4">Ready to Transform Your Productivity?</h2>
+                <p class="lead mb-4">Join TaskFlow today and experience the future of task management</p>
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    <a href="/auth/signup" class="btn btn-light btn-lg px-4 px-sm-5">Get Started Free</a>
+                    <a href="#" class="btn btn-outline-light btn-lg px-4 px-sm-5">See Pricing</a>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
