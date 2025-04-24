@@ -378,7 +378,7 @@ def disconnect_user(username):
         'new_count': user.followers.count()
     })
 
-@main.route('/connections')
+@main.route('/my-connections')
 @login_required
 def connections():
     from app import db
@@ -402,6 +402,28 @@ def connections():
         current_app.logger.error(f"Connections page error: {str(e)}")
         flash("An error occurred while loading connections", "error")
         return redirect(url_for('main.dashboard'))
+    
+@main.route('/connections/<username>')
+@login_required
+def user_connections(username):
+    # Get the user whose connections we want to view
+    profile_user = User.query.filter_by(username=username).first_or_404()
+    
+    # Don't allow viewing your own connections through this route
+    if current_user.id == profile_user.id:
+        return redirect(url_for('main.connections'))
+    
+    # Get the user's connections and followers
+    connections = profile_user.get_connections().all()
+    followers = profile_user.followers.all()
+    
+    return render_template('connections.html',
+                        connections=connections,
+                        followers=followers,
+                        suggested_users=[],  # No suggestions when viewing others' connections
+                        profile_user=profile_user,  # Pass the profile user
+                        user=current_user,
+                        active_page="connections")
 
 @main.route('/search')
 @login_required

@@ -49,8 +49,8 @@
                     </span>
                 </div>
 
-                <!-- Updated connections link button -->
-                <a href="{{ url_for('main.connections', username=user_profile.username) }}" 
+                <!-- User connections -->
+                <a href="{{ url_for('main.user_connections', username=user_profile.username) }}" 
                 class="btn btn-outline-secondary d-flex align-items-center" style="height: 38px">
                     <i class="bi bi-people me-1"></i> Connections
                     <span class="badge bg-secondary ms-2">{{ user_profile.get_connections().count() }}</span>

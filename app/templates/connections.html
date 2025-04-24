@@ -4,12 +4,30 @@
 
 {% block content %}
 <div class="container py-5 connections">
+    <!-- JavaScript context variable -->
+    <script>
+        const isOwnConnectionsPage = {% if not profile_user %}true{% else %}false{% endif %};
+    </script>
+
+    {% if profile_user %}
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ url_for('main.public_profile', username=profile_user.username) }}" class="me-3">
+            <img src="{{ url_for('static', filename='images/uploads/profile_img/' + profile_user.profile_img) }}" 
+                 class="rounded-circle" width="50" height="50">
+        </a>
+        <div>
+            <h2 class="h4 mb-0">{{ profile_user.fname }}'s Connections</h2>
+            <small class="text-muted">@{{ profile_user.username }}</small>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="card shadow-sm">
         <div class="card-header bg-white">
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">
                     <i class="bi bi-people-fill text-primary me-2"></i>
-                    My Connections
+                    {% if not profile_user %}My{% endif %} Connections
                 </h2>
                 <span class="badge bg-primary">
                     {{ connections|length }} connection{% if connections|length != 1 %}s{% endif %}
@@ -41,7 +59,7 @@
                     {% if connections %}
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         {% for user in connections %}
-                        <div class="col">
+                        <div class="col" data-user-username="{{ user.username }}">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
@@ -53,10 +71,19 @@
                                            class="btn btn-sm btn-outline-primary">
                                             View Profile
                                         </a>
-                                        <button class="btn btn-sm btn-outline-danger disconnect-btn" 
-                                                data-username="{{ user.username }}">
-                                            Disconnect
-                                        </button>
+                                        {% if user != current_user %}
+                                            {% if profile_user and not current_user.is_connected(user) %}
+                                            <button class="btn btn-sm btn-primary connect-btn"
+                                                    data-username="{{ user.username }}">
+                                                Connect
+                                            </button>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-outline-danger disconnect-btn" 
+                                                    data-username="{{ user.username }}">
+                                                Disconnect
+                                            </button>
+                                            {% endif %}
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -80,7 +107,7 @@
                     {% if followers %}
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         {% for user in followers %}
-                        <div class="col">
+                        <div class="col" data-user-username="{{ user.username }}">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
@@ -92,11 +119,23 @@
                                            class="btn btn-sm btn-outline-primary">
                                             View Profile
                                         </a>
-                                        {% if not current_user.is_connected(user) %}
-                                        <button class="btn btn-sm btn-primary connect-btn" 
-                                                data-username="{{ user.username }}">
-                                            Connect Back
-                                        </button>
+                                        {% if user != current_user %}
+                                            {% if not current_user.is_connected(user) and not profile_user %}
+                                            <button class="btn btn-sm btn-primary connect-btn" 
+                                                    data-username="{{ user.username }}">
+                                                Connect Back
+                                            </button>
+                                            {% elif profile_user and not current_user.is_connected(user) %}
+                                            <button class="btn btn-sm btn-primary connect-btn"
+                                                    data-username="{{ user.username }}">
+                                                Connect
+                                            </button>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-outline-danger disconnect-btn" 
+                                                    data-username="{{ user.username }}">
+                                                Disconnect
+                                            </button>
+                                            {% endif %}
                                         {% endif %}
                                     </div>
                                 </div>
@@ -117,7 +156,7 @@
     </div>
 
     {% if suggested_users %}
-    <div class="card mt-4">
+    <div class="card mt-4" id="suggested-users">
         <div class="card-header bg-white">
             <h4 class="mb-0">
                 <i class="bi bi-lightbulb text-warning me-2"></i>
@@ -129,7 +168,7 @@
             
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                 {% for user in suggested_users %}
-                <div class="col">
+                <div class="col" data-user-username="{{ user.username }}">
                     <div class="card h-100">
                         <div class="card-body text-center">
                             <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
@@ -166,8 +205,34 @@
 <!-- Connection Management JavaScript -->
 <script>
 $(document).ready(function() {
+    // Function to create connection card HTML
+    function createConnectionCard(user) {
+        return `
+            <div class="col" data-user-username="${user.username}">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <img src="${user.profileImg}" 
+                            class="rounded-circle mb-3" width="100" height="100">
+                        <h5 class="card-title">${user.fname} ${user.lname}</h5>
+                        <p class="text-muted mb-2">@${user.username}</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="/public_profile/${user.username}" 
+                            class="btn btn-sm btn-outline-primary">
+                                View Profile
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger disconnect-btn" 
+                                    data-username="${user.username}">
+                                Disconnect
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     // Handle disconnect buttons
-    $('.disconnect-btn').click(function() {
+    $(document).on('click', '.disconnect-btn', function() {
         const userName = $(this).data('username');
         const card = $(this).closest('.col');
         
@@ -177,13 +242,23 @@ $(document).ready(function() {
             headers: {
                 'X-CSRFToken': '{{ csrf_token() }}'
             },
-            success: function(response) {
-                if(response.success) {
-                    card.fadeOut(300, function() {
-                        $(this).remove();
+            success: (response) => {
+                if (response.success) {
+                    if (isOwnConnectionsPage) {
+                        // Remove from connections tab
+                        card.remove();
                         updateConnectionCount(-1);
-                        
-                        // Show empty state if no connections left
+
+                        // Update followers tab
+                        $(`#followers [data-user-username="${userName}"] .disconnect-btn`)
+                            .replaceWith(`
+                                <button class="btn btn-sm btn-primary connect-btn" 
+                                        data-username="${userName}">
+                                    Connect Back
+                                </button>
+                            `);
+
+                        // Check if connections are empty
                         if ($('#connections .col').length === 0) {
                             $('#connections').html(`
                                 <div class="text-center py-5">
@@ -196,14 +271,22 @@ $(document).ready(function() {
                                 </div>
                             `);
                         }
-                    });
+                    } else {
+                        // On another user's page, toggle button
+                        $(this).replaceWith(`
+                            <button class="btn btn-sm btn-primary connect-btn" 
+                                    data-username="${userName}">
+                                Connect
+                            </button>
+                        `);
+                    }
                 }
             }
         });
     });
-    
-    // Handle connect buttons (in followers tab and suggestions)
-    $('.connect-btn').click(function() {
+
+    // Handle connect buttons
+    $(document).on('click', '.connect-btn', function() {
         const userName = $(this).data('username');
         const card = $(this).closest('.col');
         const btn = $(this);
@@ -214,38 +297,52 @@ $(document).ready(function() {
             headers: {
                 'X-CSRFToken': '{{ csrf_token() }}'
             },
-            success: function(response) {
-                if(response.success) {
-                    // If in followers tab, just remove the button
-                    if (btn.closest('#followers').length) {
+            success: (response) => {
+                if (response.success) {
+                    if (isOwnConnectionsPage) {
+                        // Collect user data
+                        const userData = {
+                            username: userName,
+                            fname: card.find('.card-title').text().split(' ')[0],
+                            lname: card.find('.card-title').text().split(' ')[1],
+                            profileImg: card.find('img').attr('src')
+                        };
+
+                        // Create new connection card
+                        const newCard = createConnectionCard(userData);
+                        $('#connections .row').append(newCard);
+                        updateConnectionCount(1);
+
+                        // Remove from suggested or update followers
+                        if (card.closest('#suggested-users').length) {
+                            card.remove();
+                        } else {
+                            btn.replaceWith(`
+                                <button class="btn btn-sm btn-outline-danger disconnect-btn" 
+                                        data-username="${userName}">
+                                    Disconnect
+                                </button>
+                            `);
+                        }
+                    } else {
+                        // On another user's page, toggle button
                         btn.replaceWith(`
-                            <button class="btn btn-sm btn-outline-secondary" disabled>
-                                <i class="bi bi-check"></i> Connected
+                            <button class="btn btn-sm btn-outline-danger disconnect-btn" 
+                                    data-username="${userName}">
+                                Disconnect
                             </button>
                         `);
-                        updateConnectionCount(1);
-                    } 
-                    // If in suggestions, remove the whole card
-                    else {
-                        card.fadeOut(300, function() {
-                            $(this).remove();
-                            updateConnectionCount(1);
-                        });
                     }
                 }
             }
         });
     });
-    
+
     function updateConnectionCount(change) {
+        if (!isOwnConnectionsPage) return;
         const badge = $('.con-nav-link.active .badge');
         const current = parseInt(badge.text());
         badge.text(current + change);
-        
-        // Update all connection counts in the UI
-        $('.connection-count').each(function() {
-            $(this).text(parseInt($(this).text()) + change);
-        });
     }
 });
 </script>
