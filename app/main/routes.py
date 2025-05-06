@@ -344,7 +344,10 @@ def public_profile(username):
         ).first()
         project.user_role = membership_record.role if membership_record else None
 
-    return render_template('public_profile.html', user_profile=user_profile, user=current_user, projects=user_projects)
+    return render_template('public_profile.html', 
+                         user_profile=user_profile, 
+                         user=current_user, 
+                         projects=user_projects)
 
 @main.route('/connect/<username>', methods=['POST'])
 @login_required

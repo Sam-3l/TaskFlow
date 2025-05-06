@@ -4,12 +4,12 @@
     {% extends 'parents/base.html' %}
 {% endif %}
 
-{% block title %}{{ user_profile.username }}'s Profile{% endblock %}
+{% block title %}{{ user_profile.fname }}'s Profile{% endblock %}
 
 {% block content %}
 <div class="container py-5 profile">
     <!-- Profile Card -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mb-4">
         <!-- Profile Header -->
         <div class="position-relative">
             <div class="profile-cover" style="height: 200px; background: linear-gradient(135deg, #6e8efb, #a777e3);"></div>
@@ -29,7 +29,7 @@
 
             <!-- Connections Section -->
             <div class="d-flex align-items-center gap-3 mb-4">
-                <div class="d-flex gap-2 align-items-stretch"> <!-- Changed to align-items-stretch -->
+                <div class="d-flex gap-2 align-items-stretch">
                     {% if current_user.is_authenticated and current_user.id != user_profile.id %}
                         {% if current_user.is_connected(user_profile) %}
                             <button class="btn btn-outline-danger" id="disconnectBtn">
@@ -75,20 +75,152 @@
                             <span>Joined {{ user_profile.joined_at.strftime('%B %Y') }}</span>
                         </li>
                         {% endif %}
+                        {% if user_profile.city or user_profile.state %}
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-geo-alt text-primary me-3 mt-1"></i>
+                            <span>
+                                {% if user_profile.city %}{{ user_profile.city }}{% endif %}
+                                {% if user_profile.state %}, {{ user_profile.state }}{% endif %}
+                            </span>
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Projects Section -->
+    <div class="row">
+        <!-- User's Projects -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-collection text-primary me-2"></i>
+                        {{ user_profile.fname }}'s Projects
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <div class="row row-cols-1 g-3">
+                            {% for project in projects %}
+                            <div class="col">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) if project.cover_image.startswith('custom_') else url_for('static', filename='images/defaults/' + project.cover_image) }}" 
+                                                 class="rounded me-3" width="60" height="60" alt="Project Cover">
+                                            <div>
+                                                <h5 class="mb-1">{{ project.title }}</h5>
+                                                <p class="text-muted small mb-2">{{ project.description|truncate(100) }}</p>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-light text-dark me-2">
+                                                        <i class="bi bi-people-fill me-1"></i>
+                                                        {{ project.members|length }} members
+                                                    </span>
+                                                    {% if project.user_role %}
+                                                    <span class="badge bg-primary">
+                                                        {{ project.user_role }}
+                                                    </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-collection display-5 text-muted mb-3"></i>
+                            <h5>No projects yet</h5>
+                            <p class="text-muted">{{ user_profile.fname }} hasn't joined any projects</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects in Common (only shown if current user is viewing) -->
+        {% if current_user.is_authenticated and current_user.id != user_profile.id %}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0">
+                        <i class="bi bi-people-fill text-success me-2"></i>
+                        Projects in Common
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% set common_projects = [] %}
+                    {% for project in projects %}
+                        {% if current_user in project.members %}
+                            {% set _ = common_projects.append(project) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if common_projects %}
+                        <div class="row row-cols-1 g-3">
+                            {% for project in common_projects %}
+                            <div class="col">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) if project.cover_image.startswith('custom_') else url_for('static', filename='images/defaults/' + project.cover_image) }}" 
+                                                 class="rounded me-3" width="60" height="60" alt="Project Cover">
+                                            <div>
+                                                <h5 class="mb-1">{{ project.title }}</h5>
+                                                <p class="text-muted small mb-2">{{ project.description|truncate(100) }}</p>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-light text-dark me-2">
+                                                        <i class="bi bi-people-fill me-1"></i>
+                                                        {{ project.members|length }} members
+                                                    </span>
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                        Both members
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people display-5 text-muted mb-3"></i>
+                            <h5>No projects in common</h5>
+                            <p class="text-muted">You and {{ user_profile.fname }} haven't collaborated on any projects yet</p>
+                            <a href="{{ url_for('main.explore_projects') }}" class="btn btn-sm btn-success">
+                                <i class="bi bi-compass me-1"></i> Explore Projects
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 <style>
-    .profile{
+    .profile {
         margin-top: 60px;
     }
     .card {
         border-radius: 10px;
         overflow: hidden;
+    }
+    .project-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .project-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 </style>
 
