@@ -109,7 +109,7 @@
                                 <div class="card border-0 shadow-sm">
                                     <div class="card-body">
                                         <div class="d-flex align-items-start">
-                                            <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) if project.cover_image.startswith('custom_') else url_for('static', filename='images/defaults/' + project.cover_image) }}" 
+                                            <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) }}" 
                                                  class="rounded me-3" width="60" height="60" alt="Project Cover">
                                             <div>
                                                 <h5 class="mb-1">{{ project.title }}</h5>
@@ -168,7 +168,7 @@
                                 <div class="card border-0 shadow-sm">
                                     <div class="card-body">
                                         <div class="d-flex align-items-start">
-                                            <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) if project.cover_image.startswith('custom_') else url_for('static', filename='images/defaults/' + project.cover_image) }}" 
+                                            <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) }}" 
                                                  class="rounded me-3" width="60" height="60" alt="Project Cover">
                                             <div>
                                                 <h5 class="mb-1">{{ project.title }}</h5>
@@ -195,7 +195,7 @@
                             <i class="bi bi-people display-5 text-muted mb-3"></i>
                             <h5>No projects in common</h5>
                             <p class="text-muted">You and {{ user_profile.fname }} haven't collaborated on any projects yet</p>
-                            <a href="{{ url_for('main.explore_projects') }}" class="btn btn-sm btn-success">
+                            <a href="" class="btn btn-sm btn-success">
                                 <i class="bi bi-compass me-1"></i> Explore Projects
                             </a>
                         </div>
@@ -226,31 +226,33 @@
 
 <script>
 $(document).ready(function() {
-    // Handle connect button
-    $('#connectBtn').click(function() {
-        $.ajax({
-            url: "{{ url_for('main.connect_user', username=user_profile.username) }}",
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if(response.success) {
-                    $('#connectBtn').replaceWith(`
-                        <button class="btn btn-outline-danger" id="disconnectBtn">
-                            <i class="bi bi-person-dash"></i> Disconnect
-                        </button>
-                    `);
-                    $('#connectionCount').text(response.new_count);
-                    setupDisconnectHandler();
+    // Define the connect handler function
+    function setupConnectHandler() {
+        $('#connectBtn').off('click').on('click', function() {
+            $.ajax({
+                url: "{{ url_for('main.connect_user', username=user_profile.username) }}",
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if(response.success) {
+                        $('#connectBtn').replaceWith(`
+                            <button class="btn btn-outline-danger" id="disconnectBtn">
+                                <i class="bi bi-person-dash"></i> Disconnect
+                            </button>
+                        `);
+                        $('#connectionCount').text(response.new_count);
+                        setupDisconnectHandler();
+                    }
                 }
-            }
+            });
         });
-    });
+    }
 
-    // Handle disconnect button
+    // Define the disconnect handler function
     function setupDisconnectHandler() {
-        $('#disconnectBtn').click(function() {
+        $('#disconnectBtn').off('click').on('click', function() {
             $.ajax({
                 url: "{{ url_for('main.disconnect_user', username=user_profile.username) }}",
                 method: 'POST',
@@ -265,16 +267,20 @@ $(document).ready(function() {
                             </button>
                         `);
                         $('#connectionCount').text(response.new_count);
-                        $('#connectBtn').click(setupConnectHandler);
+                        setupConnectHandler();
                     }
                 }
             });
         });
     }
 
-    // Initial setup
-    {% if current_user.is_authenticated and current_user.is_connected(user_profile) %}
-        setupDisconnectHandler();
+    // Initial setup based on current connection status
+    {% if current_user.is_authenticated %}
+        {% if current_user.is_connected(user_profile) %}
+            setupDisconnectHandler();
+        {% else %}
+            setupConnectHandler();
+        {% endif %}
     {% endif %}
 });
 </script>

@@ -1,6 +1,12 @@
 {% extends 'parents/auth_base.html' %}
 
-{% block title %}{{ user.fname }} | Connections{% endblock %}
+{% block title %}
+    {% if profile_user %}
+        {{ profile_user.fname }}'s Connections
+    {% else %}
+        {{ user.fname }} | Connections
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container py-5 connections">
@@ -91,7 +97,7 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-5">
+                    <div class="text-center py-5" id="no-connections-message">
                         <i class="bi bi-people display-5 text-muted mb-3"></i>
                         <h4>No connections yet</h4>
                         <p class="text-muted">Connect with other users to see them here</p>
@@ -231,6 +237,13 @@ $(document).ready(function() {
         `;
     }
 
+    // Function to initialize connections grid when transitioning from no connections
+    function initConnectionsGrid() {
+        return $('<div>', {
+            class: 'row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4'
+        });
+    }
+
     // Handle disconnect buttons
     $(document).on('click', '.disconnect-btn', function() {
         const userName = $(this).data('username');
@@ -246,22 +259,15 @@ $(document).ready(function() {
                 if (response.success) {
                     if (isOwnConnectionsPage) {
                         // Remove from connections tab
-                        card.remove();
+                        $(`#connections [data-user-username="${userName}"]`).remove()
                         updateConnectionCount(-1);
 
-                        // Update followers tab
-                        $(`#followers [data-user-username="${userName}"] .disconnect-btn`)
-                            .replaceWith(`
-                                <button class="btn btn-sm btn-primary connect-btn" 
-                                        data-username="${userName}">
-                                    Connect Back
-                                </button>
-                            `);
-
-                        // Check if connections are empty
-                        if ($('#connections .col').length === 0) {
+                        // Check if we need to show the no connections message
+                        const connectionsContainer = $('#connections .row');
+                        if (connectionsContainer.children().length === 0) {
+                            connectionsContainer.remove();
                             $('#connections').html(`
-                                <div class="text-center py-5">
+                                <div class="text-center py-5" id="no-connections-message">
                                     <i class="bi bi-people display-5 text-muted mb-3"></i>
                                     <h4>No connections yet</h4>
                                     <p class="text-muted">Connect with other users to see them here</p>
@@ -271,6 +277,15 @@ $(document).ready(function() {
                                 </div>
                             `);
                         }
+
+                        // Update followers tab
+                        $(`#followers [data-user-username="${userName}"] .disconnect-btn`)
+                            .replaceWith(`
+                                <button class="btn btn-sm btn-primary connect-btn" 
+                                        data-username="${userName}">
+                                    Connect Back
+                                </button>
+                            `);
                     } else {
                         // On another user's page, toggle button
                         $(this).replaceWith(`
@@ -300,6 +315,22 @@ $(document).ready(function() {
             success: (response) => {
                 if (response.success) {
                     if (isOwnConnectionsPage) {
+                        // Check if we're transitioning from no connections
+                        const noConnectionsMessage = $('#no-connections-message');
+                        let connectionsContainer = $('#connections .row');
+                        
+                        if (noConnectionsMessage.length) {
+                            // Remove no connections message
+                            noConnectionsMessage.remove();
+                            // Initialize new connections grid
+                            connectionsContainer = initConnectionsGrid();
+                            $('#connections').append(connectionsContainer);
+                        } else if (!connectionsContainer.length) {
+                            // If for some reason we don't have a container
+                            connectionsContainer = initConnectionsGrid();
+                            $('#connections').append(connectionsContainer);
+                        }
+
                         // Collect user data
                         const userData = {
                             username: userName,
@@ -310,20 +341,21 @@ $(document).ready(function() {
 
                         // Create new connection card
                         const newCard = createConnectionCard(userData);
-                        $('#connections .row').append(newCard);
+                        connectionsContainer.append(newCard);
                         updateConnectionCount(1);
 
-                        // Remove from suggested or update followers
-                        if (card.closest('#suggested-users').length) {
-                            card.remove();
-                        } else {
-                            btn.replaceWith(`
+                        // Remove from suggested users
+                        $(`#suggested-users [data-user-username="${userName}"]`).remove();
+
+                        // Update followers tab
+                        $(`#followers [data-user-username="${userName}"] .connect-btn`)
+                            .replaceWith(`
                                 <button class="btn btn-sm btn-outline-danger disconnect-btn" 
                                         data-username="${userName}">
                                     Disconnect
                                 </button>
                             `);
-                        }
+
                     } else {
                         // On another user's page, toggle button
                         btn.replaceWith(`
@@ -340,7 +372,7 @@ $(document).ready(function() {
 
     function updateConnectionCount(change) {
         if (!isOwnConnectionsPage) return;
-        const badge = $('.con-nav-link.active .badge');
+        const badge = $('.card-header .badge');
         const current = parseInt(badge.text());
         badge.text(current + change);
     }
