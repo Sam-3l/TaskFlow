@@ -228,7 +228,7 @@ membership = db.Table("ProjectMembership",
     db.Column("project_id", db.Integer, db.ForeignKey("project.id"), primary_key=True),
     db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
     db.Column("joined_at", db.DateTime, default=func.current_timestamp()),
-    db.Column("role", db.String(30)),  # Changed from roles ARRAY to single role
+    db.Column("role", db.String(30)),
     db.Column("status", db.String(30)) # pending, active, inactive(past member)
     )
 

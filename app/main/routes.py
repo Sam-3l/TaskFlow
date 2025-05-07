@@ -16,7 +16,7 @@ import os
 from werkzeug.utils import secure_filename
 import time
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion
 from app.forms import CreateTask, CreateProject
 
 from datetime import datetime, date, timedelta
@@ -243,7 +243,71 @@ def create_projects():
 @main.route("/dashboard/projects/<int:project_id>")
 @login_required
 def project(project_id):
-    return None
+    from app import db
+
+    project = Project.query.get_or_404(project_id)
+    current_membership = db.session.query(membership).filter_by(
+        project_id=project.id,
+        user_id=current_user.id
+    ).first()
+    
+    # Get all members with their roles
+    members = db.session.query(
+        User,
+        membership.c.role,
+        membership.c.status
+    ).join(
+        membership, User.id == membership.c.user_id
+    ).filter(
+        membership.c.project_id == project.id,
+        membership.c.status == 'active'
+    ).all()
+    
+    # Get task assignments
+    task_assignments = TaskAssignment.query.filter_by(
+        source_project_id=project.id
+    ).order_by(
+        TaskAssignment.assigned_at.desc()
+    ).all()
+    
+    # Get discussions
+    discussions = ProjectDiscussion.query.filter_by(
+        project_id=project.id
+    ).order_by(
+        ProjectDiscussion.created_at.desc()
+    ).all()
+    
+    # Get tasks for Kanban board
+    tasks = Task.query.join(
+        TaskAssignment
+    ).filter(
+        TaskAssignment.source_project_id == project.id
+    ).all()
+    
+    # Organize tasks by status for Kanban
+    kanban_columns = {
+        'Backlog': [],
+        'To Do': [],
+        'In Progress': [],
+        'Review': [],
+        'Done': []
+    }
+    
+    for task in tasks:
+        status = task.status if task.status in kanban_columns else 'Backlog'
+        kanban_columns[status].append(task)
+    
+    return render_template(
+        'project.html',
+        user=current_user,
+        active_page="projects",
+        project=project,
+        current_membership=current_membership,
+        members=members,
+        task_assignments=task_assignments,
+        discussions=discussions,
+        kanban_columns=kanban_columns
+    )
 
 @main.route("/profile")
 @login_required

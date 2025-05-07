@@ -1,0 +1,1428 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}{{ project.title }} | Project{% endblock %}
+
+{% block content %}
+<div class="project-container">
+  <!-- Project Header -->
+  <div class="project-header">
+    <div class="project-cover" style="background-image: url('{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) }}')">
+      {% if current_membership and current_membership.role == 'project_manager' %}
+      <button class="edit-cover-btn" id="editCoverBtn">
+        <i class="bi bi-camera"></i> Change Cover
+      </button>
+      <input type="file" id="coverImageInput" accept="image/*" style="display: none;">
+      {% endif %}
+    </div>
+    
+    <div class="project-info">
+      <div class="project-title-container">
+        <h1 class="project-title">
+          {% if current_membership and current_membership.role == 'project_manager' %}
+          <span id="projectTitleEditable" contenteditable="true">{{ project.title }}</span>
+          <button class="save-title-btn" id="saveTitleBtn" style="display: none;">
+            <i class="bi bi-check"></i>
+          </button>
+          {% else %}
+          {{ project.title }}
+          {% endif %}
+        </h1>
+        
+        <div class="project-meta">
+          <span class="project-type">{{ project.type|capitalize }} Project</span>
+          {% if current_membership %}
+          <span class="your-role">Your Role: {{ current_membership.role|replace('_', ' ')|title }}</span>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="project-description">
+        {% if current_membership and current_membership.role == 'project_manager' %}
+        <div id="projectDescriptionEditable" contenteditable="true">{{ project.description }}</div>
+        <button class="save-description-btn" id="saveDescriptionBtn" style="display: none;">
+          Save Description
+        </button>
+        {% else %}
+        <p>{{ project.description }}</p>
+        {% endif %}
+      </div>
+      
+      <div class="project-actions">
+        {% if current_membership %}
+          {% if current_membership.role == 'project_manager' %}
+          <button class="btn btn-primary" id="addMemberBtn">
+            <i class="bi bi-plus"></i> Add Member
+          </button>
+          {% endif %}
+          <button class="btn btn-outline-primary" id="newTaskAssignmentBtn">
+            <i class="bi bi-plus-circle"></i> New Task Assignment
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Members Section -->
+  <div class="project-section">
+    <h2 class="section-title">
+      <i class="bi bi-people-fill"></i> Team Members
+      <span class="member-count">{{ members|length }} members</span>
+    </h2>
+    
+    <div class="members-grid">
+      {% for member, role, status in members %}
+      <div class="member-card">
+        <div class="member-avatar">
+          <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" alt="{{ member.username }}">
+          {% if role == 'project_manager' %}
+          <span class="role-badge manager">Manager</span>
+          {% elif role == 'task_coordinator' %}
+          <span class="role-badge coordinator">Coordinator</span>
+          {% endif %}
+        </div>
+        <div class="member-info">
+          <h3>{{ member.fname }} {{ member.lname }}</h3>
+          <p class="username">@{{ member.username }}</p>
+          <p class="role">{{ role|replace('_', ' ')|title }}</p>
+        </div>
+        {% if current_membership and current_membership.role == 'project_manager' and member.id != current_user.id %}
+        <div class="member-actions">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              Change Role
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" data-role="project_manager">Project Manager</a></li>
+              <li><a class="dropdown-item" href="#" data-role="task_coordinator">Task Coordinator</a></li>
+              <li><a class="dropdown-item" href="#" data-role="contributor">Contributor</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" data-action="remove">Remove from Project</a></li>
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      
+      {% if current_membership and current_membership.role == 'project_manager' %}
+      <div class="member-card add-member-card" id="addMemberCard" style="display: none;">
+        <div class="add-member-form">
+          <h3>Add New Member</h3>
+          <div class="form-group">
+            <input type="text" class="form-control" id="memberSearch" placeholder="Search by username or email">
+            <div class="search-results" id="searchResults"></div>
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select class="form-select" id="newMemberRole">
+              <option value="contributor">Contributor</option>
+              <option value="task_coordinator">Task Coordinator</option>
+            </select>
+          </div>
+          <div class="form-buttons">
+            <button class="btn btn-primary" id="confirmAddMember">Add Member</button>
+            <button class="btn btn-outline-secondary" id="cancelAddMember">Cancel</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Kanban Board Section -->
+  <div class="project-section">
+    <h2 class="section-title">
+      <i class="bi bi-kanban"></i> Project Board
+    </h2>
+    
+    <div class="kanban-board">
+      {% for column_name, tasks in kanban_columns.items() %}
+      <div class="kanban-column" data-status="{{ column_name }}">
+        <div class="column-header">
+          <h3>{{ column_name }}</h3>
+          <span class="task-count">{{ tasks|length }} tasks</span>
+        </div>
+        <div class="column-tasks" id="{{ column_name|lower|replace(' ', '-') }}-tasks">
+          {% for task in tasks %}
+          <div class="kanban-task" draggable="true" data-task-id="{{ task.id }}">
+            <div class="task-header">
+              <span class="task-priority {{ task.priority|lower if task.priority else 'normal' }}"></span>
+              <h4>{{ task.title }}</h4>
+            </div>
+            <div class="task-body">
+              <p class="task-description">{{ task.description|truncate(100) if task.description else 'No description' }}</p>
+              {% if task.deadline %}
+              <div class="task-deadline">
+                <i class="bi bi-calendar"></i>
+                <span>{{ task.deadline.strftime('%b %d, %Y') }}</span>
+              </div>
+              {% endif %}
+            </div>
+            <div class="task-footer">
+              <div class="assigned-users">
+                {% for user in task.assigned_users %}
+                <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
+                     alt="{{ user.username }}" 
+                     title="{{ user.fname }} {{ user.lname }}"
+                     class="user-avatar">
+                {% endfor %}
+              </div>
+              <div class="task-progress">
+                {% set completed = task.todos|selectattr('is_completed')|list|length %}
+                {% set total = task.todos|length %}
+                <div class="progress-bar" style="width: {{ (completed/total*100 if total > 0 else 0)|round }}%"></div>
+                <span>{{ completed }}/{{ total }}</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if current_membership %}
+        <button class="add-task-btn" data-column="{{ column_name }}">
+          <i class="bi bi-plus"></i> Add Task
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Task Assignments Section -->
+  {% if current_membership %}
+  <div class="project-section">
+    <h2 class="section-title">
+      <i class="bi bi-card-checklist"></i> Task Assignments
+    </h2>
+    
+    <div class="task-assignments">
+      {% for assignment in task_assignments %}
+      <div class="assignment-card">
+        <div class="assignment-header">
+          <h3>{{ assignment.title }}</h3>
+          <span class="assignment-status {{ assignment.status|lower|replace(' ', '-') }}">
+            {{ assignment.status }}
+          </span>
+        </div>
+        <div class="assignment-body">
+          <div class="assignment-meta">
+            <div class="meta-item">
+              <i class="bi bi-person"></i>
+              <span>Assigned by {{ assignment.user.fname }} {{ assignment.user.lname }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-calendar"></i>
+              <span>{{ assignment.assigned_at.strftime('%b %d, %Y') }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-list-task"></i>
+              <span>{{ assignment.task|length }} tasks</span>
+            </div>
+          </div>
+          {% if assignment.comment %}
+          <div class="assignment-comment">
+            <p>{{ assignment.comment }}</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="assignment-footer">
+          <a href="#" class="btn btn-outline-primary view-assignment-btn" data-assignment-id="{{ assignment.id }}">
+            View Details
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>No task assignments yet</p>
+        {% if current_membership.role in ['project_manager', 'task_coordinator'] %}
+        <button class="btn btn-primary" id="createFirstAssignment">
+          Create First Assignment
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Discussions Section -->
+  <div class="project-section">
+    <h2 class="section-title">
+      <i class="bi bi-chat-left-text"></i> Discussions
+    </h2>
+    
+    {% if current_membership %}
+    <div class="new-discussion">
+      <div class="discussion-form">
+        <textarea class="form-control" id="discussionContent" placeholder="Share your thoughts..."></textarea>
+        <button class="btn btn-primary" id="postDiscussion">Post</button>
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="discussions-list">
+      {% for discussion in discussions %}
+      <div class="discussion-card {% if discussion.task_assignment_id %}task-related{% endif %}">
+        <div class="discussion-header">
+          <img src="{{ url_for('static', filename='images/uploads/profile_img/' + discussion.user.profile_img) }}" 
+               alt="{{ discussion.user.username }}" 
+               class="user-avatar">
+          <div class="user-info">
+            <h3>{{ discussion.user.fname }} {{ discussion.user.lname }}</h3>
+            <p class="discussion-meta">
+              <span class="username">@{{ discussion.user.username }}</span>
+              <span class="timestamp">{{ discussion.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+            </p>
+          </div>
+        </div>
+        <div class="discussion-body">
+          <p>{{ discussion.content }}</p>
+          {% if discussion.task_assignment_id %}
+          <div class="related-task">
+            <i class="bi bi-link-45deg"></i>
+            <span>Related to task assignment: {{ discussion.task_assignment.title }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-chat-square"></i>
+        <p>No discussions yet</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="taskAssignmentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New Task Assignment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="taskAssignmentForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="assignmentTitle">Assignment Title</label>
+                <input type="text" class="form-control" id="assignmentTitle" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="generalDeadline">General Deadline (optional)</label>
+                <input type="datetime-local" class="form-control" id="generalDeadline">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="assignmentComment">Comment (optional)</label>
+            <textarea class="form-control" id="assignmentComment" rows="2"></textarea>
+          </div>
+          
+          <div class="tasks-container" id="tasksContainer">
+            <!-- Tasks will be added here dynamically -->
+          </div>
+          
+          <button type="button" class="btn btn-outline-primary" id="addTaskBtn">
+            <i class="bi bi-plus"></i> Add Another Task
+          </button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveAssignment">Save Assignment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Template (hidden) -->
+<div class="task-template" id="taskTemplate" style="display: none;">
+  <div class="task-card">
+    <div class="task-header">
+      <h4>New Task</h4>
+      <button type="button" class="btn btn-sm btn-outline-danger remove-task-btn">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+    <div class="task-body">
+      <div class="form-group">
+        <input type="text" class="form-control task-title" placeholder="Task title" required>
+      </div>
+      <div class="form-group">
+        <textarea class="form-control task-description" placeholder="Description (optional)" rows="2"></textarea>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Deadline</label>
+            <input type="datetime-local" class="form-control task-deadline">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Priority</label>
+            <select class="form-select task-priority">
+              <option value="low">Low</option>
+              <option value="normal" selected>Normal</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Assign to</label>
+        <select class="form-select task-assignees" multiple>
+          {% for member, role, status in members %}
+          <option value="{{ member.id }}">{{ member.fname }} {{ member.lname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Todos</label>
+        <div class="todos-container">
+          <div class="todo-input-group">
+            <input type="text" class="form-control todo-input" placeholder="Add todo item">
+            <button type="button" class="btn btn-outline-primary add-todo-btn">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+          <ul class="todo-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.project-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  margin-top: 80px;
+  padding: 20px;
+}
+
+.project-section {
+  margin-bottom: 40px;
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  color: #1e293b;
+}
+
+.section-title i {
+  margin-right: 10px;
+  color: #4f46e5;
+}
+
+/* Project Header */
+.project-header {
+  position: relative;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.project-cover {
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+}
+
+.edit-cover-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.edit-cover-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.project-info {
+  background: white;
+  padding: 25px;
+  border-radius: 0 0 12px 12px;
+}
+
+.project-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.project-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #1e293b;
+  flex: 1;
+}
+
+.project-title [contenteditable="true"] {
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  outline: none;
+}
+
+.project-title [contenteditable="true"]:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.save-title-btn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.project-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.project-type {
+  background: #e0e7ff;
+  color: #4f46e5;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.your-role {
+  background: #ecfdf5;
+  color: #059669;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.project-description {
+  margin-bottom: 20px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.project-description [contenteditable="true"] {
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  min-height: 100px;
+  outline: none;
+  width: 100%;
+}
+
+.project-description [contenteditable="true"]:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.save-description-btn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.project-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Members Section */
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.member-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  transition: all 0.2s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.member-avatar {
+  position: relative;
+  margin-right: 15px;
+}
+
+.member-avatar img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #f1f5f9;
+}
+
+.role-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+}
+
+.role-badge.manager {
+  background: #7c3aed;
+}
+
+.role-badge.coordinator {
+  background: #0891b2;
+}
+
+.member-info {
+  flex: 1;
+}
+
+.member-info h3 {
+  font-size: 1.1rem;
+  margin: 0 0 5px 0;
+  color: #1e293b;
+}
+
+.member-info .username {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.member-info .role {
+  font-size: 0.8rem;
+  color: #475569;
+  margin: 5px 0 0 0;
+  font-weight: 500;
+}
+
+.member-actions {
+  margin-top: 10px;
+}
+
+.add-member-card {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-member-card:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.add-member-form {
+  width: 100%;
+}
+
+.add-member-form h3 {
+  font-size: 1rem;
+  margin-top: 0;
+  color: #1e293b;
+}
+
+/* Kanban Board */
+.kanban-board {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+}
+
+.kanban-column {
+  min-width: 280px;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.column-header h3 {
+  font-size: 1rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.task-count {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.column-tasks {
+  min-height: 100px;
+}
+
+.kanban-task {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.kanban-task:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-task:active {
+  cursor: grabbing;
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.task-priority {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.task-priority.low {
+  background: #38bdf8;
+}
+
+.task-priority.normal {
+  background: #22c55e;
+}
+
+.task-priority.high {
+  background: #f59e0b;
+}
+
+.task-priority.urgent {
+  background: #ef4444;
+}
+
+.task-header h4 {
+  font-size: 1rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.task-description {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0 0 10px 0;
+}
+
+.task-deadline {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.task-deadline i {
+  margin-right: 5px;
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.assigned-users {
+  display: flex;
+}
+
+.assigned-users .user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-left: -8px;
+}
+
+.assigned-users .user-avatar:first-child {
+  margin-left: 0;
+}
+
+.task-progress {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #4f46e5;
+  border-radius: 3px;
+}
+
+.task-progress span {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.add-task-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-task-btn:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+}
+
+/* Task Assignments */
+.task-assignments {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.assignment-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.assignment-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.assignment-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.assignment-status {
+  font-size: 0.8rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.assignment-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.assignment-status.completed {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.assignment-meta {
+  margin-bottom: 15px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.meta-item i {
+  margin-right: 8px;
+  width: 20px;
+  text-align: center;
+}
+
+.assignment-comment {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 15px;
+}
+
+.assignment-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: #cbd5e1;
+}
+
+.empty-state p {
+  margin-bottom: 20px;
+}
+
+/* Discussions */
+.discussion-form {
+  margin-bottom: 20px;
+}
+
+.discussion-form textarea {
+  min-height: 100px;
+  margin-bottom: 10px;
+}
+
+.discussions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.discussion-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.discussion-card.task-related {
+  border-left: 4px solid #4f46e5;
+}
+
+.discussion-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.discussion-header .user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.user-info h3 {
+  font-size: 1rem;
+  margin: 0;
+  color: #1e293b;
+}
+
+.discussion-meta {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.discussion-meta .username {
+  font-weight: 500;
+}
+
+.discussion-meta .timestamp {
+  margin-left: 10px;
+}
+
+.discussion-body {
+  color: #475569;
+  line-height: 1.6;
+}
+
+.related-task {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #4f46e5;
+  margin-top: 10px;
+}
+
+.related-task i {
+  margin-right: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .project-cover {
+    height: 180px;
+  }
+  
+  .project-title {
+    font-size: 1.5rem;
+  }
+  
+  .members-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kanban-board {
+    flex-direction: column;
+  }
+  
+  .kanban-column {
+    min-width: 100%;
+  }
+  
+  .task-assignments {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .project-section {
+    padding: 15px;
+  }
+  
+  .project-cover {
+    height: 150px;
+  }
+  
+  .project-info {
+    padding: 15px;
+  }
+  
+  .project-title {
+    font-size: 1.3rem;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Bootstrap tooltips
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  });
+
+  // Edit Project Cover
+  const editCoverBtn = document.getElementById('editCoverBtn');
+  if (editCoverBtn) {
+    const coverImageInput = document.getElementById('coverImageInput');
+    
+    editCoverBtn.addEventListener('click', function() {
+      coverImageInput.click();
+    });
+    
+    coverImageInput.addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('cover_image', file);
+        
+        fetch(`/projects/{{ project.id }}/update_cover`, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          }
+        });
+      }
+    });
+  }
+
+  // Edit Project Title
+  const projectTitleEditable = document.getElementById('projectTitleEditable');
+  if (projectTitleEditable) {
+    const saveTitleBtn = document.getElementById('saveTitleBtn');
+    
+    projectTitleEditable.addEventListener('input', function() {
+      saveTitleBtn.style.display = 'inline-block';
+    });
+    
+    saveTitleBtn.addEventListener('click', function() {
+      const newTitle = projectTitleEditable.textContent.trim();
+      
+      fetch(`/projects/{{ project.id }}/update_title`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: newTitle })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          saveTitleBtn.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Edit Project Description
+  const projectDescriptionEditable = document.getElementById('projectDescriptionEditable');
+  if (projectDescriptionEditable) {
+    const saveDescriptionBtn = document.getElementById('saveDescriptionBtn');
+    
+    projectDescriptionEditable.addEventListener('input', function() {
+      saveDescriptionBtn.style.display = 'inline-block';
+    });
+    
+    saveDescriptionBtn.addEventListener('click', function() {
+      const newDescription = projectDescriptionEditable.textContent.trim();
+      
+      fetch(`/projects/{{ project.id }}/update_description`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ description: newDescription })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          saveDescriptionBtn.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Add Member Functionality
+  const addMemberBtn = document.getElementById('addMemberBtn');
+  if (addMemberBtn) {
+    const addMemberCard = document.getElementById('addMemberCard');
+    const cancelAddMember = document.getElementById('cancelAddMember');
+    
+    addMemberBtn.addEventListener('click', function() {
+      addMemberCard.style.display = 'block';
+      addMemberBtn.style.display = 'none';
+    });
+    
+    cancelAddMember.addEventListener('click', function() {
+      addMemberCard.style.display = 'none';
+      addMemberBtn.style.display = 'inline-block';
+    });
+    
+    // Member search functionality would go here
+  }
+
+  // Change Member Role
+  document.querySelectorAll('.dropdown-item[data-role]').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const userId = this.closest('.member-card').querySelector('.member-info .username').textContent.substring(1);
+      const newRole = this.getAttribute('data-role');
+      
+      fetch(`/projects/{{ project.id }}/change_role`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          user_id: userId,
+          role: newRole
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        }
+      });
+    });
+  });
+
+  // Remove Member
+  document.querySelectorAll('.dropdown-item[data-action="remove"]').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (confirm('Are you sure you want to remove this member from the project?')) {
+        const userId = this.closest('.member-card').querySelector('.member-info .username').textContent.substring(1);
+        
+        fetch(`/projects/{{ project.id }}/remove_member`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            user_id: userId
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          }
+        });
+      }
+    });
+  });
+
+  // Kanban Board Drag and Drop
+  const kanbanTasks = document.querySelectorAll('.kanban-task');
+  const kanbanColumns = document.querySelectorAll('.kanban-column');
+  
+  kanbanTasks.forEach(task => {
+    task.addEventListener('dragstart', function() {
+      this.classList.add('dragging');
+    });
+    
+    task.addEventListener('dragend', function() {
+      this.classList.remove('dragging');
+    });
+  });
+  
+  kanbanColumns.forEach(column => {
+    column.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      const draggingTask = document.querySelector('.kanban-task.dragging');
+      const afterElement = getDragAfterElement(this, e.clientY);
+      
+      if (afterElement) {
+        afterElement.parentNode.insertBefore(draggingTask, afterElement);
+      } else {
+        this.querySelector('.column-tasks').appendChild(draggingTask);
+      }
+    });
+    
+    column.addEventListener('drop', function() {
+      const taskId = document.querySelector('.kanban-task.dragging').getAttribute('data-task-id');
+      const newStatus = this.getAttribute('data-status');
+      
+      fetch(`/tasks/${taskId}/update_status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          status: newStatus
+        })
+      });
+    });
+  });
+  
+  function getDragAfterElement(column, y) {
+    const tasks = [...column.querySelectorAll('.kanban-task:not(.dragging)')];
+    
+    return tasks.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  // Task Assignment Modal
+  const taskAssignmentModal = new bootstrap.Modal(document.getElementById('taskAssignmentModal'));
+  const newTaskAssignmentBtn = document.getElementById('newTaskAssignmentBtn');
+  const createFirstAssignment = document.getElementById('createFirstAssignment');
+  const addTaskBtn = document.getElementById('addTaskBtn');
+  const tasksContainer = document.getElementById('tasksContainer');
+  const taskTemplate = document.getElementById('taskTemplate').innerHTML;
+  
+  if (newTaskAssignmentBtn) {
+    newTaskAssignmentBtn.addEventListener('click', function() {
+      tasksContainer.innerHTML = '';
+      addTaskToForm();
+      taskAssignmentModal.show();
+    });
+  }
+  
+  if (createFirstAssignment) {
+    createFirstAssignment.addEventListener('click', function() {
+      tasksContainer.innerHTML = '';
+      addTaskToForm();
+      taskAssignmentModal.show();
+    });
+  }
+  
+  addTaskBtn.addEventListener('click', addTaskToForm);
+  
+  function addTaskToForm() {
+    const taskElement = document.createElement('div');
+    taskElement.classList.add('task-item');
+    taskElement.innerHTML = taskTemplate;
+    tasksContainer.appendChild(taskElement);
+    
+    // Add todo functionality
+    const todoInput = taskElement.querySelector('.todo-input');
+    const addTodoBtn = taskElement.querySelector('.add-todo-btn');
+    const todoList = taskElement.querySelector('.todo-list');
+    
+    addTodoBtn.addEventListener('click', function() {
+      if (todoInput.value.trim()) {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span>${todoInput.value.trim()}</span>
+          <button type="button" class="btn btn-sm btn-outline-danger remove-todo-btn">
+            <i class="bi bi-trash"></i>
+          </button>
+        `;
+        todoList.appendChild(li);
+        todoInput.value = '';
+        
+        li.querySelector('.remove-todo-btn').addEventListener('click', function() {
+          li.remove();
+        });
+      }
+    });
+    
+    // Remove task functionality
+    taskElement.querySelector('.remove-task-btn').addEventListener('click', function() {
+      if (tasksContainer.querySelectorAll('.task-item').length > 1) {
+        taskElement.remove();
+      } else {
+        alert('You must have at least one task in the assignment.');
+      }
+    });
+  }
+
+  // Save Assignment
+  const saveAssignmentBtn = document.getElementById('saveAssignment');
+  if (saveAssignmentBtn) {
+    saveAssignmentBtn.addEventListener('click', function() {
+      const assignmentTitle = document.getElementById('assignmentTitle').value;
+      const generalDeadline = document.getElementById('generalDeadline').value;
+      const assignmentComment = document.getElementById('assignmentComment').value;
+      
+      const tasks = [];
+      document.querySelectorAll('.task-item').forEach(taskElement => {
+        const task = {
+          title: taskElement.querySelector('.task-title').value,
+          description: taskElement.querySelector('.task-description').value,
+          deadline: taskElement.querySelector('.task-deadline').value || generalDeadline,
+          priority: taskElement.querySelector('.task-priority').value,
+          assignees: Array.from(taskElement.querySelector('.task-assignees').selectedOptions).map(opt => opt.value),
+          todos: Array.from(taskElement.querySelectorAll('.todo-list li')).map(li => li.textContent.trim())
+        };
+        tasks.push(task);
+      });
+      
+      fetch(`/projects/{{ project.id }}/create_assignment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: assignmentTitle,
+          comment: assignmentComment,
+          tasks: tasks
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          taskAssignmentModal.hide();
+          location.reload();
+        }
+      });
+    });
+  }
+
+  // Post Discussion
+  const postDiscussionBtn = document.getElementById('postDiscussion');
+  if (postDiscussionBtn) {
+    postDiscussionBtn.addEventListener('click', function() {
+      const content = document.getElementById('discussionContent').value.trim();
+      
+      if (content) {
+        fetch(`/projects/{{ project.id }}/add_discussion`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: content
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          }
+        });
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
