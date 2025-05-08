@@ -6,11 +6,11 @@ from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
 from wtforms import ValidationError
 from sqlalchemy.sql import func
+from sqlalchemy import and_
 from sqlalchemy import case
 
 import plotly
 import plotly.graph_objs as go
-import pandas as pd
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -687,12 +687,16 @@ def create_task_assignment(project_id):
 @login_required
 def add_project_discussion(project_id):
     project = Project.query.get_or_404(project_id)
-    membership = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=current_user.id
+    is_member = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id
+            )
+        )
     ).first()
     
-    if not membership:
+    if not is_member:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()

@@ -277,7 +277,7 @@
       {% for discussion in discussions %}
         <div class="discussion-card {% if discussion.type == 'assignment_comment' %}task-related{% endif %}">
           <div class="discussion-header">
-            <img src="{{ discussion.user.avatar }}" alt="{{ discussion.user.username }}" class="user-avatar">
+            <img src="{{ url_for('static', filename="images/uploads/profile_img/"+discussion.user.profile_img) }}" alt="{{ discussion.user.username }}" class="user-avatar">
             <div class="dis-user-info">
               <h3>{{ discussion.user.name }}</h3>
               <p class="discussion-meta">
@@ -1327,6 +1327,8 @@
 </style>
 
 <script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize Bootstrap tooltips
   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -1839,6 +1841,7 @@ document.addEventListener('DOMContentLoaded', function() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
       },
       body: JSON.stringify({ content: content })
     })
