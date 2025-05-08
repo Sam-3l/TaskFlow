@@ -108,21 +108,34 @@
       <div class="member-card add-member-card" id="addMemberCard" style="display: none;">
         <div class="add-member-form">
           <h3>Add New Member</h3>
-          <div class="form-group">
-            <input type="text" class="form-control" id="memberSearch" placeholder="Search by username or email">
+          
+          <div class="search-container">
+            <input type="text" class="form-control" id="memberSearch" placeholder="Search by name, username or email">
             <div class="search-results" id="searchResults"></div>
           </div>
-          <div class="form-group">
-            <label>Role</label>
-            <select class="form-select" id="newMemberRole">
+          
+          <div class="selected-user-display" id="selectedUserDisplay">
+            <img id="selectedUserAvatar" src="" alt="Selected user">
+            <div class="selected-user-info">
+              <div class="name" id="selectedUserName"></div>
+              <div class="username" id="selectedUserUsername"></div>
+            </div>
+            <button class="remove-selection" id="removeSelection">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          
+          <div class="role-select-container">
+            <label for="newMemberRole">Role</label>
+            <select class="role-select" id="newMemberRole">
               <option value="contributor">Contributor</option>
               <option value="task_coordinator">Task Coordinator</option>
+              <option value="project_manager">Project Manager</option>
             </select>
           </div>
-          <div class="form-buttons">
-            <button class="btn btn-primary" id="confirmAddMember">Add Member</button>
-            <button class="btn btn-outline-secondary" id="cancelAddMember">Cancel</button>
-          </div>
+          
+          <button class="confirm-add-btn" id="confirmAddMember" disabled>Add Member</button>
+          <button class="btn btn-outline-secondary" id="cancelAddMember">Cancel</button>
         </div>
       </div>
       {% endif %}
@@ -262,34 +275,34 @@
     
     <div class="discussions-list">
       {% for discussion in discussions %}
-      <div class="discussion-card {% if discussion.task_assignment_id %}task-related{% endif %}">
-        <div class="discussion-header">
-          <img src="{{ url_for('static', filename='images/uploads/profile_img/' + discussion.user.profile_img) }}" 
-               alt="{{ discussion.user.username }}" 
-               class="user-avatar">
-          <div class="user-info">
-            <h3>{{ discussion.user.fname }} {{ discussion.user.lname }}</h3>
-            <p class="discussion-meta">
-              <span class="username">@{{ discussion.user.username }}</span>
-              <span class="timestamp">{{ discussion.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
-            </p>
+        <div class="discussion-card {% if discussion.type == 'assignment_comment' %}task-related{% endif %}">
+          <div class="discussion-header">
+            <img src="{{ discussion.user.avatar }}" alt="{{ discussion.user.username }}" class="user-avatar">
+            <div class="dis-user-info">
+              <h3>{{ discussion.user.name }}</h3>
+              <p class="discussion-meta">
+                <span class="username">@{{ discussion.user.username }}</span>
+                <span class="timestamp">{{ discussion.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+              </p>
+            </div>
+          </div>
+          <div class="discussion-body">
+            <p>{{ discussion.content }}</p>
+            {% if discussion.type == 'assignment_comment' %}
+            <div class="related-task">
+              <i class="bi bi-link-45deg"></i>
+              <span>Related to task assignment: 
+                <a href="#assignment-{{ discussion.assignment.id }}">{{ discussion.assignment.title }}</a>
+              </span>
+            </div>
+            {% endif %}
           </div>
         </div>
-        <div class="discussion-body">
-          <p>{{ discussion.content }}</p>
-          {% if discussion.task_assignment_id %}
-          <div class="related-task">
-            <i class="bi bi-link-45deg"></i>
-            <span>Related to task assignment: {{ discussion.task_assignment.title }}</span>
-          </div>
-          {% endif %}
-        </div>
-      </div>
       {% else %}
-      <div class="empty-state">
-        <i class="bi bi-chat-square"></i>
-        <p>No discussions yet</p>
-      </div>
+        <div class="empty-state">
+          <i class="bi bi-chat-square"></i>
+          <p>No discussions yet</p>
+        </div>
       {% endfor %}
     </div>
   </div>
@@ -984,7 +997,7 @@
   margin-right: 15px;
 }
 
-.user-info h3 {
+.dis-user-info h3 {
   font-size: 1rem;
   margin: 0;
   color: #1e293b;
@@ -1067,6 +1080,249 @@
   .section-title {
     font-size: 1.2rem;
   }
+}
+
+/* Add Member Card Styling */
+.member-card.add-member-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid #eaeaea;
+    transition: all 0.3s ease;
+}
+
+.add-member-form h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.4rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+/* Search Container */
+.search-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background: #f8fafc;
+}
+
+.search-container input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: #ffffff;
+}
+
+/* Search Results */
+.search-results {
+    position: absolute;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    margin-top: 8px;
+    display: none;
+    border: 1px solid #e2e8f0;
+}
+
+.search-result-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: #f8fafc;
+}
+
+.search-result-item.selected {
+    background: #f0f4ff;
+}
+
+.search-result-item .user-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.search-result-item .user-information {
+    flex: 1;
+}
+
+.search-result-item .user-information strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+
+.search-result-item .user-information small {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.search-result-item .badge {
+    margin-left: 8px;
+    font-size: 0.7rem;
+    padding: 3px 6px;
+}
+
+.no-results {
+    padding: 12px 16px;
+    color: #64748b;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Selected User Display */
+.selected-user-display {
+    display: none;
+    align-items: center;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px dashed #cbd5e1;
+}
+
+.selected-user-display #selectedUserAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.selected-user-info {
+    flex: 1;
+}
+
+.selected-user-info .name {
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 2px;
+}
+
+.selected-user-info .username {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.remove-selection {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.remove-selection:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Role Select */
+.role-select-container {
+    margin-bottom: 20px;
+}
+
+.role-select-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.role-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: #ffffff;
+}
+
+/* Buttons */
+.confirm-add-btn {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 12px;
+}
+
+.confirm-add-btn:hover {
+    background: #4f46e5;
+}
+
+.confirm-add-btn:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+#cancelAddMember {
+    background: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#cancelAddMember:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .confirm-add-btn,
+    #cancelAddMember {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
 }
 </style>
 
@@ -1168,10 +1424,23 @@ document.addEventListener('DOMContentLoaded', function() {
   if (addMemberBtn) {
     const addMemberCard = document.getElementById('addMemberCard');
     const cancelAddMember = document.getElementById('cancelAddMember');
+    const memberSearch = document.getElementById('memberSearch');
+    const searchResults = document.getElementById('searchResults');
+    const selectedUserDisplay = document.getElementById('selectedUserDisplay');
+    const confirmAddBtn = document.getElementById('confirmAddMember');
+    const removeSelectionBtn = document.getElementById('removeSelection');
+    
+    let selectedUser = null;
     
     addMemberBtn.addEventListener('click', function() {
       addMemberCard.style.display = 'block';
       addMemberBtn.style.display = 'none';
+      memberSearch.value = '';
+      searchResults.innerHTML = '';
+      searchResults.style.display = 'none';
+      selectedUserDisplay.style.display = 'none';
+      confirmAddBtn.disabled = true;
+      selectedUser = null;
     });
     
     cancelAddMember.addEventListener('click', function() {
@@ -1179,7 +1448,169 @@ document.addEventListener('DOMContentLoaded', function() {
       addMemberBtn.style.display = 'inline-block';
     });
     
-    // Member search functionality would go here
+    // Handle search input
+    memberSearch.addEventListener('input', debounce(function(e) {
+      const query = e.target.value.trim();
+      if (query.length < 2) {
+        searchResults.innerHTML = '';
+        searchResults.style.display = 'none';
+        return;
+      }
+      
+      fetch(`/projects/{{ project.id }}/search_users?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+          searchResults.innerHTML = '';
+          
+          if (data.success && data.users.length) {
+            data.users.forEach(user => {
+              const userElement = document.createElement('div');
+              userElement.className = 'search-result-item';
+              userElement.innerHTML = `
+                <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}${user.avatar.split('/').pop()}" alt="${user.username}" class="user-avatar-sm">
+                <div class="user-information">
+                  <strong>${user.name}</strong>
+                  <small>@${user.username}</small>
+                  ${user.is_connection ? '<span class="badge bg-primary">Connection</span>' : ''}
+                </div>
+              `;
+              
+              userElement.addEventListener('click', function() {
+                // Mark this item as selected
+                document.querySelectorAll('.search-result-item').forEach(item => {
+                  item.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                
+                // Set the selected user
+                selectedUser = user;
+                
+                // Update the selected user display
+                const staticBaseUrl = "{{ url_for('static', filename='images/uploads/profile_img/') }}";
+                const avatarFilename = user.avatar.split('/').pop();
+                document.getElementById('selectedUserAvatar').src = staticBaseUrl + avatarFilename;                
+                document.getElementById('selectedUserName').textContent = user.name;
+                document.getElementById('selectedUserUsername').textContent = `@${user.username}`;
+                selectedUserDisplay.style.display = 'flex';
+                
+                // Enable the add button
+                confirmAddBtn.disabled = false;
+                
+                // Hide search results
+                searchResults.style.display = 'none';
+              });
+              
+              searchResults.appendChild(userElement);
+            });
+            searchResults.style.display = 'block';
+          } else {
+            searchResults.innerHTML = '<div class="no-results">No users found</div>';
+            searchResults.style.display = 'block';
+          }
+        });
+    }, 300));
+    
+    // Remove selection
+    removeSelectionBtn.addEventListener('click', function() {
+      selectedUser = null;
+      selectedUserDisplay.style.display = 'none';
+      confirmAddBtn.disabled = true;
+      memberSearch.value = '';
+      memberSearch.focus();
+    });
+    
+    // Confirm add member
+    confirmAddBtn.addEventListener('click', function() {
+      if (!selectedUser) return;
+      
+      const role = document.getElementById('newMemberRole').value;
+      
+      fetch(`/projects/{{ project.id }}/add_member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: selectedUser.id,
+          role: role
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Add the new member to the UI
+          const membersGrid = document.querySelector('.members-grid');
+          const memberCard = document.createElement('div');
+          memberCard.className = 'member-card';
+          memberCard.innerHTML = `
+            <div class="member-avatar">
+              <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}${data.member.avatar.split('/').pop()}" alt="${data.member.username}">
+              ${role === 'project_manager' ? '<span class="role-badge manager">Manager</span>' : 
+                role === 'task_coordinator' ? '<span class="role-badge coordinator">Coordinator</span>' : ''}
+            </div>
+            <div class="member-info">
+              <h3>${data.member.name}</h3>
+              <p class="username">@${data.member.username}</p>
+              <p class="role">${role.replace('_', ' ').toUpperCase()}</p>
+            </div>
+            {% if current_membership and current_membership.role == 'project_manager' %}
+            <div class="member-actions">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  Change Role
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#" data-role="project_manager">Project Manager</a></li>
+                  <li><a class="dropdown-item" href="#" data-role="task_coordinator">Task Coordinator</a></li>
+                  <li><a class="dropdown-item" href="#" data-role="contributor">Contributor</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="#" data-action="remove">Remove from Project</a></li>
+                </ul>
+              </div>
+            </div>
+            {% endif %}
+          `;
+          
+          // Insert before the add member card
+          membersGrid.insertBefore(memberCard, addMemberCard);
+          
+          // Reset the form
+          addMemberCard.style.display = 'none';
+          addMemberBtn.style.display = 'inline-block';
+          memberSearch.value = '';
+          searchResults.innerHTML = '';
+          selectedUserDisplay.style.display = 'none';
+          confirmAddBtn.disabled = true;
+          selectedUser = null;
+          
+          // Show success message
+          showToast('Member added successfully');
+        } else {
+          showToast(data.message || 'Failed to add member', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred', 'error');
+      });
+    });
+    
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+    
+    // Helper function to show toast messages
+    function showToast(message, type = 'success') {
+      // Implement your toast notification system here
+      // For example using Bootstrap toasts or a custom solution
+      console.log(`${type}: ${message}`);
+      alert(`${type}: ${message}`); // Temporary solution
+    }
   }
 
   // Change Member Role
@@ -1400,30 +1831,24 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Post Discussion
-  const postDiscussionBtn = document.getElementById('postDiscussion');
-  if (postDiscussionBtn) {
-    postDiscussionBtn.addEventListener('click', function() {
-      const content = document.getElementById('discussionContent').value.trim();
-      
-      if (content) {
-        fetch(`/projects/{{ project.id }}/add_discussion`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            content: content
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            location.reload();
-          }
-        });
+  document.getElementById('postDiscussion').addEventListener('click', function() {
+    const content = document.getElementById('discussionContent').value.trim();
+    if (!content) return;
+  
+    fetch(`/projects/{{ project.id }}/add_discussion`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
       }
     });
-  }
+  });
 });
 </script>
 {% endblock %}

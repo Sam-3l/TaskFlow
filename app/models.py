@@ -265,10 +265,21 @@ class TaskAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(60), nullable=False)
     assigned_by_user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    user = db.relationship("User", back_populates="task_assignment")
     assigned_at = db.Column(db.DateTime, default=func.current_timestamp())
-    task = db.relationship("Task", back_populates="assignment", cascade="all, delete-orphan")
     source_project_id = db.Column(db.Integer, db.ForeignKey("project.id"))
+    status = db.Column(db.String(40), default="pending")  # E.g. 3/5 tasks completed
+
+    user = db.relationship("User", back_populates="task_assignment")
+    task = db.relationship("Task", back_populates="assignment", cascade="all, delete-orphan")
     source = db.relationship("Project", back_populates="task_assignment")
-    status = db.Column(db.String(40), default="pending") # E.g 3/5 tasks completed
-    comment = db.Column(db.Text, nullable=True)
+    comments = db.relationship("TaskAssignmentComment", back_populates="assignment", cascade="all, delete-orphan")
+
+class TaskAssignmentComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('task_assignment.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.current_timestamp())
+
+    assignment = db.relationship("TaskAssignment", back_populates="comments")
+    user = db.relationship("User") 

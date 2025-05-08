@@ -16,7 +16,7 @@ import os
 from werkzeug.utils import secure_filename
 import time
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment
 from app.forms import CreateTask, CreateProject
 
 from datetime import datetime, date, timedelta
@@ -309,17 +309,11 @@ def project(project_id):
         kanban_columns=kanban_columns
     )
 
-from flask import request, jsonify
-from werkzeug.utils import secure_filename
-import os
-from datetime import datetime
+from app import db
 
 @main.route('/projects/<int:project_id>/update_cover', methods=['POST'])
 @login_required
 def update_project_cover(project_id):
-    from app import db
-    
-    # Verify user is project manager
     project = Project.query.get_or_404(project_id)
     membership = db.session.query(membership).filter_by(
         project_id=project.id,
@@ -330,7 +324,6 @@ def update_project_cover(project_id):
     if not membership:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    # Handle file upload
     if 'cover_image' not in request.files:
         return jsonify({'success': False, 'message': 'No file uploaded'}), 400
     
@@ -339,20 +332,17 @@ def update_project_cover(project_id):
         return jsonify({'success': False, 'message': 'No selected file'}), 400
     
     if file:
-        # Save the file
         filename = secure_filename(f"project_{project_id}_{datetime.now().timestamp()}.{file.filename.split('.')[-1]}")
         upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'project_covers')
         os.makedirs(upload_folder, exist_ok=True)
         filepath = os.path.join(upload_folder, filename)
         file.save(filepath)
         
-        # Delete old cover if it's not a default
         if not project.cover_image.startswith('default_project'):
             old_filepath = os.path.join(upload_folder, project.cover_image)
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
         
-        # Update database
         project.cover_image = filename
         db.session.commit()
         
@@ -363,8 +353,6 @@ def update_project_cover(project_id):
 @main.route('/projects/<int:project_id>/update_title', methods=['POST'])
 @login_required
 def update_project_title(project_id):
-    from app import db
-
     project = Project.query.get_or_404(project_id)
     membership = db.session.query(membership).filter_by(
         project_id=project.id,
@@ -375,7 +363,11 @@ def update_project_title(project_id):
     if not membership:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    new_title = request.json.get('title', '').strip()
+    data = request.get_json()
+    if not data or 'title' not in data:
+        return jsonify({'success': False, 'message': 'Invalid request'}), 400
+    
+    new_title = data['title'].strip()
     if not new_title:
         return jsonify({'success': False, 'message': 'Title cannot be empty'}), 400
     
@@ -387,8 +379,6 @@ def update_project_title(project_id):
 @main.route('/projects/<int:project_id>/update_description', methods=['POST'])
 @login_required
 def update_project_description(project_id):
-    from app import db
-
     project = Project.query.get_or_404(project_id)
     membership = db.session.query(membership).filter_by(
         project_id=project.id,
@@ -399,17 +389,112 @@ def update_project_description(project_id):
     if not membership:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    new_description = request.json.get('description', '').strip()
+    data = request.get_json()
+    if not data or 'description' not in data:
+        return jsonify({'success': False, 'message': 'Invalid request'}), 400
+    
+    new_description = data['description'].strip()
     project.description = new_description
     db.session.commit()
     
     return jsonify({'success': True})
 
+@main.route('/projects/<int:project_id>/search_users', methods=['GET'])
+@login_required
+def search_users_to_add(project_id):
+    query = request.args.get('query', '').strip()
+    if not query:
+        return jsonify({'success': False, 'message': 'Search query required'}), 400
+    
+    # Search in connections first
+    connections = current_user.get_connections().filter(
+        (User.username.ilike(f'%{query}%')) | 
+        (User.email.ilike(f'%{query}%')) |
+        (User.fname.ilike(f'%{query}%')) |
+        (User.lname.ilike(f'%{query}%'))
+    ).limit(10).all()
+    
+    # Then search in all users if not enough results
+    if len(connections) < 10:
+        additional_users = User.query.filter(
+            (User.username.ilike(f'%{query}%')) | 
+            (User.email.ilike(f'%{query}%')) |
+            (User.fname.ilike(f'%{query}%')) |
+            (User.lname.ilike(f'%{query}%')),
+            ~User.id.in_([c.id for c in connections]),
+            User.id != current_user.id
+        ).limit(10 - len(connections)).all()
+        connections.extend(additional_users)
+    
+    results = [{
+        'id': user.id,
+        'name': f"{user.fname} {user.lname}",
+        'username': user.username,
+        'email': user.email,
+        'avatar': url_for('static', filename='images/profiles/' + user.profile_img),
+        'is_connection': user in current_user.get_connections().all()
+    } for user in connections]
+    
+    return jsonify({'success': True, 'users': results})
+
+@main.route('/projects/<int:project_id>/add_member', methods=['POST'])
+@login_required
+def add_project_member(project_id):
+    project = Project.query.get_or_404(project_id)
+    membership = db.session.query(membership).filter_by(
+        project_id=project.id,
+        user_id=current_user.id,
+        role='project_manager'
+    ).first()
+    
+    if not membership:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.get_json()
+    if not data or 'user_id' not in data or 'role' not in data:
+        return jsonify({'success': False, 'message': 'Invalid request'}), 400
+    
+    user_id = data['user_id']
+    role = data['role']
+    
+    if role not in ['project_manager', 'task_coordinator', 'contributor']:
+        return jsonify({'success': False, 'message': 'Invalid role'}), 400
+    
+    # Check if user is already a member
+    existing_member = db.session.query(membership).filter_by(
+        project_id=project.id,
+        user_id=user_id
+    ).first()
+    
+    if existing_member:
+        return jsonify({'success': False, 'message': 'User is already a member'}), 400
+    
+    # Add new member
+    db.session.execute(
+        membership.insert().values(
+            project_id=project.id,
+            user_id=user_id,
+            role=role,
+            status='active'
+        )
+    )
+    db.session.commit()
+    
+    new_member = User.query.get(user_id)
+    return jsonify({
+        'success': True,
+        'member': {
+            'id': new_member.id,
+            'name': f"{new_member.fname} {new_member.lname}",
+            'username': new_member.username,
+            'role': role,
+            'avatar': url_for('static', filename='images/profiles/' + new_member.profile_img)
+        }
+    })
+
 @main.route('/projects/<int:project_id>/change_role', methods=['POST'])
 @login_required
 def change_member_role(project_id):
-    from app import db
-
     project = Project.query.get_or_404(project_id)
     requesting_membership = db.session.query(membership).filter_by(
         project_id=project.id,
@@ -420,17 +505,19 @@ def change_member_role(project_id):
     if not requesting_membership:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    user_id = request.json.get('user_id')
-    new_role = request.json.get('role')
-    
-    if not user_id or new_role not in ['project_manager', 'task_coordinator', 'contributor']:
+    data = request.get_json()
+    if not data or 'user_id' not in data or 'role' not in data:
         return jsonify({'success': False, 'message': 'Invalid request'}), 400
     
-    # Can't change your own role
+    user_id = data['user_id']
+    new_role = data['role']
+    
+    if new_role not in ['project_manager', 'task_coordinator', 'contributor']:
+        return jsonify({'success': False, 'message': 'Invalid role'}), 400
+    
     if str(user_id) == str(current_user.id):
         return jsonify({'success': False, 'message': 'Cannot change your own role'}), 400
     
-    # Update role in association table
     db.session.execute(
         membership.update()
         .where(membership.c.project_id == project_id)
@@ -444,8 +531,6 @@ def change_member_role(project_id):
 @main.route('/projects/<int:project_id>/remove_member', methods=['POST'])
 @login_required
 def remove_project_member(project_id):
-    from app import db
-
     project = Project.query.get_or_404(project_id)
     requesting_membership = db.session.query(membership).filter_by(
         project_id=project.id,
@@ -456,23 +541,21 @@ def remove_project_member(project_id):
     if not requesting_membership:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    user_id = request.json.get('user_id')
-    
-    if not user_id:
+    data = request.get_json()
+    if not data or 'user_id' not in data:
         return jsonify({'success': False, 'message': 'Invalid request'}), 400
     
-    # Can't remove yourself
+    user_id = data['user_id']
+    
     if str(user_id) == str(current_user.id):
         return jsonify({'success': False, 'message': 'Cannot remove yourself'}), 400
     
-    # Remove from association table
     db.session.execute(
         membership.delete()
         .where(membership.c.project_id == project_id)
         .where(membership.c.user_id == user_id)
     )
     
-    # Unassign from all tasks in this project
     tasks_to_unassign = Task.query.join(
         TaskAssignment
     ).filter(
@@ -490,16 +573,12 @@ def remove_project_member(project_id):
 @main.route('/tasks/<int:task_id>/update_status', methods=['POST'])
 @login_required
 def update_task_status(task_id):
-    from app import db
-
     task = Task.query.get_or_404(task_id)
     
-    # Verify user is assigned to this task or is project manager/task coordinator
     is_assigned = current_user in task.assigned_users
     is_manager_or_coordinator = False
     
     if not is_assigned:
-        # Check if user has higher privileges
         assignment = TaskAssignment.query.get(task.assignment_id)
         if assignment:
             membership = db.session.query(membership).filter_by(
@@ -513,11 +592,11 @@ def update_task_status(task_id):
     if not is_assigned and not is_manager_or_coordinator:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    new_status = request.json.get('status')
-    if not new_status:
+    data = request.get_json()
+    if not data or 'status' not in data:
         return jsonify({'success': False, 'message': 'Status required'}), 400
     
-    task.status = new_status
+    task.status = data['status']
     db.session.commit()
     
     return jsonify({'success': True})
@@ -525,27 +604,26 @@ def update_task_status(task_id):
 @main.route('/projects/<int:project_id>/create_assignment', methods=['POST'])
 @login_required
 def create_task_assignment(project_id):
-    from app import db
-
     project = Project.query.get_or_404(project_id)
     membership = db.session.query(membership).filter_by(
         project_id=project.id,
         user_id=current_user.id
     ).first()
     
-    # Only project managers and task coordinators can create assignments
     if not membership or membership.role not in ['project_manager', 'task_coordinator']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    data = request.json
-    title = data.get('title')
-    comment = data.get('comment', '')
-    tasks_data = data.get('tasks', [])
+    data = request.get_json()
+    if not data or 'title' not in data or 'tasks' not in data or not isinstance(data['tasks'], list):
+        return jsonify({'success': False, 'message': 'Invalid request'}), 400
+    
+    title = data['title'].strip()
+    comment = data.get('comment', '').strip()
+    tasks_data = data['tasks']
     
     if not title or not tasks_data:
         return jsonify({'success': False, 'message': 'Title and at least one task required'}), 400
     
-    # Create the assignment
     assignment = TaskAssignment(
         title=title,
         comment=comment,
@@ -554,32 +632,32 @@ def create_task_assignment(project_id):
         status='pending'
     )
     db.session.add(assignment)
-    db.session.flush()  # To get the assignment ID
+    db.session.flush()
     
-    # Create tasks
     for task_data in tasks_data:
-        deadline = task_data.get('deadline')
-        if deadline:
+        if 'title' not in task_data or not task_data['title'].strip():
+            continue
+            
+        deadline = None
+        if 'deadline' in task_data and task_data['deadline']:
             try:
-                deadline = datetime.fromisoformat(deadline)
+                deadline = datetime.fromisoformat(task_data['deadline'])
             except ValueError:
-                deadline = None
+                pass
         
         task = Task(
-            title=task_data.get('title'),
-            description=task_data.get('description', ''),
+            title=task_data['title'].strip(),
+            description=task_data.get('description', '').strip(),
             deadline=deadline,
             priority=task_data.get('priority', 'normal'),
             status='backlog',
             assignment_id=assignment.id
         )
         
-        # Add todos
         for todo_content in task_data.get('todos', []):
-            todo = Todo(content=todo_content)
-            task.todos.append(todo)
+            if todo_content.strip():
+                task.todos.append(Todo(content=todo_content.strip()))
         
-        # Assign users
         for user_id in task_data.get('assignees', []):
             user = User.query.get(user_id)
             if user and user in project.members:
@@ -589,54 +667,125 @@ def create_task_assignment(project_id):
     
     db.session.commit()
     
-    return jsonify({'success': True, 'assignment_id': assignment.id})
+    return jsonify({
+        'success': True, 
+        'assignment': {
+            'id': assignment.id,
+            'title': assignment.title,
+            'assigned_at': assignment.assigned_at.isoformat(),
+            'status': assignment.status,
+            'comment': assignment.comment,
+            'assigned_by': {
+                'id': current_user.id,
+                'name': f"{current_user.fname} {current_user.lname}"
+            },
+            'task_count': len(assignment.task)
+        }
+    })
 
 @main.route('/projects/<int:project_id>/add_discussion', methods=['POST'])
 @login_required
 def add_project_discussion(project_id):
-    from app import db
-
     project = Project.query.get_or_404(project_id)
     membership = db.session.query(membership).filter_by(
         project_id=project.id,
         user_id=current_user.id
     ).first()
     
-    # Only members can post discussions
     if not membership:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
-    content = request.json.get('content', '').strip()
+    data = request.get_json()
+    if not data or 'content' not in data:
+        return jsonify({'success': False, 'message': 'Content required'}), 400
+    
+    content = data['content'].strip()
     if not content:
         return jsonify({'success': False, 'message': 'Content cannot be empty'}), 400
     
-    # Check if this is related to a task assignment
-    assignment_id = request.json.get('assignment_id')
+    assignment_id = data.get('assignment_id')
     
-    discussion = ProjectDiscussion(
-        project_id=project_id,
-        user_id=current_user.id,
-        content=content,
-        task_assignment_id=assignment_id if assignment_id else None
-    )
+    if assignment_id:
+        # Add as task assignment comment
+        comment = TaskAssignmentComment(
+            assignment_id=assignment_id,
+            user_id=current_user.id,
+            content=content
+        )
+        db.session.add(comment)
+    else:
+        # Add as regular project discussion
+        discussion = ProjectDiscussion(
+            project_id=project_id,
+            user_id=current_user.id,
+            content=content
+        )
+        db.session.add(discussion)
     
-    db.session.add(discussion)
     db.session.commit()
     
-    return jsonify({
-        'success': True,
-        'discussion': {
-            'id': discussion.id,
-            'content': discussion.content,
-            'created_at': discussion.created_at.isoformat(),
+    return jsonify({'success': True})
+
+@main.route('/projects/<int:project_id>/discussions', methods=['GET'])
+@login_required
+def get_project_discussions(project_id):
+    project = Project.query.get_or_404(project_id)
+    
+    # Get regular discussions
+    discussions = ProjectDiscussion.query.filter_by(
+        project_id=project.id
+    ).order_by(
+        ProjectDiscussion.created_at.desc()
+    ).all()
+    
+    # Get task assignment comments
+    assignment_comments = TaskAssignmentComment.query.join(
+        TaskAssignment
+    ).filter(
+        TaskAssignment.source_project_id == project.id
+    ).order_by(
+        TaskAssignmentComment.created_at.desc()
+    ).all()
+    
+    # Combine and sort by created_at
+    all_comments = []
+    
+    for d in discussions:
+        all_comments.append({
+            'type': 'discussion',
+            'id': d.id,
+            'content': d.content,
+            'created_at': d.created_at,
             'user': {
-                'id': current_user.id,
-                'name': f"{current_user.fname} {current_user.lname}",
-                'username': current_user.username,
-                'avatar': url_for('static', filename='images/profiles/' + current_user.profile_img)
+                'id': d.user.id,
+                'name': f"{d.user.fname} {d.user.lname}",
+                'username': d.user.username,
+                'avatar': url_for('static', filename='images/profiles/' + d.user.profile_img)
             }
-        }
-    })
+        })
+    
+    for c in assignment_comments:
+        all_comments.append({
+            'type': 'assignment_comment',
+            'id': c.id,
+            'content': c.content,
+            'created_at': c.created_at,
+            'user': {
+                'id': c.user.id,
+                'name': f"{c.user.fname} {c.user.lname}",
+                'username': c.user.username,
+                'avatar': url_for('static', filename='images/profiles/' + c.user.profile_img)
+            },
+            'assignment': {
+                'id': c.assignment.id,
+                'title': c.assignment.title
+            }
+        })
+    
+    # Sort all by created_at descending
+    all_comments.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    return jsonify({'success': True, 'discussions': all_comments})
 
 @main.route("/profile")
 @login_required
