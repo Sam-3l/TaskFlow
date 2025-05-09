@@ -1625,7 +1625,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.dropdown-item[data-role]').forEach(item => {
     item.addEventListener('click', function(e) {
       e.preventDefault();
-      const userId = this.closest('.member-card').querySelector('.member-info .username').textContent.substring(1);
+      const username = this.closest('.member-card').querySelector('.member-info .username').textContent.substring(1);
       const newRole = this.getAttribute('data-role');
       
       fetch(`/projects/{{ project.id }}/change_role`, {
@@ -1635,7 +1635,7 @@ document.addEventListener('DOMContentLoaded', function() {
           'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ 
-          user_id: userId,
+          username: username,
           role: newRole
         })
       })

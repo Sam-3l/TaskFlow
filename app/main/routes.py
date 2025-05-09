@@ -526,10 +526,14 @@ def change_member_role(project_id):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
-    if not data or 'user_id' not in data or 'role' not in data:
+    if not data or 'username' not in data or 'role' not in data:
         return jsonify({'success': False, 'message': 'Invalid request'}), 400
     
-    user_id = data['user_id']
+    user = User.query.filter_by(username=data['username']).first()
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    user_id = user.id
     new_role = data['role']
     
     if new_role not in ['project_manager', 'task_coordinator', 'contributor']:
