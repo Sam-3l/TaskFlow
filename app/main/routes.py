@@ -311,8 +311,6 @@ def project(project_id):
 
 from app import db
 
-from sqlalchemy import and_
-
 @main.route('/projects/<int:project_id>/update_cover', methods=['POST'])
 @login_required
 def update_project_cover(project_id):
@@ -339,7 +337,7 @@ def update_project_cover(project_id):
     
     if file:
         filename = secure_filename(f"project_{project_id}_{datetime.now().timestamp()}.{file.filename.split('.')[-1]}")
-        upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'project_covers')
+        upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'uploads', 'project_covers')
         os.makedirs(upload_folder, exist_ok=True)
         filepath = os.path.join(upload_folder, filename)
         file.save(filepath)

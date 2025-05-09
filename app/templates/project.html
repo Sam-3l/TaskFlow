@@ -1353,7 +1353,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         fetch(`/projects/{{ project.id }}/update_cover`, {
           method: 'POST',
-          body: formData
+          body: formData,
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
         })
         .then(response => response.json())
         .then(data => {
@@ -1381,6 +1384,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ title: newTitle })
       })
@@ -1409,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ description: newDescription })
       })
@@ -1627,6 +1632,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ 
           user_id: userId,
@@ -1653,6 +1659,7 @@ document.addEventListener('DOMContentLoaded', function() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
           },
           body: JSON.stringify({ 
             user_id: userId
@@ -1703,6 +1710,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ 
           status: newStatus
@@ -1816,6 +1824,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
           title: assignmentTitle,
