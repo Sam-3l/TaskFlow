@@ -311,17 +311,23 @@ def project(project_id):
 
 from app import db
 
+from sqlalchemy import and_
+
 @main.route('/projects/<int:project_id>/update_cover', methods=['POST'])
 @login_required
 def update_project_cover(project_id):
     project = Project.query.get_or_404(project_id)
-    membership = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=current_user.id,
-        role='project_manager'
+    is_manager = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id,
+                membership.c.role == 'project_manager'
+            )
+        )
     ).first()
     
-    if not membership:
+    if not is_manager:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     if 'cover_image' not in request.files:
@@ -354,13 +360,17 @@ def update_project_cover(project_id):
 @login_required
 def update_project_title(project_id):
     project = Project.query.get_or_404(project_id)
-    membership = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=current_user.id,
-        role='project_manager'
+    is_manager = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id,
+                membership.c.role == 'project_manager'
+            )
+        )
     ).first()
     
-    if not membership:
+    if not is_manager:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
@@ -380,13 +390,17 @@ def update_project_title(project_id):
 @login_required
 def update_project_description(project_id):
     project = Project.query.get_or_404(project_id)
-    membership = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=current_user.id,
-        role='project_manager'
+    is_manager = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id,
+                membership.c.role == 'project_manager'
+            )
+        )
     ).first()
     
-    if not membership:
+    if not is_manager:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
@@ -406,7 +420,6 @@ def search_users_to_add(project_id):
     if not query:
         return jsonify({'success': False, 'message': 'Search query required'}), 400
     
-    # Search in connections first
     connections = current_user.get_connections().filter(
         (User.username.ilike(f'%{query}%')) | 
         (User.email.ilike(f'%{query}%')) |
@@ -414,7 +427,6 @@ def search_users_to_add(project_id):
         (User.lname.ilike(f'%{query}%'))
     ).limit(10).all()
     
-    # Then search in all users if not enough results
     if len(connections) < 10:
         additional_users = User.query.filter(
             (User.username.ilike(f'%{query}%')) | 
@@ -441,13 +453,17 @@ def search_users_to_add(project_id):
 @login_required
 def add_project_member(project_id):
     project = Project.query.get_or_404(project_id)
-    membership = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=current_user.id,
-        role='project_manager'
+    is_manager = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id,
+                membership.c.role == 'project_manager'
+            )
+        )
     ).first()
     
-    if not membership:
+    if not is_manager:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
@@ -460,16 +476,18 @@ def add_project_member(project_id):
     if role not in ['project_manager', 'task_coordinator', 'contributor']:
         return jsonify({'success': False, 'message': 'Invalid role'}), 400
     
-    # Check if user is already a member
-    existing_member = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=user_id
+    existing_member = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == user_id
+            )
+        )
     ).first()
     
     if existing_member:
         return jsonify({'success': False, 'message': 'User is already a member'}), 400
     
-    # Add new member
     db.session.execute(
         membership.insert().values(
             project_id=project.id,
@@ -496,13 +514,17 @@ def add_project_member(project_id):
 @login_required
 def change_member_role(project_id):
     project = Project.query.get_or_404(project_id)
-    requesting_membership = db.session.query(membership).filter_by(
-        project_id=project.id,
-        user_id=current_user.id,
-        role='project_manager'
+    is_manager = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id,
+                membership.c.role == 'project_manager'
+            )
+        )
     ).first()
     
-    if not requesting_membership:
+    if not is_manager:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
@@ -534,8 +556,9 @@ def remove_project_member(project_id):
     project = Project.query.get_or_404(project_id)
     requesting_membership = db.session.query(membership).filter_by(
         project_id=project.id,
-        user_id=current_user.id,
-        role='project_manager'
+        user_id=current_user.id
+    ).filter(
+        membership.c.role == 'project_manager'
     ).first()
     
     if not requesting_membership:
@@ -570,6 +593,7 @@ def remove_project_member(project_id):
     
     return jsonify({'success': True})
 
+
 @main.route('/tasks/<int:task_id>/update_status', methods=['POST'])
 @login_required
 def update_task_status(task_id):
@@ -581,12 +605,12 @@ def update_task_status(task_id):
     if not is_assigned:
         assignment = TaskAssignment.query.get(task.assignment_id)
         if assignment:
-            membership = db.session.query(membership).filter_by(
+            member = db.session.query(membership).filter_by(
                 project_id=assignment.source_project_id,
                 user_id=current_user.id
             ).first()
             
-            if membership and membership.role in ['project_manager', 'task_coordinator']:
+            if member and member.role in ['project_manager', 'task_coordinator']:
                 is_manager_or_coordinator = True
     
     if not is_assigned and not is_manager_or_coordinator:
@@ -601,16 +625,17 @@ def update_task_status(task_id):
     
     return jsonify({'success': True})
 
+
 @main.route('/projects/<int:project_id>/create_assignment', methods=['POST'])
 @login_required
 def create_task_assignment(project_id):
     project = Project.query.get_or_404(project_id)
-    membership = db.session.query(membership).filter_by(
+    member = db.session.query(membership).filter_by(
         project_id=project.id,
         user_id=current_user.id
     ).first()
     
-    if not membership or membership.role not in ['project_manager', 'task_coordinator']:
+    if not member or member.role not in ['project_manager', 'task_coordinator']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
@@ -683,6 +708,7 @@ def create_task_assignment(project_id):
         }
     })
 
+
 @main.route('/projects/<int:project_id>/add_discussion', methods=['POST'])
 @login_required
 def add_project_discussion(project_id):
@@ -710,7 +736,6 @@ def add_project_discussion(project_id):
     assignment_id = data.get('assignment_id')
     
     if assignment_id:
-        # Add as task assignment comment
         comment = TaskAssignmentComment(
             assignment_id=assignment_id,
             user_id=current_user.id,
@@ -718,7 +743,6 @@ def add_project_discussion(project_id):
         )
         db.session.add(comment)
     else:
-        # Add as regular project discussion
         discussion = ProjectDiscussion(
             project_id=project_id,
             user_id=current_user.id,
@@ -730,19 +754,18 @@ def add_project_discussion(project_id):
     
     return jsonify({'success': True})
 
+
 @main.route('/projects/<int:project_id>/discussions', methods=['GET'])
 @login_required
 def get_project_discussions(project_id):
     project = Project.query.get_or_404(project_id)
     
-    # Get regular discussions
     discussions = ProjectDiscussion.query.filter_by(
         project_id=project.id
     ).order_by(
         ProjectDiscussion.created_at.desc()
     ).all()
     
-    # Get task assignment comments
     assignment_comments = TaskAssignmentComment.query.join(
         TaskAssignment
     ).filter(
@@ -751,7 +774,6 @@ def get_project_discussions(project_id):
         TaskAssignmentComment.created_at.desc()
     ).all()
     
-    # Combine and sort by created_at
     all_comments = []
     
     for d in discussions:
@@ -786,7 +808,6 @@ def get_project_discussions(project_id):
             }
         })
     
-    # Sort all by created_at descending
     all_comments.sort(key=lambda x: x['created_at'], reverse=True)
     
     return jsonify({'success': True, 'discussions': all_comments})
