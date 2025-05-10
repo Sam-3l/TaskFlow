@@ -609,6 +609,7 @@
 
 .member-avatar {
   position: relative;
+  display: inline-block;
   margin-right: 15px;
 }
 
@@ -617,26 +618,41 @@
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #f1f5f9;
+  border: 2px solid #eee;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .role-badge {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: -5px;
+  right: -5px;
   font-size: 10px;
   padding: 2px 8px;
-  border-radius: 10px;
-  color: white;
+  border-radius: 12px;
+  color: #fff;
   font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .role-badge.manager {
-  background: #7c3aed;
+  background: linear-gradient(135deg, #007bff, #0056b3); /* Blue gradient */
 }
 
 .role-badge.coordinator {
-  background: #0891b2;
+  background: linear-gradient(135deg, #28a745, #1e7e34); /* Green gradient */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .member-info {
