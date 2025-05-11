@@ -60,7 +60,7 @@
             <div class="todo-card glass-card">
                 <form class="todo-create">
                     <input type="hidden" id="csrf-token" name="csrf_token" value="{{ csrf_token() }}" />
-                    <div class="input-group">
+                    <div class="input-group this-input-group">
                         <input type="text" id="task-input" placeholder="Add a new todo..." class="todo-input" maxlength="200" />
                         <button id="add-task-btn" class="btn-add">
                             <i class="fas fa-plus"></i>
@@ -830,7 +830,7 @@ function updateTaskTitle(title) {
         margin-bottom: 2rem;
     }
 
-    .input-group {
+    .this-input-group {
         display: flex;
         gap: 0.5rem;
         margin-bottom: 1.5rem;
@@ -1121,7 +1121,7 @@ function updateTaskTitle(title) {
             padding: 1.5rem;
         }
         
-        .input-group {
+        .this-input-group {
             flex-direction: column;
         }
         

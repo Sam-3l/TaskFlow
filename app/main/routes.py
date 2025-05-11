@@ -684,8 +684,8 @@ def create_task_assignment(project_id):
             title=task_data['title'].strip(),
             description=task_data.get('description', '').strip(),
             deadline=deadline,
-            priority=task_data.get('priority', 'normal'),
-            status='backlog',
+            priority=task_data.get('priority', 'medium-priority'),
+            status='pending',
             assignment_id=assignment.id
         )
         
