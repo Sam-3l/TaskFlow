@@ -42,11 +42,13 @@
                         <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0">
                             <div class="d-flex align-items-center">
                                 {% if task["status"] == 'completed' %}
-                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                  <i class="fas fa-check-circle text-success me-2" title="Completed"></i>
                                 {% elif task["status"] == 'in progress' %}
-                                    <i class="fas fa-circle-notch text-primary me-2"></i>
+                                  <i class="fas fa-spinner fa-pulse text-primary me-2" title="In Progress"></i>
+                                {% elif task["status"] == 'review' %}
+                                  <i class="fas fa-eye text-warning me-2" title="In Review"></i>
                                 {% else %}
-                                    <i class="fas fa-spinner text-primary me-2"></i>
+                                  <i class="far fa-circle text-secondary me-2" title="Pending"></i>
                                 {% endif %}
                                 <h3 class="h6 mb-0">
                                     <a href="/dashboard/tasks/{{ task['id'] }}" class="text-decoration-none text-dark stretched-link">

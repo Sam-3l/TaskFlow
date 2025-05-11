@@ -149,17 +149,17 @@
     </h2>
     
     <div class="kanban-board">
-      {% for column_name, tasks in kanban_columns.items() %}
+      {% for column_name, (column_label, tasks) in kanban_columns.items() %}
       <div class="kanban-column" data-status="{{ column_name }}">
         <div class="column-header">
-          <h3>{{ column_name }}</h3>
+          <h3>{{ column_label }}</h3>
           <span class="task-count">{{ tasks|length }} tasks</span>
         </div>
-        <div class="column-tasks" id="{{ column_name|lower|replace(' ', '-') }}-tasks">
+        <div class="column-tasks" id="{{ column_label|lower|replace(' ', '-') }}-tasks">
           {% for task in tasks %}
           <div class="kanban-task" draggable="true" data-task-id="{{ task.id }}">
             <div class="task-header">
-              <span class="task-priority {{ task.priority|lower if task.priority else 'normal' }}"></span>
+              <span class="task-priority {{ task.priority|lower if task.priority else 'medium-priority' }}"></span>
               <h4>{{ task.title }}</h4>
             </div>
             <div class="task-body">
@@ -192,7 +192,7 @@
         </div>
         {% if current_membership %}
         <button class="add-task-btn" data-column="{{ column_name }}">
-          <i class="bi bi-plus"></i> Add Task
+          <i class="bi bi-plus"></i> Drag and Drop to Add Task
         </button>
         {% endif %}
       </div>
@@ -382,10 +382,11 @@
           <div class="form-group">
             <label>Priority</label>
             <select class="form-select task-priority">
-              <option value="low">Low</option>
-              <option value="normal" selected>Normal</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
+              <option value="optional">Optional</option>
+              <option value="low-priority">Low Priority</option>
+              <option value="medium-priority" selected>Medium Priority</option>
+              <option value="high-priority">High Priority</option>
+              <option value="critical">Critical</option>
             </select>
           </div>
         </div>
@@ -710,16 +711,36 @@
 /* Kanban Board */
 .kanban-board {
   display: flex;
+  justify-content: center; /* Center columns horizontally */
   gap: 15px;
-  overflow-x: auto;
   padding-bottom: 20px;
+  max-width: 1280px; /* Adjust based on your layout */
+  margin: 0 auto; /* Center the entire board */
+  flex-wrap: nowrap; /* Prevent wrapping on large screens */
 }
 
 .kanban-column {
-  min-width: 280px;
+  width: 320px; /* Fixed width instead of min-width */
   background: #f8fafc;
   border-radius: 10px;
+  border: 1px solid #e2e8f0;
   padding: 15px;
+  flex-shrink: 0; /* Prevent columns from shrinking */
+}
+
+/* Remove horizontal overflow on large screens */
+@media (min-width: 1280px) {
+  .kanban-board {
+    overflow-x: visible;
+  }
+}
+
+/* Keep horizontal scrolling for smaller screens */
+@media (max-width: 1279px) {
+  .kanban-board {
+    overflow-x: auto;
+    justify-content: flex-start; /* Align left when scrolling */
+  }
 }
 
 .column-header {
@@ -779,19 +800,23 @@
   margin-right: 8px;
 }
 
-.task-priority.low {
+.task-priority.optional {
   background: #38bdf8;
 }
 
-.task-priority.normal {
+.task-priority.low-priority {
   background: #22c55e;
 }
 
-.task-priority.high {
+.task-priority.medium-priority {
+  background: #fbbf24;
+}
+
+.task-priority.high-priority {
   background: #f59e0b;
 }
 
-.task-priority.urgent {
+.task-priority.critical {
   background: #ef4444;
 }
 

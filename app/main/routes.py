@@ -286,16 +286,15 @@ def project(project_id):
     
     # Organize tasks by status for Kanban
     kanban_columns = {
-        'Backlog': [],
-        'To Do': [],
-        'In Progress': [],
-        'Review': [],
-        'Done': []
+        'pending': ('To Do', []),
+        'in progress': ('In Progress', []),
+        'review': ('Review', []),
+        'completed': ('Done', [])
     }
     
     for task in tasks:
-        status = task.status if task.status in kanban_columns else 'Backlog'
-        kanban_columns[status].append(task)
+        status = task.status if task.status in kanban_columns else 'pending'
+        kanban_columns[status][1].append(task)
     
     return render_template(
         'project.html',
@@ -653,11 +652,20 @@ def create_task_assignment(project_id):
     
     assignment = TaskAssignment(
         title=title,
-        comment=comment,
         assigned_by_user_id=current_user.id,
         source_project_id=project_id,
         status='pending'
     )
+
+    # Then if there's a comment, create a TaskAssignmentComment
+    if comment:
+        assignment_comment = TaskAssignmentComment(
+            content=comment,
+            user_id=current_user.id,
+            assignment=assignment  # This links the comment to the assignment
+        )
+        db.session.add(assignment_comment)
+
     db.session.add(assignment)
     db.session.flush()
     
@@ -701,7 +709,7 @@ def create_task_assignment(project_id):
             'title': assignment.title,
             'assigned_at': assignment.assigned_at.isoformat(),
             'status': assignment.status,
-            'comment': assignment.comment,
+            'comment': assignment.comments.content if assignment.comments else None,
             'assigned_by': {
                 'id': current_user.id,
                 'name': f"{current_user.fname} {current_user.lname}"

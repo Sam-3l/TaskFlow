@@ -44,7 +44,10 @@
                 </div>
                 
                 <div class="status-pill status-{{ task.status|lower|replace(' ', '-') }}">
-                    <i class="fas fa-{% if task.status == 'completed' %}check-circle{% elif task.status == 'in-progress' %}spinner{% else %}circle{% endif %}"></i>
+                    <i class="fas fa-{% if task.status == 'completed' %}check-circle
+                                  {% elif task.status == 'in progress' %}spinner fa-pulse
+                                  {% elif task.status == 'review' %}eye
+                                  {% else %}circle{% endif %}"></i>
                     {{ task.status | capitalize }}
                 </div>
             </div>
@@ -708,30 +711,46 @@ function updateTaskTitle(title) {
         color: var(--accent-color);
     }
     
+    /* Status Pill Base Styles */
     .status-pill {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.2rem;
-        border-radius: 2rem;
-        font-size: 0.85rem;
-        font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid transparent;
     }
-    
-    .status-completed {
-        background: rgba(74, 222, 128, 0.15);
-        color: #16a34a;
-    }
-    
-    .status-in-progress {
-        background: rgba(250, 204, 21, 0.15);
-        color: #d97706;
-        animation: pulse 2s infinite;
-    }
-    
+
+    /* Status-Specific Colors */
     .status-pending {
-        background: rgba(148, 163, 184, 0.15);
-        color: #64748b;
+    background-color: #f0f0f0;
+    color: #666;
+    }
+
+    .status-in-progress {
+    background-color: #e6f2ff;
+    color: #0066cc;
+    }
+
+    .status-review {
+    background-color: #fff8e6;
+    color: #cc8800;
+    }
+
+    .status-completed {
+    background-color: #e6ffee;
+    color: #00aa55;
+    }
+
+    /* Icon Adjustments */
+    .status-pill .fa-spinner {
+    animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+    100% { transform: rotate(360deg); }
     }
     
     /* Priority Badges with Icons */
