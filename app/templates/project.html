@@ -328,7 +328,7 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label for="generalDeadline">General Deadline (optional)</label>
-                <input type="datetime-local" class="form-control" id="generalDeadline">
+                <input type="date" class="form-control" id="generalDeadline">
               </div>
             </div>
           </div>
@@ -356,7 +356,7 @@
 </div>
 
 <!-- Task Template (hidden) -->
-<div class="task-template" id="taskTemplate" style="display: none;">
+<template class="task-template" id="taskTemplate" style="display: none;">
   <div class="task-card">
     <div class="task-header">
       <h4>New Task</h4>
@@ -375,7 +375,7 @@
         <div class="col-md-6">
           <div class="form-group">
             <label>Deadline</label>
-            <input type="datetime-local" class="form-control task-deadline">
+            <input type="date" class="form-control task-deadline">
           </div>
         </div>
         <div class="col-md-6">
@@ -393,11 +393,28 @@
       </div>
       <div class="form-group">
         <label>Assign to</label>
-        <select class="form-select task-assignees" multiple>
+        <div class="assignee-options">
           {% for member, role, status in members %}
-          <option value="{{ member.id }}">{{ member.fname }} {{ member.lname }}</option>
+          <div class="assignee-option">
+            <input type="checkbox" class="task-assignee" value="{{ member.id }}" id="assignee_{{ member.id }}">
+            <label for="assignee_{{ member.id }}" class="d-flex align-items-center gap-2 cursor-pointer">
+              <div class="assignee-avatar">
+                {% if member.profile_img %}
+                  <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" 
+                       alt="{{ member.fname }} {{ member.lname }}" 
+                       class="rounded-circle" 
+                       onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default-avatar.png') }}'">
+                {% else %}
+                  <div class="avatar-initials bg-light-primary text-primary">
+                    {{ member.fname|first|upper }}{{ member.lname|first|upper }}
+                  </div>
+                {% endif %}
+              </div>
+              <span>{{ member.fname }} {{ member.lname }}</span>
+            </label>
+          </div>
           {% endfor %}
-        </select>
+        </div>
       </div>
       <div class="form-group">
         <label>Todos</label>
@@ -413,7 +430,7 @@
       </div>
     </div>
   </div>
-</div>
+</template>
 
 <style>
 /* Base Styles */
@@ -1365,6 +1382,274 @@
         margin-right: 0;
     }
 }
+
+/* ===== MODAL OVERHAUL ===== */
+#taskAssignmentModal .modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 1.5rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 1rem 1.5rem;
+}
+
+/* ===== FORM STYLING ===== */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-select {
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+  width: 100%;
+  height: 40px;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #4d90fe;
+  box-shadow: 0 0 0 2px rgba(77, 144, 254, 0.2);
+}
+
+/* ===== TASK CARDS ===== */
+.tasks-container {
+  margin: 1.5rem 0;
+}
+
+.task-card {
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.2s;
+}
+
+.task-card:hover {
+  border-color: #d1d5db;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.task-header h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #374151;
+}
+
+.remove-task-btn {
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ===== MEMBER SELECTION ===== */
+.assignee-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.assignee-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.assignee-option:hover {
+  background: #f0f4f8;
+}
+
+.assignee-option input {
+  margin-right: 0.5rem;
+}
+
+.assignee-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  font-weight: 500;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+/* ===== TODO STYLING ===== */
+.todo-input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.todo-input {
+  flex: 1;
+}
+
+.add-todo-btn {
+  border-radius: 8px !important;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+/* ===== BUTTONS ===== */
+.btn-outline-primary {
+  border-radius: 8px;
+}
+
+.btn-primary {
+  border-radius: 8px;
+  background-color: #4d90fe;
+  border: none;
+  padding: 0.5rem 1.25rem;
+}
+
+.btn-primary:hover {
+  background-color: #3a7de8;
+}
+
+/* ===== DATE INPUTS ===== */
+input[type="date"] {
+  position: relative;
+  padding: 0.5rem 0.75rem;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  color: transparent;
+  background: transparent;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none;
+}
+
+/* ===== PRIORITY INDICATORS ===== */
+.task-priority option {
+  padding: 0.5rem;
+}
+
+.task-priority option[value="critical"] {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.task-priority option[value="high-priority"] {
+  color: #ea580c;
+  font-weight: 500;
+}
+
+.task-priority option[value="medium-priority"] {
+  color: #ca8a04;
+  font-weight: 500;
+}
+
+.task-priority option[value="low-priority"] {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.task-priority option[value="optional"] {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+/* Avatar Styles */
+.assignee-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.assignee-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Hover Effects */
+.assignee-option:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Checkbox Styles */
+.task-assignee {
+  margin-right: 8px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
 </style>
 
 <script>
@@ -1801,43 +2086,65 @@ document.addEventListener('DOMContentLoaded', function() {
   
   addTaskBtn.addEventListener('click', addTaskToForm);
   
+  // Generate a simple unique ID for each task
+  let taskCounter = 0;
+
   function addTaskToForm() {
-    const taskElement = document.createElement('div');
-    taskElement.classList.add('task-item');
-    taskElement.innerHTML = taskTemplate;
-    tasksContainer.appendChild(taskElement);
-    
-    // Add todo functionality
-    const todoInput = taskElement.querySelector('.todo-input');
-    const addTodoBtn = taskElement.querySelector('.add-todo-btn');
-    const todoList = taskElement.querySelector('.todo-list');
-    
-    addTodoBtn.addEventListener('click', function() {
-      if (todoInput.value.trim()) {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <span>${todoInput.value.trim()}</span>
-          <button type="button" class="btn btn-sm btn-outline-danger remove-todo-btn">
-            <i class="bi bi-trash"></i>
-          </button>
-        `;
-        todoList.appendChild(li);
-        todoInput.value = '';
-        
-        li.querySelector('.remove-todo-btn').addEventListener('click', function() {
-          li.remove();
-        });
-      }
-    });
-    
-    // Remove task functionality
-    taskElement.querySelector('.remove-task-btn').addEventListener('click', function() {
-      if (tasksContainer.querySelectorAll('.task-item').length > 1) {
-        taskElement.remove();
-      } else {
-        alert('You must have at least one task in the assignment.');
-      }
-    });
+      const taskId = `task_${Date.now()}_${taskCounter++}`;
+      const taskElement = document.createElement('div');
+      taskElement.classList.add('task-item');
+      taskElement.dataset.taskId = taskId;
+      
+      // Clone the template and update IDs
+      const templateContent = document.getElementById('taskTemplate').content.cloneNode(true);
+      const taskCard = templateContent.querySelector('.task-card');
+      
+      // Update all checkbox IDs and labels in this task
+      const checkboxes = taskCard.querySelectorAll('.task-assignee');
+      checkboxes.forEach(checkbox => {
+          const memberId = checkbox.value;
+          const newId = `assignee_${taskId}_${memberId}`;
+          checkbox.id = newId;
+          const label = taskCard.querySelector(`label[for="assignee_${memberId}"]`);
+          if (label) {
+              label.htmlFor = newId;
+          }
+      });
+      
+      taskElement.appendChild(templateContent);
+      tasksContainer.appendChild(taskElement);
+      
+      // Add todo functionality
+      const todoInput = taskElement.querySelector('.todo-input');
+      const addTodoBtn = taskElement.querySelector('.add-todo-btn');
+      const todoList = taskElement.querySelector('.todo-list');
+      
+      addTodoBtn.addEventListener('click', function() {
+          if (todoInput.value.trim()) {
+              const li = document.createElement('li');
+              li.innerHTML = `
+                  <span class="todo-text">${todoInput.value.trim()}</span>
+                  <button type="button" class="btn btn-sm btn-outline-danger remove-todo-btn">
+                      <i class="bi bi-trash"></i>
+                  </button>
+              `;
+              todoList.appendChild(li);
+              todoInput.value = '';
+              
+              li.querySelector('.remove-todo-btn').addEventListener('click', function() {
+                  li.remove();
+              });
+          }
+      });
+      
+      // Remove task functionality
+      taskElement.querySelector('.remove-task-btn').addEventListener('click', function() {
+          if (tasksContainer.querySelectorAll('.task-item').length > 1) {
+              taskElement.remove();
+          } else {
+              alert('You must have at least one task in the assignment.');
+          }
+      });
   }
 
   // Save Assignment
@@ -1850,12 +2157,13 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const tasks = [];
       document.querySelectorAll('.task-item').forEach(taskElement => {
+        const taskId = taskElement.dataset.taskId;
         const task = {
           title: taskElement.querySelector('.task-title').value,
           description: taskElement.querySelector('.task-description').value,
           deadline: taskElement.querySelector('.task-deadline').value || generalDeadline,
           priority: taskElement.querySelector('.task-priority').value,
-          assignees: Array.from(taskElement.querySelector('.task-assignees').selectedOptions).map(opt => opt.value),
+          assignees: Array.from(taskElement.querySelectorAll('.task-assignee:checked')).map(checkbox => checkbox.value),
           todos: Array.from(taskElement.querySelectorAll('.todo-list li')).map(li => li.textContent.trim())
         };
         tasks.push(task);
@@ -1903,6 +2211,16 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+});
+
+// JavaScript for Deadline Propagation
+document.getElementById('generalDeadline').addEventListener('change', function() {
+  const generalDate = this.value;
+  if (generalDate) {
+    document.querySelectorAll('.task-deadline').forEach(el => {
+      el.value = generalDate;
+    });
+  }
 });
 </script>
 {% endblock %}

@@ -709,7 +709,7 @@ def create_task_assignment(project_id):
             'title': assignment.title,
             'assigned_at': assignment.assigned_at.isoformat(),
             'status': assignment.status,
-            'comment': assignment.comments.content if assignment.comments else None,
+            'comment': comment,
             'assigned_by': {
                 'id': current_user.id,
                 'name': f"{current_user.fname} {current_user.lname}"
