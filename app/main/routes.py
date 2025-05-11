@@ -167,9 +167,7 @@ def projects():
     # Add progress, task count, and user role to each project
     for project in user_projects:
         # Calculate project progress based on completed tasks
-        total_tasks = len(project.task_assignment)
-        completed_tasks = len([t for t in project.task_assignment if t.status == "completed"])
-        project.progress = int((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
+        total_tasks = sum([len(assignment.task) for assignment in project.task_assignment])
         project.task_count = total_tasks
         
         # Get user's role in this project

@@ -2181,13 +2181,27 @@ document.addEventListener('DOMContentLoaded', function() {
           tasks: tasks
         })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          // Throw error to be caught below if response is not OK (status not 2xx)
+          return response.json().then(err => {
+            throw new Error(err.message || 'Server error');
+          });
+        }
+        return response.json();
+      })
       .then(data => {
         if (data.success) {
           taskAssignmentModal.hide();
           location.reload();
+        } else {
+          alert(data.message || 'Assignment creation failed.');
         }
-      });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the assignment: ' + error.message);
+      });      
     });
   }
 
