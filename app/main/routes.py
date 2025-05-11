@@ -268,12 +268,34 @@ def project(project_id):
         TaskAssignment.assigned_at.desc()
     ).all()
     
-    # Get discussions
+    # Get regular project discussions
     discussions = ProjectDiscussion.query.filter_by(
         project_id=project.id
-    ).order_by(
-        ProjectDiscussion.created_at.desc()
     ).all()
+
+    # Get task assignment comments for this project
+    comments = TaskAssignmentComment.query.join(
+        TaskAssignment
+    ).filter(
+        TaskAssignment.source_project_id == project.id
+    ).all()
+
+    # Add type attribute and combine
+    combined = []
+    for d in discussions:
+        d.type = 'discussion'  # This will be used in the template
+        combined.append(d)
+
+    for c in comments:
+        c.type = 'assignment_comment'  # This matches your template condition
+        combined.append(c)
+
+    # Sort by created_at (newest first)
+    sorted_discussions = sorted(
+        combined,
+        key=lambda x: x.created_at,
+        reverse=True
+    )
     
     # Get tasks for Kanban board
     tasks = Task.query.join(
@@ -302,7 +324,7 @@ def project(project_id):
         current_membership=current_membership,
         members=members,
         task_assignments=task_assignments,
-        discussions=discussions,
+        discussions=sorted_discussions,
         kanban_columns=kanban_columns
     )
 
