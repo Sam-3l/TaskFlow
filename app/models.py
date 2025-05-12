@@ -190,7 +190,7 @@ class Task(db.Model):
     updated_at = db.Column(db.DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
     deadline = db.Column(db.DateTime, nullable=True)
     priority = db.Column(db.String(30), nullable=True)
-    status = db.Column(db.String(30), default="pending")
+    status = db.Column(db.String(30), default="pending") # pending, in progress, review, completed
     
     # User - Task M2M relationship:
     assigned_users = db.relationship(
