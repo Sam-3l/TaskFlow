@@ -57,7 +57,7 @@
     <div class="task-layout">
         <!-- Todo List Section And Pulse Chart -->
         <div class="todo-section">
-            <div class="todo-card glass-card">
+            <div class="todo-card glass-card" style="z-index: 2; position: relative;">
                 <form class="todo-create">
                     <input type="hidden" id="csrf-token" name="csrf_token" value="{{ csrf_token() }}" />
                     <div class="input-group this-input-group">
@@ -142,7 +142,7 @@
             </div>
 
             <!-- Pulse Chart -->
-            <div class="chart-container glass-card" style="height: 400px; position: relative;">
+            <div class="chart-container glass-card" style="height: 400px; z-index: 1; position: relative;">
                 {% if has_progress %}
                     <canvas id="pulseChart"></canvas>
                 {% else %}
@@ -1619,20 +1619,18 @@ document.addEventListener('DOMContentLoaded', function() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 1000;
-        backdrop-filter: blur(5px);
+        z-index: 100;
     }
 
     .ai-modal-content {
         width: 90%;
         max-width: 600px;
-        max-height: 80vh;
-        overflow-y: auto;
         padding: 25px;
+        position: relative;
+        z-index: 100;
         animation: modalFadeIn 0.3s ease-out;
     }
 

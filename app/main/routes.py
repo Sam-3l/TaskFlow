@@ -1307,6 +1307,19 @@ def add_subtasks(task_id):
                 db.session.add(todo)
         
         db.session.commit()
+
+        task = Task.query.get(task_id)
+        completed = sum(1 for todo in task.todos if todo.is_completed)
+        
+        if not completed:
+            task.status = "pending"
+        elif completed == len(task.todos):
+            task.status = "completed"
+        else:
+            task.status = "in progress"
+        task.updated_at = func.now()
+        db.session.commit()
+        
         return jsonify({'success': True})
         
     except Exception as e:
