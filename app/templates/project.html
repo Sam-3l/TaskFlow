@@ -955,6 +955,8 @@
   padding: 3px 10px;
   border-radius: 20px;
   font-weight: 600;
+  background:rgb(233, 242, 247);
+  color:rgb(6, 27, 95);
 }
 
 .assignment-status.pending {
@@ -2041,7 +2043,19 @@ document.addEventListener('DOMContentLoaded', function() {
         body: JSON.stringify({ 
           status: newStatus
         })
-      });
+      })
+      .then(res => {
+        if (!res.ok){
+          return res.json().then(err => {
+            throw new Error(err.message || 'Server error');
+          });
+        }
+        return res.json();
+      })
+      .catch(err => {
+        console.error(err, error);
+        alert("Error: " + err.message);
+      })
     });
   });
   

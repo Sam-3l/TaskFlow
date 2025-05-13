@@ -647,6 +647,16 @@ def update_task_status(task_id):
     
     task.status = data['status']
     db.session.commit()
+
+    assignment = task.assignment
+    completed_tasks = sum(1 for task in assignment.task if task.status == "completed")
+    if not completed_tasks:
+        assignment.status = "pending"
+    elif completed_tasks == len(assignment.task):
+        assignment.status = "completed"
+    else:
+        assignment.status = f"{completed_tasks}/{len(assignment.task)} tasks completed"
+    db.session.commit()
     
     return jsonify({'success': True})
 
@@ -1319,6 +1329,16 @@ def add_subtasks(task_id):
             task.status = "in progress"
         task.updated_at = func.now()
         db.session.commit()
+
+        assignment = task.assignment
+        completed_tasks = sum(1 for task in assignment.task if task.status == "completed")
+        if not completed_tasks:
+            assignment.status = "pending"
+        elif completed_tasks == len(assignment.task):
+            assignment.status = "completed"
+        else:
+            assignment.status = f"{completed_tasks}/{len(assignment.task)} tasks completed"
+        db.session.commit()
         
         return jsonify({'success': True})
         
@@ -1569,6 +1589,16 @@ def create_todo(task_id):
     task.updated_at = func.now()
     db.session.commit()
 
+    assignment = task.assignment
+    completed_tasks = sum(1 for task in assignment.task if task.status == "completed")
+    if not completed_tasks:
+        assignment.status = "pending"
+    elif completed_tasks == len(assignment.task):
+        assignment.status = "completed"
+    else:
+        assignment.status = f"{completed_tasks}/{len(assignment.task)} tasks completed"
+    db.session.commit()
+
     return jsonify({
         'id': todo.id,
         'content': todo.content,
@@ -1632,6 +1662,16 @@ def update_todo(todo_id):
     task.updated_at = func.now()
     db.session.commit()
 
+    assignment = task.assignment
+    completed_tasks = sum(1 for task in assignment.task if task.status == "completed")
+    if not completed_tasks:
+        assignment.status = "pending"
+    elif completed_tasks == len(assignment.task):
+        assignment.status = "completed"
+    else:
+        assignment.status = f"{completed_tasks}/{len(assignment.task)} tasks completed"
+    db.session.commit()
+
     return jsonify({
         'id': todo.id,
         'content': todo.content,
@@ -1671,6 +1711,16 @@ def delete_todo(todo_id):
     else:
         task.status = "in progress"
     task.updated_at = func.now()
+    db.session.commit()
+
+    assignment = task.assignment
+    completed_tasks = sum(1 for task in assignment.task if task.status == "completed")
+    if not completed_tasks:
+        assignment.status = "pending"
+    elif completed_tasks == len(assignment.task):
+        assignment.status = "completed"
+    else:
+        assignment.status = f"{completed_tasks}/{len(assignment.task)} tasks completed"
     db.session.commit()
 
     return jsonify({'message': 'Todo deleted'}), 200
