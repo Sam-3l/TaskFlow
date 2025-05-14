@@ -185,4 +185,125 @@
 <a href="/dashboard/tasks/new" class="btn btn-primary btn-lg floating-action-button shadow">
     <i class="fas fa-plus"></i>
 </a>
+
+<script>
+    // Tasks sort
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortLabels = {
+            'priority': 'Priority & Last Modified',
+            'deadline': 'Deadline',
+            'last_modified': 'Last Modified'
+        };
+
+        const sortKeys = {
+            PRIORITY: 'priority',
+            DEADLINE: 'deadline',
+            LAST_MODIFIED: 'last_modified'
+        };
+
+        // Priority hierarchy
+        const priorityOrder = {
+            'critical': 1,
+            'high-priority': 2,
+            'medium-priority': 3,
+            'low-priority': 4,
+            'optional': 5
+        };
+
+        // Get stored sort or default to priority
+        const currentSort = localStorage.getItem('taskSort') || sortKeys.PRIORITY;
+        applySort(currentSort);
+
+        // Dropdown click handler
+        document.querySelectorAll('.tasks-sort .dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                localStorage.setItem('taskSort', sortKey);
+                applySort(sortKey);
+            });
+        });
+
+        function applySort(sortKey) {
+            const container = document.getElementById('tasks-container');
+            const tasks = Array.from(container.querySelectorAll('.task-card-container'));
+
+            tasks.sort(getSortFunction(sortKey));
+            tasks.forEach(task => container.appendChild(task));
+            updateActiveSortUI(sortKey);
+        }
+
+        function updateActiveSortUI(sortKey) {
+            // Update dropdown label
+            document.getElementById('current-sort-label').textContent = sortLabels[sortKey];
+            
+            // Remove all active states
+            document.querySelectorAll('.tasks-sort .dropdown-item').forEach(item => {
+                item.classList.remove('active-sort');
+                item.querySelector('.bi-check-lg').classList.add('d-none');
+            });
+            
+            // Add active state to current sort
+            const activeItem = document.querySelector(`.tasks-sort .dropdown-item[data-sort="${sortKey}"]`);
+            if (activeItem) {
+                activeItem.classList.add('active-sort');
+                activeItem.querySelector('.bi-check-lg').classList.remove('d-none');
+            }
+        }
+
+        function getSortFunction(sortKey) {
+            switch(sortKey) {
+                case sortKeys.PRIORITY:
+                    return (a, b) => {
+                        const aCompleted = a.dataset.status === 'completed';
+                        const bCompleted = b.dataset.status === 'completed';
+
+                        // Separate completed/non-completed
+                        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+
+                        // Sort non-completed by priority then last modified
+                        const priorityCompare = comparePriorities(a, b);
+                        return priorityCompare !== 0 ? priorityCompare : compareLastModified(a, b);
+                    };
+                
+                case sortKeys.DEADLINE:
+                    return (a, b) => {
+                        const aCompleted = a.dataset.status === 'completed';
+                        const bCompleted = b.dataset.status === 'completed';
+
+                        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+
+                        const deadlineCompare = compareDeadlines(a, b);
+                        return deadlineCompare !== 0 ? deadlineCompare : compareLastModified(a, b);
+                    };
+                
+                case sortKeys.LAST_MODIFIED:
+                    return (a, b) => {
+                        const aCompleted = a.dataset.status === 'completed';
+                        const bCompleted = b.dataset.status === 'completed';
+
+                        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+
+                        return compareLastModified(a, b);
+                    };
+            }
+        }
+
+        // Comparison functions
+        function comparePriorities(a, b) {
+            return (priorityOrder[a.dataset.priority] || 4) - (priorityOrder[b.dataset.priority] || 4);
+        }
+
+        function compareDeadlines(a, b) {
+            const aDeadline = a.dataset.deadline ? new Date(a.dataset.deadline) : Infinity;
+            const bDeadline = b.dataset.deadline ? new Date(b.dataset.deadline) : Infinity;
+            return aDeadline - bDeadline;
+        }
+
+        function compareLastModified(a, b) {
+            return new Date(b.dataset.updated) - new Date(a.dataset.updated);
+        }
+
+        updateActiveSortUI(currentSort);
+    });
+</script>
 {% endblock %}

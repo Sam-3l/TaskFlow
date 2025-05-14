@@ -1652,6 +1652,57 @@ input[type="date"]::-webkit-clear-button {
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* Add these to your existing CSS */
+.kanban-task[data-draggable="false"],
+.kanban-task.non-draggable {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.kanban-task[data-draggable="false"]:active,
+.kanban-task.non-draggable:active {
+  pointer-events: none;
+}
+
+.kanban-task.drag-error {
+  animation: shake 0.5s ease-in-out;
+  border-left: 3px solid #ff4444;
+}
+
+.drag-error-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff4444;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  margin-bottom: 5px;
+}
+
+.drag-error-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #ff4444 transparent transparent transparent;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
 </style>
 
 <script>
@@ -2003,77 +2054,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Kanban Board Drag and Drop
-  const kanbanTasks = document.querySelectorAll('.kanban-task');
-  const kanbanColumns = document.querySelectorAll('.kanban-column');
-  
-  kanbanTasks.forEach(task => {
-    task.addEventListener('dragstart', function() {
-      this.classList.add('dragging');
-    });
-    
-    task.addEventListener('dragend', function() {
-      this.classList.remove('dragging');
-    });
-  });
-  
-  kanbanColumns.forEach(column => {
-    column.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      const draggingTask = document.querySelector('.kanban-task.dragging');
-      const afterElement = getDragAfterElement(this, e.clientY);
-      
-      if (afterElement) {
-        afterElement.parentNode.insertBefore(draggingTask, afterElement);
-      } else {
-        this.querySelector('.column-tasks').appendChild(draggingTask);
-      }
-    });
-    
-    column.addEventListener('drop', function() {
-      const taskId = document.querySelector('.kanban-task.dragging').getAttribute('data-task-id');
-      const newStatus = this.getAttribute('data-status');
-      
-      fetch(`/tasks/${taskId}/update_status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken
-        },
-        body: JSON.stringify({ 
-          status: newStatus
-        })
-      })
-      .then(res => {
-        if (!res.ok){
-          return res.json().then(err => {
-            throw new Error(err.message || 'Server error');
-          });
-        }
-        return res.json();
-      })
-      .catch(err => {
-        console.error(err, error);
-        alert("Error: " + err.message);
-      })
-    });
-  });
-  
-  function getDragAfterElement(column, y) {
-    const tasks = [...column.querySelectorAll('.kanban-task:not(.dragging)')];
-    
-    return tasks.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-  }
-
   // Task Assignment Modal
   const taskAssignmentModal = new bootstrap.Modal(document.getElementById('taskAssignmentModal'));
   const newTaskAssignmentBtn = document.getElementById('newTaskAssignmentBtn');
@@ -2239,6 +2219,158 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+});
+
+// Kanban Board Drag and Drop
+document.addEventListener('DOMContentLoaded', function() {
+  const kanbanTasks = document.querySelectorAll('.kanban-task');
+  const kanbanColumns = document.querySelectorAll('.kanban-column');
+  
+  // First, check draggable status for all tasks
+  kanbanTasks.forEach(task => {
+    checkDraggableStatus(task);
+  });
+
+  kanbanTasks.forEach(task => {
+    task.addEventListener('dragstart', function(e) {
+      if (this.getAttribute('data-draggable') === 'false') {
+        e.preventDefault();
+        return;
+      }
+      
+      this.classList.add('dragging');
+      // Store original position for potential revert
+      this.setAttribute('data-original-column', this.closest('.kanban-column').getAttribute('data-status'));
+      this.setAttribute('data-original-index', [...this.parentNode.children].indexOf(this));
+    });
+    
+    task.addEventListener('dragend', function() {
+      this.classList.remove('dragging');
+    });
+  });
+  
+  kanbanColumns.forEach(column => {
+    column.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      const draggingTask = document.querySelector('.kanban-task.dragging');
+      if (!draggingTask) return;
+      
+      const afterElement = getDragAfterElement(this, e.clientY);
+      
+      if (afterElement) {
+        afterElement.parentNode.insertBefore(draggingTask, afterElement);
+      } else {
+        this.querySelector('.column-tasks').appendChild(draggingTask);
+      }
+    });
+    
+    column.addEventListener('drop', async function() {
+      const draggingTask = document.querySelector('.kanban-task.dragging');
+      if (!draggingTask) return;
+      
+      const taskId = draggingTask.getAttribute('data-task-id');
+      const newStatus = this.getAttribute('data-status');
+      
+      try {
+        const response = await fetch(`/tasks/${taskId}/update_status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({ 
+            status: newStatus
+          })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Server error');
+        }
+        
+        const data = await response.json();
+        if (data.draggable === false) {
+          throw new Error('You do not have permission to move this task');
+        }
+        
+        // Success - update draggable status if needed
+        checkDraggableStatus(draggingTask);
+      } catch (err) {
+        console.error("Drag error:", err);
+        
+        // Revert to original position
+        revertTaskPosition(draggingTask);
+        
+        // Show error feedback
+        showDragErrorFeedback(draggingTask, err.message);
+      }
+    });
+  });
+  
+  function getDragAfterElement(column, y) {
+    const tasks = [...column.querySelectorAll('.kanban-task:not(.dragging)')];
+    
+    return tasks.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+  
+  function revertTaskPosition(task) {
+    const originalColumn = document.querySelector(`.kanban-column[data-status="${task.getAttribute('data-original-column')}"]`);
+    const originalIndex = parseInt(task.getAttribute('data-original-index'));
+    const columnTasks = originalColumn.querySelector('.column-tasks');
+    
+    if (originalIndex === 0) {
+      columnTasks.prepend(task);
+    } else {
+      const referenceNode = columnTasks.children[originalIndex] || null;
+      columnTasks.insertBefore(task, referenceNode);
+    }
+  }
+  
+  function showDragErrorFeedback(task, message) {
+    // Create or show error tooltip
+    let tooltip = task.querySelector('.drag-error-tooltip');
+    if (!tooltip) {
+      tooltip = document.createElement('div');
+      tooltip.className = 'drag-error-tooltip';
+      task.appendChild(tooltip);
+    }
+    tooltip.textContent = message;
+    
+    // Visual feedback
+    task.classList.add('drag-error');
+    setTimeout(() => {
+      task.classList.remove('drag-error');
+      if (tooltip) tooltip.textContent = '';
+    }, 3000);
+  }
+  
+  async function checkDraggableStatus(task) {
+    try {
+      const response = await fetch(`/tasks/${task.getAttribute('data-task-id')}/can_edit`, {
+        method: 'GET',
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        task.setAttribute('data-draggable', data.can_edit);
+        task.classList.toggle('non-draggable', !data.can_edit);
+      }
+    } catch (err) {
+      console.error('Error checking draggable status:', err);
+    }
+  }
 });
 
 // JavaScript for Deadline Propagation

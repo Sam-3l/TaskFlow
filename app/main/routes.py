@@ -618,28 +618,47 @@ def remove_project_member(project_id):
     
     return jsonify({'success': True})
 
-
 @main.route('/tasks/<int:task_id>/update_status', methods=['POST'])
 @login_required
 def update_task_status(task_id):
     task = Task.query.get_or_404(task_id)
     
-    is_assigned = current_user in task.assigned_users
-    is_manager_or_coordinator = False
+    # Check if user is project manager of the task's project
+    is_project_manager = db.session.query(membership).filter_by(
+        project_id=task.assignment.source_project_id,
+        user_id=current_user.id,
+        role='project_manager'
+    ).first() is not None
     
-    if not is_assigned:
-        assignment = TaskAssignment.query.get(task.assignment_id)
-        if assignment:
-            member = db.session.query(membership).filter_by(
-                project_id=assignment.source_project_id,
-                user_id=current_user.id
-            ).first()
-            
-            if member and member.role in ['project_manager', 'task_coordinator']:
-                is_manager_or_coordinator = True
+    # Check if user is task coordinator AND either assigned the task or is assigned to it
+    is_task_coordinator = False
+    if not is_project_manager:
+        task_coordinator = db.session.query(membership).filter_by(
+            project_id=task.assignment.source_project_id,
+            user_id=current_user.id,
+            role='task_coordinator'
+        ).first()
+        
+        if task_coordinator:
+            # Check if user assigned this task or is assigned to it
+            is_task_coordinator = (
+                task.assignment.assigned_by_user_id == current_user.id or
+                current_user in task.assigned_users
+            )
     
-    if not is_assigned and not is_manager_or_coordinator:
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    # Check if user is contributor assigned to the task
+    is_assigned_contributor = (
+        not is_project_manager and 
+        not is_task_coordinator and 
+        current_user in task.assigned_users
+    )
+    
+    if not any([is_project_manager, is_task_coordinator, is_assigned_contributor]):
+        return jsonify({
+            'success': False, 
+            'message': 'Unauthorized: You do not have permission to modify this task',
+            'draggable': False
+        }), 403
     
     data = request.get_json()
     if not data or 'status' not in data:
@@ -648,18 +667,56 @@ def update_task_status(task_id):
     task.status = data['status']
     db.session.commit()
 
+    # Update assignment status
     assignment = task.assignment
-    completed_tasks = sum(1 for task in assignment.task if task.status == "completed")
-    if not completed_tasks:
+    completed_tasks = sum(1 for t in assignment.task if t.status == "completed")
+    
+    if completed_tasks == 0:
         assignment.status = "pending"
     elif completed_tasks == len(assignment.task):
         assignment.status = "completed"
     else:
         assignment.status = f"{completed_tasks}/{len(assignment.task)} tasks completed"
+    
     db.session.commit()
     
-    return jsonify({'success': True})
+    return jsonify({'success': True, 'draggable': True})
 
+@main.route('/tasks/<int:task_id>/can_edit', methods=['GET'])
+@login_required
+def can_edit_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # Same permission logic as update_status
+    is_project_manager = db.session.query(membership).filter_by(
+        project_id=task.assignment.source_project_id,
+        user_id=current_user.id,
+        role='project_manager'
+    ).first() is not None
+    
+    is_task_coordinator = False
+    if not is_project_manager:
+        task_coordinator = db.session.query(membership).filter_by(
+            project_id=task.assignment.source_project_id,
+            user_id=current_user.id,
+            role='task_coordinator'
+        ).first()
+        
+        if task_coordinator:
+            is_task_coordinator = (
+                task.assignment.assigned_by_user_id == current_user.id or
+                current_user in task.assigned_users
+            )
+    
+    is_assigned_contributor = (
+        not is_project_manager and 
+        not is_task_coordinator and 
+        current_user in task.assigned_users
+    )
+    
+    can_edit = any([is_project_manager, is_task_coordinator, is_assigned_contributor])
+    
+    return jsonify({'can_edit': can_edit})
 
 @main.route('/projects/<int:project_id>/create_assignment', methods=['POST'])
 @login_required
