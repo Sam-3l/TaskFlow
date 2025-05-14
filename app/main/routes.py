@@ -1342,7 +1342,16 @@ def generate_ai_subtasks(task):
 
 @main.route('/tasks/<int:task_id>/generate_subtasks', methods=['POST'])
 def generate_subtasks(task_id):
-    task = Task.query.get_or_404(task_id)
+    # For new tasks (task_id = 0), get data from request body
+    if task_id == 0:
+        data = request.json
+        task = {}
+        task['title'] = data.get('title', '')
+        task['description'] = data.get('description', '')
+        task['priority'] = data.get('priority', 'medium-priority')
+        task['deadline'] = data.get('deadline', None)
+    else:
+        task = Task.query.get_or_404(task_id)
     
     try:
         subtasks = generate_ai_subtasks(task)

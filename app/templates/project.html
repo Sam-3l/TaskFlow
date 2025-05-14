@@ -427,6 +427,53 @@
           </div>
           <ul class="todo-list"></ul>
         </div>
+        <div class="ai-subtask-section mt-3">
+          <button type="button" class="btn btn-sm btn-outline-primary generate-subtasks-btn">
+            <i class="bi bi-magic"></i> Generate Subtasks with AI
+          </button>
+          <div class="ai-subtask-modal" style="display: none;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ai-subtask-modal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-robot"></i> AI Subtask Suggestions</h5>
+          <button type="button" class="ai-btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="ai-loading-state text-center py-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Analyzing your task and generating smart subtasks...</p>
+          </div>
+          
+          <div class="ai-results" style="display: none;">
+            <p class="text-muted ai-prompt-used"></p>
+            <ul class="list-group ai-subtask-list mb-3"></ul>
+          </div>
+          
+          <div class="ai-error-state text-center py-4" style="display: none;">
+            <div class="text-danger mb-3">
+              <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+            </div>
+            <p class="ai-error-message"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-ai-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary btn-ai-confirm">
+            <i class="bi bi-check-circle"></i> Add Selected Subtasks
+          </button>
+          <button type="button" class="btn btn-primary btn-ai-retry" style="display: none;">
+            <i class="bi bi-arrow-repeat"></i> Try Again
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1703,6 +1750,53 @@ input[type="date"]::-webkit-clear-button {
   40%, 80% { transform: translateX(5px); }
 }
 
+/* AI Subtask Generator Styles */
+.generate-subtasks-btn {
+  transition: all 0.2s ease;
+}
+
+.generate-subtasks-btn:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.ai-subtask-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1060; /* Above Bootstrap modals */
+  backdrop-filter: blur(3px);
+}
+
+.ai-subtask-modal .modal-content {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.ai-subtask-list .list-group-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+}
+
+.ai-subtask-list .form-check {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+
+.ai-subtask-list .form-check-input {
+  margin-top: 0;
+}
+
+.ai-subtask-list .form-check-label {
+  width: 100%;
+}
+
 </style>
 
 <script>
@@ -2083,62 +2177,212 @@ document.addEventListener('DOMContentLoaded', function() {
   // Generate a simple unique ID for each task
   let taskCounter = 0;
 
+  function setupAISubtaskGeneration(taskElement) {
+    const generateBtn = taskElement.querySelector('.generate-subtasks-btn');
+    const modal = taskElement.querySelector('.ai-subtask-modal');
+    const loadingState = taskElement.querySelector('.ai-loading-state');
+    const resultsState = taskElement.querySelector('.ai-results');
+    const errorState = taskElement.querySelector('.ai-error-state');
+    const subtaskList = taskElement.querySelector('.ai-subtask-list');
+    const promptUsed = taskElement.querySelector('.ai-prompt-used');
+    const errorMessage = taskElement.querySelector('.ai-error-message');
+    const confirmBtn = taskElement.querySelector('.btn-ai-confirm');
+    const cancelBtn = taskElement.querySelector('.btn-ai-cancel');
+    const retryBtn = taskElement.querySelector('.btn-ai-retry');
+    const todoList = taskElement.querySelector('.todo-list');
+  
+    generateBtn.addEventListener('click', function() {
+      const title = taskElement.querySelector('.task-title').value.trim();
+      const description = taskElement.querySelector('.task-description').value.trim();
+      
+      if (!title) {
+        alert('Please enter a task title before generating subtasks');
+        taskElement.querySelector('.task-title').focus();
+        return;
+      }
+      
+      // Show modal
+      modal.style.display = 'flex';
+      startSubtaskGeneration();
+    });
+  
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+  
+    cancelBtn.addEventListener('click', closeModal);
+    taskElement.querySelector('.ai-btn-close').addEventListener('click', closeModal);
+  
+    // Click outside modal to close
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+  
+    function startSubtaskGeneration() {
+      const title = taskElement.querySelector('.task-title').value.trim();
+      const description = taskElement.querySelector('.task-description').value.trim();
+      const priority = taskElement.querySelector('.task-priority').value;
+      const deadline = taskElement.querySelector('.task-deadline').value;
+      
+      loadingState.style.display = 'block';
+      resultsState.style.display = 'none';
+      errorState.style.display = 'none';
+      retryBtn.style.display = 'none';
+      
+      fetch('/tasks/0/generate_subtasks', {  // We use 0 as task ID since it's not saved yet
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          priority: priority,
+          deadline: deadline
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          displaySubtaskResults(data.subtasks, title, description);
+        } else {
+          showError(data.error || 'Failed to generate subtasks');
+        }
+      })
+      .catch(error => {
+        showError(error.message || 'Network error occurred');
+      });
+    }
+  
+    function displaySubtaskResults(subtasks, title, description) {
+      loadingState.style.display = 'none';
+      resultsState.style.display = 'block';
+      confirmBtn.style.display = 'block';
+      retryBtn.style.display = 'none';
+      
+      promptUsed.textContent = `Based on: "${title}"${description ? ` - ${description}` : ''}`;
+      subtaskList.innerHTML = '';
+      
+      subtasks.forEach((subtask, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="subtask-${index}" checked>
+            <label class="form-check-label" for="subtask-${index}">${subtask}</label>
+          </div>
+        `;
+        subtaskList.appendChild(li);
+      });
+    }
+  
+    function showError(message) {
+      loadingState.style.display = 'none';
+      resultsState.style.display = 'none';
+      errorState.style.display = 'block';
+      confirmBtn.style.display = 'none';
+      retryBtn.style.display = 'block';
+      
+      errorMessage.textContent = message;
+    }
+  
+    retryBtn.addEventListener('click', startSubtaskGeneration);
+  
+    confirmBtn.addEventListener('click', function() {
+      const selectedSubtasks = [];
+      
+      taskElement.querySelectorAll('.ai-subtask-list input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedSubtasks.push(checkbox.nextElementSibling.textContent.trim());
+      });
+      
+      if (selectedSubtasks.length === 0) {
+        showError('Please select at least one subtask to add');
+        return;
+      }
+      
+      // Add the selected subtasks to the todo list
+      selectedSubtasks.forEach(subtask => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="todo-text">${subtask}</span>
+          <button type="button" class="btn btn-sm btn-outline-danger remove-todo-btn">
+            <i class="bi bi-trash"></i>
+          </button>
+        `;
+        todoList.appendChild(li);
+        
+        li.querySelector('.remove-todo-btn').addEventListener('click', function() {
+          li.remove();
+        });
+      });
+      
+      closeModal();
+    });
+  }
+  
+  // addTaskToForm function with AI setup
   function addTaskToForm() {
-      const taskId = `task_${Date.now()}_${taskCounter++}`;
-      const taskElement = document.createElement('div');
-      taskElement.classList.add('task-item');
-      taskElement.dataset.taskId = taskId;
-      
-      // Clone the template and update IDs
-      const templateContent = document.getElementById('taskTemplate').content.cloneNode(true);
-      const taskCard = templateContent.querySelector('.task-card');
-      
-      // Update all checkbox IDs and labels in this task
-      const checkboxes = taskCard.querySelectorAll('.task-assignee');
-      checkboxes.forEach(checkbox => {
-          const memberId = checkbox.value;
-          const newId = `assignee_${taskId}_${memberId}`;
-          checkbox.id = newId;
-          const label = taskCard.querySelector(`label[for="assignee_${memberId}"]`);
-          if (label) {
-              label.htmlFor = newId;
-          }
-      });
-      
-      taskElement.appendChild(templateContent);
-      tasksContainer.appendChild(taskElement);
-      
-      // Add todo functionality
-      const todoInput = taskElement.querySelector('.todo-input');
-      const addTodoBtn = taskElement.querySelector('.add-todo-btn');
-      const todoList = taskElement.querySelector('.todo-list');
-      
-      addTodoBtn.addEventListener('click', function() {
-          if (todoInput.value.trim()) {
-              const li = document.createElement('li');
-              li.innerHTML = `
-                  <span class="todo-text">${todoInput.value.trim()}</span>
-                  <button type="button" class="btn btn-sm btn-outline-danger remove-todo-btn">
-                      <i class="bi bi-trash"></i>
-                  </button>
-              `;
-              todoList.appendChild(li);
-              todoInput.value = '';
-              
-              li.querySelector('.remove-todo-btn').addEventListener('click', function() {
-                  li.remove();
-              });
-          }
-      });
-      
-      // Remove task functionality
-      taskElement.querySelector('.remove-task-btn').addEventListener('click', function() {
-          if (tasksContainer.querySelectorAll('.task-item').length > 1) {
-              taskElement.remove();
-          } else {
-              alert('You must have at least one task in the assignment.');
-          }
-      });
+    const taskId = `task_${Date.now()}_${taskCounter++}`;
+    const taskElement = document.createElement('div');
+    taskElement.classList.add('task-item');
+    taskElement.dataset.taskId = taskId;
+    
+    // Clone the template and update IDs
+    const templateContent = document.getElementById('taskTemplate').content.cloneNode(true);
+    const taskCard = templateContent.querySelector('.task-card');
+    
+    // Update all checkbox IDs and labels in this task
+    const checkboxes = taskCard.querySelectorAll('.task-assignee');
+    checkboxes.forEach(checkbox => {
+        const memberId = checkbox.value;
+        const newId = `assignee_${taskId}_${memberId}`;
+        checkbox.id = newId;
+        const label = taskCard.querySelector(`label[for="assignee_${memberId}"]`);
+        if (label) {
+            label.htmlFor = newId;
+        }
+    });
+    
+    taskElement.appendChild(templateContent);
+    tasksContainer.appendChild(taskElement);
+    
+    // Add todo functionality
+    const todoInput = taskElement.querySelector('.todo-input');
+    const addTodoBtn = taskElement.querySelector('.add-todo-btn');
+    const todoList = taskElement.querySelector('.todo-list');
+    
+    addTodoBtn.addEventListener('click', function() {
+        if (todoInput.value.trim()) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="todo-text">${todoInput.value.trim()}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-todo-btn">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            todoList.appendChild(li);
+            todoInput.value = '';
+            
+            li.querySelector('.remove-todo-btn').addEventListener('click', function() {
+                li.remove();
+            });
+        }
+    });
+    
+    // Remove task functionality
+    taskElement.querySelector('.remove-task-btn').addEventListener('click', function() {
+        if (tasksContainer.querySelectorAll('.task-item').length > 1) {
+            taskElement.remove();
+        } else {
+            alert('You must have at least one task in the assignment.');
+        }
+    });
+  
+    // Setup AI subtask generation for this task
+    setupAISubtaskGeneration(taskElement);
   }
 
   // Save Assignment
