@@ -8,7 +8,6 @@ from wtforms import ValidationError
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 from sqlalchemy import case
-import re
 
 # Data viz
 import plotly
@@ -19,6 +18,8 @@ import requests
 import os
 from werkzeug.utils import secure_filename
 import time
+import re
+from types import SimpleNamespace
 
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment
 from app.forms import CreateTask, CreateProject
@@ -1345,11 +1346,23 @@ def generate_subtasks(task_id):
     # For new tasks (task_id = 0), get data from request body
     if task_id == 0:
         data = request.json
-        task = {}
-        task['title'] = data.get('title', '')
-        task['description'] = data.get('description', '')
-        task['priority'] = data.get('priority', 'medium-priority')
-        task['deadline'] = data.get('deadline', None)
+        deadline_str = data.get('deadline', None)
+
+        # Convert deadline to datetime if it's provided
+        deadline = None
+        if deadline_str:
+            try:
+                deadline = datetime.strptime(deadline_str, "%Y-%m-%d")
+            except ValueError:
+                # handle unexpected format if needed
+                deadline = None
+
+        task = SimpleNamespace(
+            title=data.get('title', ''),
+            description=data.get('description', ''),
+            priority=data.get('priority', 'medium-priority'),
+            deadline=deadline
+        )
     else:
         task = Task.query.get_or_404(task_id)
     
