@@ -1,0 +1,48 @@
+<div class="kanban-task {{ task.status.replace(' ', '-') }}" data-task-id="{{ task.id }}" data-priority="{{ task.priority }}" data-project="{{ 'true' if task.assignment.source else 'false' }}">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+        <h6 class="mb-0 flex-grow-1">
+            <a href="/dashboard/tasks/{{ task.id }}" class="text-decoration-none text-dark">
+                {{ task.title|truncate(30, True) }}
+            </a>
+        </h6>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/dashboard/tasks/{{ task.id }}/edit"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                <li><a class="dropdown-item" href="#" data-task-id="{{ task.id }}" class="delete-task"><i class="fas fa-trash me-2"></i>Delete</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <p class="small text-muted mb-2">{{ task.description|truncate(100, True) }}</p>
+    
+    <div class="d-flex flex-wrap gap-1 mb-2">
+        <span class="badge priority-{{ task.priority }}">
+            {{ task.priority|replace('-', ' ')|title }}
+        </span>
+        {% if task.deadline and task.status != 'completed' %}
+            <span class="badge deadline-{{ task['deadline_from_now']|deadline_category }}">
+                <i class="fas fa-clock me-1"></i>
+                {{ task['deadline_from_now']|deadline_display }}
+            </span>
+        {% endif %}
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center small">
+        <span class="text-muted">
+            <i class="fas fa-pencil-alt me-1"></i>
+            {{ task.updated_at.strftime('%b %d, %Y') }}
+        </span>
+        <span class="text-muted">
+            {% if task.assignment.source %}
+                <i class="fas fa-project-diagram me-1"></i>
+                {{ task.assignment.source.title|truncate(15, True) }}
+            {% else %}
+                <i class="fas fa-user me-1"></i>
+                Personal
+            {% endif %}
+        </span>
+    </div>
+</div>

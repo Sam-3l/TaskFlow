@@ -162,6 +162,24 @@ def tasks():
 
     return render_template("tasks.html", user=current_user, tasks=tasks, active_page="tasks", today=today)
 
+@main.route("/tasks/<int:task_id>/personal-status", methods=["PATCH"])
+@login_required
+def update_personal_task_status(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # Verify user owns the task or is assigned to it
+    if task.user_id != current_user.id and not any(u.id == current_user.id for u in task.assigned_users):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    new_status = request.json.get('status')
+    if new_status not in ['pending', 'in progress', 'review', 'completed']:
+        return jsonify({'success': False, 'error': 'Invalid status'}), 400
+    
+    task.status = new_status
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
 @main.route("/dashboard/projects")
 @login_required
 def projects():
@@ -645,10 +663,16 @@ def remove_project_member(project_id):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
     data = request.get_json()
-    if not data or 'user_id' not in data:
+    if not data or 'username' not in data:
         return jsonify({'success': False, 'message': 'Invalid request'}), 400
+
+    username = data['username']
+    user = User.query.filter_by(username=username).first()
+    if user:
+        user_id = user.id
+    else:
+        user_id = None
     
-    user_id = data['user_id']
     
     if str(user_id) == str(current_user.id):
         return jsonify({'success': False, 'message': 'Cannot remove yourself'}), 400

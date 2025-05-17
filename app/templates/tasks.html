@@ -6,118 +6,264 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 text-dark mb-0">Your Tasks</h1>
-            <p class="text-muted pt-2">Organize, prioritize, and complete tasks. Set deadlines, track progress, and manage your workload efficiently.</p>
+            <p class="text-muted pt-2">Organize, prioritize, and complete tasks. Drag tasks between columns to update their status.</p>
         </div>
-        <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
-                <i class="fas fa-sort"></i> Sort by
-                <span id="current-sort-label" style="display:none;">Priority & Last Modified</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end tasks-sort" style="cursor:pointer;">
-                <li class="dropdown-item" data-sort="priority">
-                    <i class="bi bi-check-lg me-2 d-none"></i>
-                    Priority & Last Modified
-                </li>
-                <li class="dropdown-item" data-sort="deadline">
-                    <i class="bi bi-check-lg me-2 d-none"></i>
-                    Deadline
-                </li>
-                <li class="dropdown-item" data-sort="last_modified">
-                    <i class="bi bi-check-lg me-2 d-none"></i>
-                    Last Modified
-                </li>
-            </ul>
+        <div class="d-flex gap-3">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="viewDropdown" data-bs-toggle="dropdown">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" id="view-kanban"><i class="fas fa-columns"></i> Kanban Board</a></li>
+                    <li><a class="dropdown-item" href="#" id="view-list"><i class="fas fa-list"></i> List View</a></li>
+                </ul>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="personal" id="filterPersonal" checked>
+                                <label class="form-check-label" for="filterPersonal">
+                                    <i class="fas fa-user"></i> Personal Tasks
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="project" id="filterProject" checked>
+                                <label class="form-check-label" for="filterProject">
+                                    <i class="fas fa-project-diagram"></i> Project Tasks
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="critical" id="filterCritical" checked>
+                                <label class="form-check-label" for="filterCritical">
+                                    <span class="badge bg-danger me-1">&nbsp;</span> Critical
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="high" id="filterHigh" checked>
+                                <label class="form-check-label" for="filterHigh">
+                                    <span class="badge bg-warning me-1">&nbsp;</span> High Priority
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="medium" id="filterMedium" checked>
+                                <label class="form-check-label" for="filterMedium">
+                                    <span class="badge bg-info me-1">&nbsp;</span> Medium Priority
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="dropdown-item">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="low" id="filterLow" checked>
+                                <label class="form-check-label" for="filterLow">
+                                    <span class="badge bg-secondary me-1">&nbsp;</span> Low Priority
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4" id="tasks-container">
-        {% if tasks %}
-            {% for task in tasks %}
-                <div class="col-12 col-md-6 col-xl-4 task-card-container"
-                    data-priority="{{ task.priority }}"
-                    data-deadline="{{ task.deadline.isoformat() if task.deadline else '' }}"
-                    data-status="{{ task.status }}"
-                    data-updated="{{ task.updated_at.isoformat() }}">
-                    <div class="card task-card shadow-sm h-100">
-                        <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0">
-                            <div class="d-flex align-items-center">
-                                {% if task["status"] == 'completed' %}
-                                  <i class="fas fa-check-circle text-success me-2" title="Completed"></i>
-                                {% elif task["status"] == 'in progress' %}
-                                  <i class="fas fa-spinner fa-pulse text-primary me-2" title="In Progress"></i>
-                                {% elif task["status"] == 'review' %}
-                                  <i class="fas fa-eye text-warning me-2" title="In Review"></i>
-                                {% else %}
-                                  <i class="far fa-circle text-secondary me-2" title="Pending"></i>
-                                {% endif %}
-                                <h3 class="h6 mb-0">
-                                    <a href="/dashboard/tasks/{{ task['id'] }}" class="text-decoration-none text-dark stretched-link">
-                                        {{ task["title"]|truncate(45, True) }}
-                                    </a>
-                                </h3>
-                            </div>
-                            <button class="btn btn-link text-white p-0">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="card-body pt-1">
-                            <div class="task-description scrollable-content mb-3">
-                                <p class="text-muted mb-0">{{ task['description']|truncate(200, True) }}</p>
-                            </div>
-                            
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <span class="badge priority-{{ task['priority'] }}">
-                                    {{ task['priority']|replace('-', ' ')|title }}
-                                </span>
-                                {% if task["status"] != 'completed' %}
-                                    <span class="badge deadline-{{ task['deadline_from_now']|deadline_category }}">
-                                        <i class="fas fa-clock me-1"></i>
-                                        {{ task['deadline_from_now']|deadline_display }}
-                                    </span>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="d-flex justify-content-between text-muted small">
-                                <span>
-                                    <i class="fas fa-pencil-alt me-1"></i>
-                                    {{ task["updated_at"].date() }}
-                                </span>
-                                <span>
-                                    {% if task.assignment.source %}
-                                        <i class="fas fa-external-link-alt me-1"></i>
-                                        {{ task.assignment.source.title|truncate(20, True) }}
-                                    {% else %}
-                                        <i class="fas fa-user-circle me-1"></i>
-                                        Self
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Kanban Board View -->
+    <div id="kanban-view" class="kanban-board">
+        <div class="kanban-container">
+            <!-- Pending Column -->
+            <div class="kanban-column" data-status="pending">
+                <div class="kanban-column-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-circle-notch text-secondary me-2"></i> Pending
+                        &nbsp;
+                        <span class="badge bg-secondary float-end" id="pending-count">0</span>
+                    </h5>
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12">
-                <div class="text-center py-5 my-5">
-                    <div class="empty-state-icon mb-4">
-                        <i class="fas fa-tasks fa-4x text-muted"></i>
-                    </div>
-                    <h2 class="h4 mb-3">No Tasks Found</h2>
-                    <p class="text-muted mb-4">Start organizing your work by creating your first task</p>
-                    <a href="/dashboard/tasks/new" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Create Task
+                <div class="kanban-column-body" id="pending-tasks">
+                    {% for task in tasks if task.status == 'pending' %}
+                        {% include 'partials/task_card.html' %}
+                    {% endfor %}
+                </div>
+                <div class="kanban-column-footer">
+                    <a href="/dashboard/tasks/new" class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="fas fa-plus me-1"></i> Add Task
                     </a>
                 </div>
             </div>
-        {% endif %}
+
+            <!-- In Progress Column -->
+            <div class="kanban-column" data-status="in progress">
+                <div class="kanban-column-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-spinner fa-pulse text-primary me-2"></i> In Progress
+                        &nbsp;
+                        <span class="badge bg-primary float-end" id="progress-count">0</span>
+                    </h5>
+                </div>
+                <div class="kanban-column-body" id="progress-tasks">
+                    {% for task in tasks if task.status == 'in progress' %}
+                        {% include 'partials/task_card.html' %}
+                    {% endfor %}
+                </div>
+                <div class="kanban-column-footer">
+                    <a href="/dashboard/tasks/new" class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="fas fa-plus me-1"></i> Add Task
+                    </a>
+                </div>
+            </div>
+
+            <!-- Review Column -->
+            <div class="kanban-column" data-status="review">
+                <div class="kanban-column-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-eye text-warning me-2"></i> Review
+                        &nbsp;
+                        <span class="badge bg-warning float-end" id="review-count">0</span>
+                    </h5>
+                </div>
+                <div class="kanban-column-body" id="review-tasks">
+                    {% for task in tasks if task.status == 'review' %}
+                        {% include 'partials/task_card.html' %}
+                    {% endfor %}
+                </div>
+                <div class="kanban-column-footer">
+                    <a href="/dashboard/tasks/new" class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="fas fa-plus me-1"></i> Add Task
+                    </a>
+                </div>
+            </div>
+
+            <!-- Completed Column -->
+            <div class="kanban-column" data-status="completed">
+                <div class="kanban-column-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-check-circle text-success me-2"></i> Completed
+                        &nbsp;
+                        <span class="badge bg-success float-end" id="completed-count">0</span>
+                    </h5>
+                </div>
+                <div class="kanban-column-body" id="completed-tasks">
+                    {% for task in tasks if task.status == 'completed' %}
+                        {% include 'partials/task_card.html' %}
+                    {% endfor %}
+                </div>
+                <div class="kanban-column-footer">
+                    <a href="/dashboard/tasks/new" class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="fas fa-plus me-1"></i> Add Task
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    {% if tasks %}
-        <div class="text-center mt-4">
-            <small class="text-muted">Self-assigned tasks are private and visible only to you</small>
+    <!-- List View (Hidden by default) -->
+    <div id="list-view" class="d-none">
+        <div class="row g-4" id="tasks-container">
+            {% if tasks %}
+                {% for task in tasks %}
+                    <div class="col-12 col-md-6 col-xl-4 task-card-container"
+                        data-priority="{{ task.priority }}"
+                        data-deadline="{{ task.deadline.isoformat() if task.deadline else '' }}"
+                        data-status="{{ task.status }}"
+                        data-updated="{{ task.updated_at.isoformat() }}"
+                        data-type="{{ 'project' if task.assignment.source else 'personal' }}">
+                        <div class="card task-card shadow-sm h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0">
+                                <div class="d-flex align-items-center">
+                                    {% if task["status"] == 'completed' %}
+                                      <i class="fas fa-check-circle text-success me-2" title="Completed"></i>
+                                    {% elif task["status"] == 'in progress' %}
+                                      <i class="fas fa-spinner fa-pulse text-primary me-2" title="In Progress"></i>
+                                    {% elif task["status"] == 'review' %}
+                                      <i class="fas fa-eye text-warning me-2" title="In Review"></i>
+                                    {% else %}
+                                      <i class="far fa-circle text-secondary me-2" title="Pending"></i>
+                                    {% endif %}
+                                    <h3 class="h6 mb-0">
+                                        <a href="/dashboard/tasks/{{ task['id'] }}" class="text-decoration-none text-dark stretched-link">
+                                            {{ task["title"]|truncate(45, True) }}
+                                        </a>
+                                    </h3>
+                                </div>
+                                <button class="btn btn-link text-white p-0">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="card-body pt-1">
+                                <div class="task-description scrollable-content mb-3">
+                                    <p class="text-muted mb-0">{{ task['description']|truncate(200, True) }}</p>
+                                </div>
+                                
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge priority-{{ task['priority'] }}">
+                                        {{ task['priority']|replace('-', ' ')|title }}
+                                    </span>
+                                    {% if task["status"] != 'completed' %}
+                                        <span class="badge deadline-{{ task['deadline_from_now']|deadline_category }}">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ task['deadline_from_now']|deadline_display }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>
+                                        <i class="fas fa-pencil-alt me-1"></i>
+                                        {{ task["updated_at"].date() }}
+                                    </span>
+                                    <span>
+                                        {% if task.assignment.source %}
+                                            <i class="fas fa-external-link-alt me-1"></i>
+                                            {{ task.assignment.source.title|truncate(20, True) }}
+                                        {% else %}
+                                            <i class="fas fa-user-circle me-1"></i>
+                                            Self
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5 my-5">
+                        <div class="empty-state-icon mb-4">
+                            <i class="fas fa-tasks fa-4x text-muted"></i>
+                        </div>
+                        <h2 class="h4 mb-3">No Tasks Found</h2>
+                        <p class="text-muted mb-4">Start organizing your work by creating your first task</p>
+                        <a href="/dashboard/tasks/new" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Task
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
-    {% endif %}
+    </div>
 </div>
 
 <!-- Flash Messages -->
@@ -142,18 +288,269 @@
         margin-top: 70px;
         padding: 2rem;
     }
-
+    
+    /* Kanban Board Styles */
+    .kanban-board {
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scrollbar-width: thin;
+        scrollbar-color: #e9ecef #f8f9fa;
+    }
+    
+    .kanban-board::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .kanban-board::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .kanban-board::-webkit-scrollbar-thumb {
+        background-color: #e9ecef;
+        border-radius: 10px;
+    }
+    
+    .kanban-container {
+        display: flex;
+        gap: 1.5rem;
+        min-width: fit-content;
+        padding: 0.5rem 0.25rem 1.5rem;
+        justify-content: center;
+    }
+    
+    .kanban-column {
+        width: 330px;
+        min-width: 330px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0.75rem;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+    
+    .kanban-column:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .kanban-column-header {
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem 0.75rem 0 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .kanban-column-header h5 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+    
+    .kanban-column-header .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+    }
+    
+    .kanban-column-body {
+        flex-grow: 1;
+        padding: 0.75rem;
+        overflow-y: auto;
+        min-height: 100px;
+        max-height: calc(100vh - 250px);
+        scrollbar-width: thin;
+        scrollbar-color: #e9ecef transparent;
+    }
+    
+    .kanban-column-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .kanban-column-body::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 10px;
+    }
+    
+    .kanban-column-body::-webkit-scrollbar-thumb {
+        background-color: #e9ecef;
+        border-radius: 10px;
+    }
+    
+    .kanban-column-footer {
+        padding: 0.75rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        background-color: #fff;
+        border-radius: 0 0 0.75rem 0.75rem;
+    }
+    
+    .kanban-column-footer .btn {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .kanban-task {
+        background: white;
+        border-radius: 0.625rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        cursor: grab;
+        transition: all 0.2s ease;
+        border-left: 4px solid;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .kanban-task:last-child {
+        margin-bottom: 0;
+    }
+    
+    .kanban-task:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .kanban-task.pending { 
+        border-left-color: #adb5bd;
+        background-color: rgba(108, 117, 125, 0.02);
+    }
+    
+    .kanban-task.in-progress { 
+        border-left-color: #3b7ddd;
+        background-color: rgba(13, 110, 253, 0.02);
+    }
+    
+    .kanban-task.review { 
+        border-left-color: #ffc107;
+        background-color: rgba(255, 193, 7, 0.02);
+    }
+    
+    .kanban-task.completed { 
+        border-left-color: #28a745;
+        background-color: rgba(25, 135, 84, 0.02);
+    }
+    
+    .kanban-task.dragging {
+        opacity: 0.8;
+        transform: scale(0.98);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .kanban-task-placeholder {
+        background-color: rgba(0, 0, 0, 0.03);
+        border: 2px dashed #dee2e6;
+        border-radius: 0.625rem;
+        margin-bottom: 0.75rem;
+        height: 100px;
+    }
+    
+    .kanban-task-title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #212529;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .kanban-task-description {
+        font-size: 0.8125rem;
+        color: #6c757d;
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .kanban-task-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    
+    .kanban-task-priority {
+        font-size: 0.6875rem;
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        text-transform: capitalize;
+    }
+    
+    /* Priority badges */
+    .priority-critical { 
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .priority-high-priority { 
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+    
+    .priority-medium-priority { 
+        background-color: rgba(13, 202, 240, 0.1);
+        color: #0dcaf0;
+    }
+    
+    .priority-low-priority { 
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    /* Deadline badges */
+    .deadline-overdue { 
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .deadline-today { 
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+    
+    .deadline-upcoming { 
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .deadline-future { 
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    /* Task card styles */
     .task-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        transition: all 0.2s ease-in-out;
         border: none;
         border-radius: 12px;
+        overflow: hidden;
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
     }
-
+    
     .task-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
     }
-
+    
+    /* Empty state */
+    .empty-state-icon {
+        color: #6c757d;
+        opacity: 0.7;
+    }
+    
+    /* Floating action button */
     .floating-action-button {
         position: fixed;
         bottom: 2rem;
@@ -164,146 +561,242 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.2s ease-in-out;
-    }
-
-    .floating-action-button:hover {
-        transform: scale(1.1);
-    }
-
-    .empty-state-icon {
-        color: #6c757d;
-    }
-
-    .badge {
-        font-weight: 500;
-        padding: 0.5em 0.8em;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
     }
     
+    .floating-action-button:hover {
+        transform: scale(1.1) rotate(90deg);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .kanban-container {
+            gap: 1rem;
+        }
+        
+        .kanban-column {
+            width: 280px;
+            min-width: 280px;
+        }
+        
+        .tasks {
+            padding: 1rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .kanban-column {
+            width: 260px;
+            min-width: 260px;
+        }
+        
+        .kanban-column-header {
+            padding: 0.75rem 1rem;
+        }
+        
+        .kanban-column-body {
+            padding: 0.5rem;
+        }
+    }
 </style>
 
 <a href="/dashboard/tasks/new" class="btn btn-primary btn-lg floating-action-button shadow">
     <i class="fas fa-plus"></i>
 </a>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script>
-    // Tasks sort
-    document.addEventListener('DOMContentLoaded', function() {
-        const sortLabels = {
-            'priority': 'Priority & Last Modified',
-            'deadline': 'Deadline',
-            'last_modified': 'Last Modified'
-        };
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize view from localStorage or default to kanban
+    const currentView = localStorage.getItem('tasksView') || 'kanban';
+    setView(currentView);
 
-        const sortKeys = {
-            PRIORITY: 'priority',
-            DEADLINE: 'deadline',
-            LAST_MODIFIED: 'last_modified'
-        };
+    // View toggle handlers
+    document.getElementById('view-kanban').addEventListener('click', function(e) {
+        e.preventDefault();
+        setView('kanban');
+    });
 
-        // Priority hierarchy
-        const priorityOrder = {
-            'critical': 1,
-            'high-priority': 2,
-            'medium-priority': 3,
-            'low-priority': 4,
-            'optional': 5
-        };
+    document.getElementById('view-list').addEventListener('click', function(e) {
+        e.preventDefault();
+        setView('list');
+    });
 
-        // Get stored sort or default to priority
-        const currentSort = localStorage.getItem('taskSort') || sortKeys.PRIORITY;
-        applySort(currentSort);
+    // Filter handlers
+    document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', applyFilters);
+    });
 
-        // Dropdown click handler
-        document.querySelectorAll('.tasks-sort .dropdown-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const sortKey = this.dataset.sort;
-                localStorage.setItem('taskSort', sortKey);
-                applySort(sortKey);
+    // Initialize kanban drag and drop
+    initializeKanban();
+
+    // Add task button handlers
+    document.querySelectorAll('.add-task-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('taskStatusInput').value = this.dataset.status;
+            const modal = new bootstrap.Modal(document.getElementById('createTaskModal'));
+            modal.show();
+        });
+    });
+
+    // Count tasks in each column
+    updateTaskCounts();
+
+    // Apply initial filters
+    applyFilters();
+
+    function setView(view) {
+        localStorage.setItem('tasksView', view);
+        if (view === 'kanban') {
+            document.getElementById('kanban-view').classList.remove('d-none');
+            document.getElementById('list-view').classList.add('d-none');
+            document.getElementById('view-kanban').classList.add('active');
+            document.getElementById('view-list').classList.remove('active');
+        } else {
+            document.getElementById('kanban-view').classList.add('d-none');
+            document.getElementById('list-view').classList.remove('d-none');
+            document.getElementById('view-kanban').classList.remove('active');
+            document.getElementById('view-list').classList.add('active');
+        }
+    }
+
+    function initializeKanban() {
+        const columns = document.querySelectorAll('.kanban-column-body');
+        
+        columns.forEach(column => {
+            new Sortable(column, {
+                group: 'tasks',
+                animation: 150,
+                ghostClass: 'kanban-task-placeholder',
+                dragClass: 'kanban-task-dragging',
+                onEnd: function(evt) {
+                    const taskId = evt.item.dataset.taskId;
+                    const newStatus = evt.to.parentElement.dataset.status;
+                    
+                    // Update task status on server
+                    updateTaskStatus(taskId, newStatus);
+                    
+                    // Update UI
+                    evt.item.className = `kanban-task ${newStatus.replace(' ', '-')}`;
+                    updateTaskCounts();
+                }
             });
         });
+    }
 
-        function applySort(sortKey) {
-            const container = document.getElementById('tasks-container');
-            const tasks = Array.from(container.querySelectorAll('.task-card-container'));
-
-            tasks.sort(getSortFunction(sortKey));
-            tasks.forEach(task => container.appendChild(task));
-            updateActiveSortUI(sortKey);
-        }
-
-        function updateActiveSortUI(sortKey) {
-            // Update dropdown label
-            document.getElementById('current-sort-label').textContent = sortLabels[sortKey];
-            
-            // Remove all active states
-            document.querySelectorAll('.tasks-sort .dropdown-item').forEach(item => {
-                item.classList.remove('active-sort');
-                item.querySelector('.bi-check-lg').classList.add('d-none');
-            });
-            
-            // Add active state to current sort
-            const activeItem = document.querySelector(`.tasks-sort .dropdown-item[data-sort="${sortKey}"]`);
-            if (activeItem) {
-                activeItem.classList.add('active-sort');
-                activeItem.querySelector('.bi-check-lg').classList.remove('d-none');
+    function updateTaskStatus(taskId, newStatus) {
+        fetch(`/tasks/${taskId}/personal-status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert('Failed to update task status');
+                // Optionally revert the UI change
             }
-        }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update task status');
+        });
+    }
 
-        function getSortFunction(sortKey) {
-            switch(sortKey) {
-                case sortKeys.PRIORITY:
-                    return (a, b) => {
-                        const aCompleted = a.dataset.status === 'completed';
-                        const bCompleted = b.dataset.status === 'completed';
+    function updateTaskCounts() {
+        document.getElementById('pending-count').textContent = 
+            document.getElementById('pending-tasks').children.length;
+        document.getElementById('progress-count').textContent = 
+            document.getElementById('progress-tasks').children.length;
+        document.getElementById('review-count').textContent = 
+            document.getElementById('review-tasks').children.length;
+        document.getElementById('completed-count').textContent = 
+            document.getElementById('completed-tasks').children.length;
+    }
 
-                        // Separate completed/non-completed
-                        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+    function applyFilters() {
+        const showPersonal = document.getElementById('filterPersonal').checked;
+        const showProject = document.getElementById('filterProject').checked;
+        const showCritical = document.getElementById('filterCritical').checked;
+        const showHigh = document.getElementById('filterHigh').checked;
+        const showMedium = document.getElementById('filterMedium').checked;
+        const showLow = document.getElementById('filterLow').checked;
 
-                        // Sort non-completed by priority then last modified
-                        const priorityCompare = comparePriorities(a, b);
-                        return priorityCompare !== 0 ? priorityCompare : compareLastModified(a, b);
-                    };
-                
-                case sortKeys.DEADLINE:
-                    return (a, b) => {
-                        const aCompleted = a.dataset.status === 'completed';
-                        const bCompleted = b.dataset.status === 'completed';
-
-                        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
-
-                        const deadlineCompare = compareDeadlines(a, b);
-                        return deadlineCompare !== 0 ? deadlineCompare : compareLastModified(a, b);
-                    };
-                
-                case sortKeys.LAST_MODIFIED:
-                    return (a, b) => {
-                        const aCompleted = a.dataset.status === 'completed';
-                        const bCompleted = b.dataset.status === 'completed';
-
-                        if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
-
-                        return compareLastModified(a, b);
-                    };
+        document.querySelectorAll('.task-card-container').forEach(task => {
+            const type = task.dataset.type;
+            const priority = task.dataset.priority;
+            
+            const typeMatch = 
+                (type === 'personal' && showPersonal) || 
+                (type === 'project' && showProject);
+            
+            const priorityMatch = 
+                (priority === 'critical' && showCritical) ||
+                (priority === 'high-priority' && showHigh) ||
+                (priority === 'medium-priority' && showMedium) ||
+                (priority === 'low-priority' && showLow);
+            
+            if (typeMatch && priorityMatch) {
+                task.style.display = 'block';
+            } else {
+                task.style.display = 'none';
             }
-        }
+        });
 
-        // Comparison functions
-        function comparePriorities(a, b) {
-            return (priorityOrder[a.dataset.priority] || 4) - (priorityOrder[b.dataset.priority] || 4);
-        }
+        // Also filter kanban cards if needed
+        document.querySelectorAll('.kanban-task').forEach(task => {
+            const priority = task.dataset.priority;
+            const isProject = task.dataset.project === 'true';
+            
+            const typeMatch = 
+                (!isProject && showPersonal) || 
+                (isProject && showProject);
+            
+            const priorityMatch = 
+                (priority === 'critical' && showCritical) ||
+                (priority === 'high-priority' && showHigh) ||
+                (priority === 'medium-priority' && showMedium) ||
+                (priority === 'low-priority' && showLow);
+            
+            if (typeMatch && priorityMatch) {
+                task.style.display = 'block';
+            } else {
+                task.style.display = 'none';
+            }
+        });
+    }
+});
 
-        function compareDeadlines(a, b) {
-            const aDeadline = a.dataset.deadline ? new Date(a.dataset.deadline) : Infinity;
-            const bDeadline = b.dataset.deadline ? new Date(b.dataset.deadline) : Infinity;
-            return aDeadline - bDeadline;
-        }
+// Your existing flash function
+function flash() {
+    const flashMessage = document.getElementById('flash-message');
+    if (flashMessage) {
+        setTimeout(() => {
+            flashMessage.style.opacity = '1';
+            flashMessage.style.transform = 'translateY(0)';
+        }, 100);
 
-        function compareLastModified(a, b) {
-            return new Date(b.dataset.updated) - new Date(a.dataset.updated);
-        }
+        document.getElementById('close-btn').addEventListener('click', () => {
+            flashMessage.style.opacity = '0';
+            flashMessage.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                flashMessage.remove();
+            }, 300);
+        });
 
-        updateActiveSortUI(currentSort);
-    });
+        setTimeout(() => {
+            flashMessage.style.opacity = '0';
+            flashMessage.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                flashMessage.remove();
+            }, 300);
+        }, 5000);
+    }
+}
 </script>
 {% endblock %}
