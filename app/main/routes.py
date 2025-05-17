@@ -351,6 +351,33 @@ def project(project_id):
         kanban_columns=kanban_columns
     )
 
+@main.route('/projects/<int:project_id>/upvote', methods=['POST', 'DELETE'])
+@login_required
+def upvote_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    
+    if request.method == 'POST':
+        if current_user not in project.upvotes:
+            project.upvotes.append(current_user)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'new_count': len(project.upvotes),
+                'action': 'added'
+            })
+    
+    elif request.method == 'DELETE':
+        if current_user in project.upvotes:
+            project.upvotes.remove(current_user)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'new_count': len(project.upvotes),
+                'action': 'removed'
+            })
+    
+    return jsonify({'success': False}), 400
+
 @main.route('/assignment/<int:assignment_id>', methods=['GET', 'POST'])
 @login_required
 def task_assignment(assignment_id):

@@ -1,0 +1,17 @@
+<div class="upvote-wrapper" data-project-id="{{ project.id }}">
+    <button class="upvote-btn {% if current_user in project.upvotes %}active{% endif %}" 
+            {% if not current_user.is_authenticated %}disabled title="Login to upvote"{% endif %}>
+      <div class="upvote-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4L3 15H9V20H15V15H21L12 4Z" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="upvote-count">{{ project.upvotes|length }}</span>
+      <span class="upvote-pulse"></span>
+    </button>
+    <div class="upvote-tooltip">Upvote this project</div>
+</div>
