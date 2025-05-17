@@ -1,0 +1,307 @@
+{% extends 'parents/auth_base.html' %}
+
+{% block title %}Task Assignment - {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5 assignment">
+    <!-- Assignment Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">{{ assignment.title }}</h1>
+        <span class="badge bg-{{ 'success' if assignment.status == 'completed' else 'warning' if assignment.status == 'in progress' else 'secondary' }}">
+            {{ assignment.status|title }}
+        </span>
+    </div>
+
+    <!-- Assignment Details -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">Assignment Details</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Assigned To:</span>
+                            <span>
+                                {% for task in assignment.task %}
+                                    {% for user in task.assigned_users %}
+                                        <a href="{{ url_for('main.public_profile', username=user.username) }}" class="text-decoration-none">
+                                            {{ user.fname }} {{ user.lname }}
+                                        </a>
+                                        {% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Project:</span>
+                            <a href="{{ url_for('main.project', project_id=assignment.source.id) }}" class="text-decoration-none">
+                                {{ assignment.source.title }}
+                            </a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Assigned By:</span>
+                            <span>
+                                <a href="{{ url_for('main.public_profile', username=assigned_by.username) }}" class="text-decoration-none">
+                                    {{ assigned_by.fname }} {{ assigned_by.lname }}
+                                </a>
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Assigned On:</span>
+                            <span>{{ assignment.assigned_at.strftime('%b %d, %Y %I:%M %p') }}</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="card-title">Tasks Summary</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Total Tasks:</span>
+                            <span>{{ assignment.task|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Completed Tasks:</span>
+                            <span>{{ assignment.task|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Due Soon:</span>
+                            <span>
+                                {% set due_soon = assignment.task|selectattr('deadline')|list %}
+                                {{ due_soon|length }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Tasks in this Assignment</h5>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="tasksAccordion">
+                {% for task in assignment.task %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ task.id }}">
+                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ task.id }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ task.id }}">
+                            <div class="d-flex justify-content-between w-100 pe-3">
+                                <span>{{ task.title }}</span>
+                                <span class="badge bg-{{ 'success' if task.status == 'completed' else 'warning' if task.status == 'in progress' else 'info' }}">
+                                    {{ task.status|title }}
+                                </span>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ task.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ task.id }}" data-bs-parent="#tasksAccordion">
+                        <div class="accordion-body">
+                            <!-- Task Details -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6>Task Details</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Priority:</span>
+                                            <span class="text-{{ 'danger' if task.priority == 'high' else 'warning' if task.priority == 'medium' else 'success' }}">
+                                                {{ task.priority|title if task.priority else 'Not Specified' }}
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Deadline:</span>
+                                            <span>{{ task.deadline.strftime('%b %d, %Y') if task.deadline else 'No deadline' }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Assigned To</h6>
+                                    <ul class="list-group list-group-flush">
+                                        {% for user in task.assigned_users %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>{{ user.fname }} {{ user.lname }}</span>
+                                            <a href="{{ url_for('main.public_profile', username=user.username) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Task Description -->
+                            <div class="mb-3">
+                                <h6>Description</h6>
+                                <div class="p-3 bg-light rounded">
+                                    {{ task.description|default('No description provided', true) }}
+                                </div>
+                            </div>
+                            
+                            <!-- Task Progress -->
+                            <div class="mb-3">
+                                <h6>Progress</h6>
+                                {% if task.task_progress %}
+                                    <div class="timeline">
+                                        {% for progress in task.task_progress|sort(attribute='made_at') %}
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker"></div>
+                                                <div class="timeline-content">
+                                                    <div class="d-flex justify-content-between">
+                                                        <small class="text-muted">{{ progress.made_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                                                        <span class="badge bg-primary">
+                                                            {{ progress.progress[0] }}/{{ progress.progress[1] }} completed
+                                                        </span>
+                                                    </div>
+                                                    {% if progress.notes %}
+                                                        <div class="mt-2 p-2 bg-light rounded">
+                                                            {{ progress.notes }}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No progress updates yet.</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Task Todos -->
+                            <div>
+                                <h6>Checklist ({{ task.todos|selectattr('is_completed')|list|length }}/{{ task.todos|length }} completed)</h6>
+                                {% if task.todos %}
+                                    <ul class="list-group">
+                                        {% for todo in task.todos %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="todo-{{ todo.id }}" 
+                                                        {% if todo.is_completed %}checked{% endif %} disabled>
+                                                    <label class="form-check-label {% if todo.is_completed %}text-decoration-line-through text-muted{% endif %}" 
+                                                        for="todo-{{ todo.id }}">
+                                                        {{ todo.content }}
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">{{ todo.created_at.strftime('%b %d, %Y') }}</small>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted">No checklist items added.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Section -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Discussion</h5>
+        </div>
+        <div class="card-body">
+            <!-- Comment Form -->
+            {% if current_user in assignment.source.members %}
+                <form method="POST" class="mb-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Add a comment</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                </form>
+            {% endif %}
+
+            <!-- Comments List -->
+            {% if assignment.comments %}
+                <div class="comments">
+                    {% for comment in assignment.comments|sort(attribute='created_at', reverse=True) %}
+                        <div class="comment mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <img src="{{ url_for('static', filename='images/uploads/profile_img/' + comment.user.profile_img) }}" 
+                                        alt="{{ comment.user.username }}" class="rounded-circle" width="50" height="50">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">
+                                            <a href="{{ url_for('main.public_profile', username=comment.user.username) }}" class="text-decoration-none">
+                                                {{ comment.user.fname }} {{ comment.user.lname }}
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                                    </div>
+                                    <div class="mt-2 p-3 bg-light rounded">
+                                        {{ comment.content }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No comments yet. Be the first to comment!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .assignment {
+        margin-top: 50px;
+    }
+    .timeline {
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-marker {
+        position: absolute;
+        left: -1.5rem;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #0d6efd;
+        top: 0;
+    }
+    .timeline-content {
+        padding-left: 1rem;
+    }
+    .comment {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
+    .comment:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    .card {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+</style>
+{% endblock %}

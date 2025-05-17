@@ -333,6 +333,61 @@ def project(project_id):
         kanban_columns=kanban_columns
     )
 
+@main.route('/assignment/<int:assignment_id>', methods=['GET', 'POST'])
+@login_required
+def task_assignment(assignment_id):
+    # Get the assignment with all related data including tasks
+    assignment = TaskAssignment.query.options(
+        db.joinedload(TaskAssignment.user),
+        db.joinedload(TaskAssignment.source),
+        db.joinedload(TaskAssignment.task).joinedload(Task.assigned_users),
+        db.joinedload(TaskAssignment.task).joinedload(Task.todos),
+        db.joinedload(TaskAssignment.task).joinedload(Task.task_progress),
+        db.joinedload(TaskAssignment.comments).joinedload(TaskAssignmentComment.user)
+    ).get_or_404(assignment_id)
+
+    if not assignment.source:
+        flash("Assignment not found", "error")
+        return redirect(url_for('main.dashboard'))
+    
+    # Get the assigned_by user
+    assigned_by = User.query.get(assignment.assigned_by_user_id)
+    
+    # Check permissions
+    if not (current_user in assignment.source.members or 
+            any(current_user in task.assigned_users for task in assignment.tasks) or 
+            current_user.id == assignment.assigned_by_user_id):
+        flash("You don't have permission to view this assignment", "error")
+        return redirect(url_for('main.dashboard'))
+    
+    # Handle comment submission
+    if request.method == 'POST':
+        try:
+            # Validate CSRF token first
+            validate_csrf(request.form.get('csrf_token'))
+            
+            # Then process your form
+            comment_content = request.form.get('comment')
+            if comment_content and comment_content.strip():
+                new_comment = TaskAssignmentComment(
+                    content=comment_content.strip(),
+                    user_id=current_user.id,
+                    assignment_id=assignment.id
+                )
+                db.session.add(new_comment)
+                db.session.commit()
+                flash('Comment added successfully', 'success')
+                return redirect(url_for('main.task_assignment', assignment_id=assignment_id))
+                
+        except ValidationError:
+            flash('Invalid form submission. Please try again.', 'error')
+            return redirect(url_for('main.task_assignment', assignment_id=assignment_id))
+    
+    return render_template('task_assignment.html', 
+                        assignment=assignment, 
+                        user=current_user,
+                        assigned_by=assigned_by)
+
 from app import db
 
 @main.route('/projects/<int:project_id>/update_cover', methods=['POST'])
@@ -1352,7 +1407,7 @@ def generate_subtasks(task_id):
         deadline = None
         if deadline_str:
             try:
-                deadline = datetime.strptime(deadline_str, "%Y-%m-%d")
+                deadline = datetime.strptime(deadline_str, "%m-%d-%Y")
             except ValueError:
                 # handle unexpected format if needed
                 deadline = None
