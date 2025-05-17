@@ -171,6 +171,80 @@
                     <textarea class="description-edit" id="description-edit" style="display: none;">{{ task.description or "" }}</textarea>
                 </div>
             </div>
+
+            <div class="glass-card task-assignment-card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Assignment Details</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Assigned Users -->
+                    <div class="mb-3">
+                        <h6 class="text-muted small">Assigned To</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for user in task.assigned_users %}
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
+                                     alt="{{ user.username }}" 
+                                     class="rounded-circle me-2" 
+                                     width="32" 
+                                     height="32">
+                                <a href="{{ url_for('main.public_profile', username=user.username) }}" 
+                                   class="text-decoration-none">
+                                    {{ user.fname }} {{ user.lname }}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+            
+                    <!-- Divider -->
+                    <hr class="my-2">
+            
+                    <!-- Assigned By -->
+                    <div class="mb-3">
+                        <h6 class="text-muted small">Assigned By</h6>
+                        <div class="d-flex align-items-center">
+                            {% set assigned_by = task.assignment.user %}
+                            <img src="{{ url_for('static', filename='images/uploads/profile_img/' + assigned_by.profile_img) }}" 
+                                 alt="{{ assigned_by.username }}" 
+                                 class="rounded-circle me-2" 
+                                 width="32" 
+                                 height="32">
+                            <a href="{{ url_for('main.public_profile', username=assigned_by.username) }}" 
+                               class="text-decoration-none">
+                                {{ assigned_by.fname }} {{ assigned_by.lname }}
+                            </a>
+                        </div>
+                    </div>
+            
+                    <!-- Divider -->
+                    <hr class="my-2">
+            
+                    <!-- Project/Source -->
+                    <div class="mb-3">
+                        <h6 class="text-muted small">Project</h6>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-project-diagram me-2 text-primary"></i>
+                            <a href="{{ url_for('main.project', project_id=task.assignment.source.id) }}" 
+                               class="text-decoration-none">
+                                {{ task.assignment.source.title }}
+                            </a>
+                        </div>
+                    </div>
+            
+                    <!-- Divider -->
+                    <hr class="my-2">
+            
+                    <!-- View Assignment Link -->
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('main.task_assignment', assignment_id=task.assignment.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            View Full Assignment
+                        </a>
+                    </div>
+                </div>
+            </div>
             
             <!-- Progress Gauge Card -->
             <div class="stats-card glass-card">
@@ -2128,6 +2202,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     .btn-ai-retry:hover {
         background: rgba(255, 255, 255, 0.2);
+    }
+
+    .task-assignment-card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .task-assignment-card .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .task-assignment-card h6 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 </style>
 

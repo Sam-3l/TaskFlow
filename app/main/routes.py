@@ -376,7 +376,6 @@ def task_assignment(assignment_id):
                 )
                 db.session.add(new_comment)
                 db.session.commit()
-                flash('Comment added successfully', 'success')
                 return redirect(url_for('main.task_assignment', assignment_id=assignment_id))
                 
         except ValidationError:
