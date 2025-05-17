@@ -238,7 +238,7 @@
           {% endif %}
         </div>
         <div class="assignment-footer">
-          <a href="#" class="btn btn-outline-primary view-assignment-btn" data-assignment-id="{{ assignment.id }}">
+          <a href={{ url_for('main.task_assignment', assignment_id=assignment.id) }} class="btn btn-outline-primary view-assignment-btn" data-assignment-id="{{ assignment.id }}">
             View Details
           </a>
         </div>
@@ -292,7 +292,7 @@
             <div class="related-task">
               <i class="bi bi-link-45deg"></i>
               <span>Related to task assignment: 
-                <a href="#assignment-{{ discussion.assignment.id }}">{{ discussion.assignment.title }}</a>
+                <a href="{{ url_for('main.task_assignment', assignment_id=discussion.assignment.id) }}">{{ discussion.assignment.title }}</a>
               </span>
             </div>
             {% endif %}

@@ -16,20 +16,74 @@
                         <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-sort"></i> Sort by
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-star"></i> Priority</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-clock"></i> Deadline</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-sync"></i> Last Modified</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end" id="sortOptions">
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="recent" data-direction="desc"><i class="fas fa-clock"></i> Most Recent</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="recent" data-direction="asc"><i class="fas fa-clock-rotate-left"></i> Oldest First</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="title" data-direction="asc"><i class="fas fa-font"></i> Title (A-Z)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="title" data-direction="desc"><i class="fas fa-font"></i> Title (Z-A)</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="members" data-direction="desc"><i class="fas fa-users"></i> Most Members</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="members" data-direction="asc"><i class="fas fa-users"></i> Fewest Members</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="tasks" data-direction="desc"><i class="fas fa-tasks"></i> Most Tasks</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="tasks" data-direction="asc"><i class="fas fa-tasks"></i> Fewest Tasks</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="upvotes" data-direction="desc"><i class="fas fa-thumbs-up"></i> Most Upvotes</a></li>
                         </ul>
                     </div>
                     <div class="dropdown">
                         <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-filter"></i> Filter
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock"></i> Private</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-globe"></i> Public</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-check-circle"></i> Active</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end" id="filterOptions">
+                            <li>
+                                <div class="dropdown-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="private" id="filterPrivate" checked>
+                                        <label class="form-check-label" for="filterPrivate">
+                                            <i class="fas fa-lock"></i> Private
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="dropdown-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="public" id="filterPublic" checked>
+                                        <label class="form-check-label" for="filterPublic">
+                                            <i class="fas fa-globe"></i> Public
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <div class="dropdown-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="manager" id="filterManager" checked>
+                                        <label class="form-check-label" for="filterManager">
+                                            <i class="fas fa-crown"></i> Manager Role
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="dropdown-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="coordinator" id="filterCoordinator" checked>
+                                        <label class="form-check-label" for="filterCoordinator">
+                                            <i class="fas fa-user-tie"></i> Coordinator Role
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="dropdown-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="member" id="filterMember" checked>
+                                        <label class="form-check-label" for="filterMember">
+                                            <i class="fas fa-user"></i> Member Role
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -38,10 +92,18 @@
     </div>
 
     <!-- Projects Grid -->
-    <div class="row g-4">
+    <div class="row g-4" id="projectsContainer">
         {% if projects %}
             {% for project in projects %}
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 project-item" 
+                 data-id="{{ project.id }}"
+                 data-title="{{ project.title|lower }}"
+                 data-created="{{ project.created_at.timestamp() if project.created_at else 0 }}"
+                 data-members="{{ project.members|length }}"
+                 data-tasks="{{ project.task_count }}"
+                 data-upvotes="{{ project.upvotes|length }}"
+                 data-type="{{ project.type }}"
+                 data-role="{{ project.user_role }}">
                 <div class="card project-card h-100 shadow-sm">
                     <div class="project-header position-relative">
                         <a href="/dashboard/projects/{{ project.id }}" class="text-decoration-none">
@@ -148,6 +210,212 @@
     {% endfor %}
 {% endwith %}
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize sorting and filtering from localStorage or defaults
+    const sortSettings = JSON.parse(localStorage.getItem('projectSortSettings')) || {
+        sortBy: 'recent',
+        direction: 'desc'
+    };
+    
+    const filterSettings = JSON.parse(localStorage.getItem('projectFilterSettings')) || {
+        types: ['private', 'public'],
+        roles: ['manager', 'coordinator', 'member']
+    };
+
+    // Apply initial settings
+    applySortSettings(sortSettings);
+    applyFilterSettings(filterSettings);
+    updateActiveSortIndicator(sortSettings);
+    updateActiveFilterIndicators(filterSettings);
+
+    // Sort event listeners
+    document.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sortBy = this.dataset.sort;
+            const direction = this.dataset.direction;
+            
+            const newSettings = {
+                sortBy: sortBy,
+                direction: direction
+            };
+            
+            localStorage.setItem('projectSortSettings', JSON.stringify(newSettings));
+            applySortSettings(newSettings);
+            updateActiveSortIndicator(newSettings);
+        });
+    });
+
+    // Filter event listeners
+    document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const filterSettings = getCurrentFilterSettings();
+            localStorage.setItem('projectFilterSettings', JSON.stringify(filterSettings));
+            applyFilterSettings(filterSettings);
+        });
+        
+        // Set initial checked state from localStorage
+        const filterType = this.value;
+        if (filterType === 'private' || filterType === 'public') {
+            this.checked = filterSettings.types.includes(filterType);
+        } else {
+            this.checked = filterSettings.roles.includes(filterType);
+        }
+    });
+
+    // Function to apply sort settings
+    function applySortSettings(settings) {
+        const container = document.getElementById('projectsContainer');
+        const projects = Array.from(document.querySelectorAll('.project-item'));
+        
+        projects.sort((a, b) => {
+            let valueA, valueB;
+            
+            switch(settings.sortBy) {
+                case 'title':
+                    valueA = a.dataset.title;
+                    valueB = b.dataset.title;
+                    return settings.direction === 'asc' 
+                        ? valueA.localeCompare(valueB) 
+                        : valueB.localeCompare(valueA);
+                
+                case 'members':
+                    valueA = parseInt(a.dataset.members);
+                    valueB = parseInt(b.dataset.members);
+                    break;
+                
+                case 'tasks':
+                    valueA = parseInt(a.dataset.tasks);
+                    valueB = parseInt(b.dataset.tasks);
+                    break;
+                
+                case 'upvotes':
+                    valueA = parseInt(a.dataset.upvotes);
+                    valueB = parseInt(b.dataset.upvotes);
+                    break;
+                
+                case 'recent':
+                default:
+                    valueA = parseFloat(a.dataset.created);
+                    valueB = parseFloat(b.dataset.created);
+                    break;
+            }
+            
+            return settings.direction === 'asc' 
+                ? valueA - valueB 
+                : valueB - valueA;
+        });
+        
+        // Re-append sorted projects
+        projects.forEach(project => {
+            container.appendChild(project);
+        });
+    }
+
+    // Function to apply filter settings
+    function applyFilterSettings(settings) {
+        document.querySelectorAll('.project-item').forEach(project => {
+            const typeMatch = settings.types.includes(project.dataset.type);
+            let roleMatch = false;
+            
+            // Check role filters
+            if (project.dataset.role === 'project_manager' && settings.roles.includes('manager')) {
+                roleMatch = true;
+            } else if (project.dataset.role === 'task_coordinator' && settings.roles.includes('coordinator')) {
+                roleMatch = true;
+            } else if (settings.roles.includes('member')) {
+                roleMatch = true;
+            }
+            
+            if (typeMatch && roleMatch) {
+                project.style.display = 'block';
+            } else {
+                project.style.display = 'none';
+            }
+        });
+        
+        // Show empty state if all filtered out
+        const visibleProjects = document.querySelectorAll('.project-item[style="display: block;"]');
+        const emptyState = document.querySelector('.empty-state-icon')?.closest('.col-12');
+        
+        if (emptyState) {
+            if (visibleProjects.length === 0 && document.querySelectorAll('.project-item').length > 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+    }
+
+    // Helper functions
+    function getCurrentFilterSettings() {
+        const types = [];
+        const roles = [];
+        
+        if (document.getElementById('filterPrivate').checked) types.push('private');
+        if (document.getElementById('filterPublic').checked) types.push('public');
+        if (document.getElementById('filterManager').checked) roles.push('manager');
+        if (document.getElementById('filterCoordinator').checked) roles.push('coordinator');
+        if (document.getElementById('filterMember').checked) roles.push('member');
+        
+        return { types, roles };
+    }
+
+    function updateActiveSortIndicator(settings) {
+        document.querySelectorAll('.sort-option').forEach(option => {
+            option.classList.remove('active');
+            if (option.dataset.sort === settings.sortBy && option.dataset.direction === settings.direction) {
+                option.classList.add('active');
+                document.getElementById('sortDropdown').innerHTML = `
+                    <i class="fas fa-sort"></i> ${option.textContent.trim()}
+                `;
+            }
+        });
+    }
+
+    function updateActiveFilterIndicators(settings) {
+        // Update filter dropdown text based on active filters
+        const activeTypeFilters = settings.types.length;
+        const activeRoleFilters = settings.roles.length;
+        let filterText = '<i class="fas fa-filter"></i> Filter';
+        
+        if (activeTypeFilters < 2 || activeRoleFilters < 3) {
+            filterText += ` <span class="badge bg-primary rounded-pill">${activeTypeFilters + activeRoleFilters}</span>`;
+        }
+        
+        document.getElementById('filterDropdown').innerHTML = filterText;
+    }
+});
+
+// Your existing flash function
+function flash() {
+    const flashMessage = document.getElementById('flash-message');
+    if (flashMessage) {
+        setTimeout(() => {
+            flashMessage.style.opacity = '1';
+            flashMessage.style.transform = 'translateY(0)';
+        }, 100);
+
+        document.getElementById('close-btn').addEventListener('click', () => {
+            flashMessage.style.opacity = '0';
+            flashMessage.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                flashMessage.remove();
+            }, 300);
+        });
+
+        setTimeout(() => {
+            flashMessage.style.opacity = '0';
+            flashMessage.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                flashMessage.remove();
+            }, 300);
+        }, 5000);
+    }
+}
+</script>
+
 <style>
     .projects {
         margin-top: 70px;
@@ -161,7 +429,7 @@
         background: rgba(255, 255, 255, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.1);
         overflow: hidden;
-        height: 380px !important; /* Fixed height */
+        height: 380px !important;
     }
 
     .project-header {
@@ -235,7 +503,7 @@
     }
 
     .card-body {
-        height: calc(380px - 160px); /* Subtract cover image height from card height */
+        height: calc(380px - 160px);
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -282,10 +550,6 @@
         transform: scale(1.1);
     }
 
-    .equal-height {
-        height: 100%;
-    }
-
     .dropdown-item i {
         width: 20px;
         margin-right: 8px;
@@ -296,15 +560,6 @@
         padding: 0.5em 0.8em;
     }
 
-    .progress {
-        background-color: #e9ecef;
-        border-radius: 10px;
-    }
-
-    .progress-bar {
-        border-radius: 10px;
-    }
-
     .description-text {
         overflow: hidden;
         display: -webkit-box;
@@ -313,7 +568,7 @@
         margin-bottom: 1rem;
         font-size: 0.9rem;
         line-height: 1.5;
-        height: 4.5em; /* 3 lines * 1.5 line height */
+        height: 4.5em;
     }
 
     .card-title {
@@ -321,6 +576,31 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%;
+    }
+
+    /* Active sort option styling */
+    .sort-option.active {
+        background-color: #f8f9fa;
+        font-weight: 500;
+        color: #0d6efd;
+    }
+
+    .sort-option.active i {
+        color: #0d6efd;
+    }
+
+    /* Filter checkboxes */
+    .dropdown-item .form-check {
+        padding: 0.25rem 1.5rem;
+    }
+
+    .dropdown-item:hover {
+        background-color: transparent;
+    }
+
+    /* Empty state */
+    .empty-state-icon {
+        opacity: 0.7;
     }
 </style>
 {% endblock %}
