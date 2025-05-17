@@ -21,7 +21,7 @@ import time
 import re
 from types import SimpleNamespace
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment, upvotes
 from app.forms import CreateTask, CreateProject
 
 from datetime import datetime, date, timedelta
@@ -377,6 +377,28 @@ def upvote_project(project_id):
             })
     
     return jsonify({'success': False}), 400
+
+@main.route('/dashboard/upvotes')
+@login_required
+def upvoted_projects():
+    upvoted_projects = (
+        db.session.query(Project)
+        .join(upvotes, Project.id == upvotes.c.project_id)
+        .filter(upvotes.c.user_id == current_user.id)
+        .add_columns(db.func.count(upvotes.c.user_id).label('upvote_count'))
+        .group_by(Project.id)
+        .order_by(db.desc('upvote_count'))
+        .all()
+    )
+    
+    # Extract just the Project objects from the result
+    projects = [project for project, upvote_count in upvoted_projects]
+    
+    return render_template('upvoted_projects.html', 
+                         projects=projects,
+                         user=current_user,
+                         active_page="upvotes",
+                         title="Your Upvoted Projects")
 
 @main.route('/assignment/<int:assignment_id>', methods=['GET', 'POST'])
 @login_required

@@ -1,0 +1,161 @@
+{% extends 'parents/auth_base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5 upvotes">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <div class="upvote-icon-lg mb-3">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4L3 15H9V20H15V15H21L12 4Z" 
+                      fill="currentColor" 
+                      stroke="currentColor" 
+                      stroke-width="2" 
+                      stroke-linecap="round" 
+                      stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h1 class="display-5 fw-bold mb-3">{{ title }}</h1>
+        <p class="lead text-muted">
+            {% if projects %}
+                You've upvoted {{ projects|length }} project{{ '' if projects|length == 1 else 's' }}
+            {% else %}
+                Projects you upvote will appear here
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Projects Grid -->
+    {% if projects %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for project in projects %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
+                <!-- Project Cover Image -->
+                {% if project.cover_image %}
+                <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) }}" 
+                     class="card-img-top" 
+                     alt="{{ project.title }}"
+                     style="height: 180px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 180px;">
+                    <i class="fas fa-project-diagram fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <!-- Project Title and Upvote Button -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h3 class="h5 mb-0">
+                            <a href="{{ url_for('main.project', project_id=project.id) }}" 
+                               class="text-decoration-none text-dark stretched-link">
+                                {{ project.title }}
+                            </a>
+                        </h3>
+                        {% include 'partials/upvote_button.html' %}
+                    </div>
+                    
+                    <!-- Project Description -->
+                    <p class="card-text text-muted mb-3">
+                        {{ project.description|truncate(120) }}
+                    </p>
+                    
+                    <!-- Project Stats -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center text-muted small">
+                            <i class="fas fa-users me-1"></i>
+                            <span>{{ project.members|length }} member{{ '' if project.members|length == 1 else 's' }}</span>
+                        </div>
+                        <div class="d-flex align-items-center text-muted small">
+                            <i class="fas fa-tasks me-1"></i>
+                            <span>{{ project.task_count }} task{{ '' if project.task_count == 1 else 's' }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Project Footer -->
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Created {{ project.created_at.strftime('%b %d, %Y') }}
+                        </small>
+                        <span class="badge bg-{{ 'primary' if project.type == 'public' else 'secondary' }}">
+                            {{ project.type|title }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5 my-5">
+        <div class="empty-state-icon mb-4">
+            <i class="fas fa-arrow-up fa-4x text-muted"></i>
+        </div>
+        <h2 class="h4 mb-3">No upvoted projects yet</h2>
+        <p class="text-muted mb-4">Upvote projects you find interesting to save them here</p>
+        <a href="{{ url_for('main.projects') }}" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i>Browse Projects
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.upvotes{
+    margin-top: 50px;
+}
+.upvote-icon-lg {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.hover-shadow {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Card link overlay */
+.stretched-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+}
+
+/* Empty state */
+.empty-state-icon {
+    opacity: 0.7;
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-5 {
+        font-size: 2rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

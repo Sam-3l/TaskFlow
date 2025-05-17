@@ -15,3 +15,136 @@
     </button>
     <div class="upvote-tooltip">Upvote this project</div>
 </div>
+
+<style>
+  /* Upvote Button Container */
+.upvote-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Base Button Styles */
+.upvote-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 50px;
+  border: none;
+  background: #f5f5f5;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Hover State */
+.upvote-btn:not(.active):hover {
+  background: #e2e8f0;
+  color: #334155;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Active/Upvoted State */
+.upvote-btn.active {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+}
+
+/* Icon Animation */
+.upvote-btn .upvote-icon {
+  transition: all 0.3s ease;
+}
+
+.upvote-btn.active .upvote-icon {
+  animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Pulse Effect */
+.upvote-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 50px;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+.upvote-btn.active .upvote-pulse {
+  animation: pulse 1s;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+/* Count Styling */
+.upvote-count {
+  transition: all 0.3s ease;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Tooltip */
+.upvote-tooltip {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.upvote-tooltip:after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 5px 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent #1e293b transparent;
+}
+
+.upvote-btn:hover + .upvote-tooltip {
+  opacity: 1;
+  visibility: visible;
+  bottom: -35px;
+}
+
+/* Disabled State */
+.upvote-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.upvote-btn:disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+</style>

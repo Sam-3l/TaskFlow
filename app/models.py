@@ -260,6 +260,8 @@ class Project(db.Model):
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
     members = db.relationship("User", secondary=membership, backref="member_to")
     upvotes = db.relationship("User", secondary=upvotes, backref="upvote_to")
+    created_at = db.Column(db.DateTime, default=func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
 class TaskAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
