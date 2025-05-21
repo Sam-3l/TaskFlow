@@ -6,7 +6,7 @@ from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
 from wtforms import ValidationError
 from sqlalchemy.sql import func
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy import case
 
 # Data viz
@@ -393,6 +393,11 @@ def upvoted_projects():
     
     # Extract just the Project objects from the result
     projects = [project for project, upvote_count in upvoted_projects]
+
+    for project in projects:
+        # Calculate project progress based on completed tasks
+        total_tasks = sum([len(assignment.task) for assignment in project.task_assignment])
+        project.task_count = total_tasks
     
     return render_template('upvoted_projects.html', 
                          projects=projects,
@@ -1321,9 +1326,9 @@ def search_suggest():
     
     return jsonify(results)
 
-@main.route('/explore')
+@main.route('/explore-users')
 @login_required
-def explore():
+def explore_users():
     from app import db
     
     page = request.args.get('page', 1, type=int)
@@ -1360,10 +1365,59 @@ def explore():
     pagination = users_query.paginate(page=page, per_page=20, error_out=False)
     users = pagination.items
     
-    return render_template('explore.html',
+    return render_template('explore_users.html',
                          users=users,
                          pagination=pagination,
                          user=current_user)
+
+@main.route("/explore-projects")
+@login_required
+def explore_projects():
+    # Get filter parameters
+    search_query = request.args.get('q', '')
+    project_type = request.args.get('type', 'all')
+    sort_by = request.args.get('sort', 'popular')
+    min_upvotes = request.args.get('min_upvotes', 0, type=int)
+    
+    # Base query
+    query = Project.query
+    
+    # Apply filters
+    if search_query:
+        query = query.filter(
+            or_(
+                Project.title.ilike(f'%{search_query}%'),
+                Project.description.ilike(f'%{search_query}%')
+            )
+        )
+    
+    if project_type != 'all':
+        query = query.filter(Project.type == project_type)
+    
+    # Apply sorting
+    if sort_by == 'recent':
+        query = query.order_by(Project.created_at.desc())
+    elif sort_by == 'title':
+        query = query.order_by(Project.title.asc())
+    elif sort_by == 'active':
+        query = query.order_by(Project.updated_at.desc())
+    elif sort_by == 'popular':
+        # For PostgreSQL, we can use func.array_length
+        query = query.outerjoin(upvotes).group_by(Project.id).order_by(func.count(upvotes.c.user_id).desc())
+    
+    # Apply minimum upvotes filter
+    if min_upvotes > 0:
+        query = query.outerjoin(upvotes).group_by(Project.id).having(func.count(upvotes.c.user_id) >= min_upvotes)
+    
+    projects = query.all()
+    
+    return render_template('explore_projects.html',
+                         projects=projects,
+                         user=current_user,
+                         search_query=search_query,
+                         project_type=project_type,
+                         sort_by=sort_by,
+                         min_upvotes=min_upvotes)
 
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required

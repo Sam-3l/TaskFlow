@@ -98,7 +98,7 @@
         </div>
         <h2 class="h4 mb-3">No upvoted projects yet</h2>
         <p class="text-muted mb-4">Upvote projects you find interesting to save them here</p>
-        <a href="{{ url_for('main.projects') }}" class="btn btn-primary">
+        <a href="{{ url_for('main.explore_projects') }}" class="btn btn-primary">
             <i class="fas fa-search me-2"></i>Browse Projects
         </a>
     </div>
@@ -158,4 +158,49 @@
     }
 }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.upvote-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+          if (button.disabled) return;
+          
+          const wrapper = this.closest('.upvote-wrapper');
+          const projectId = wrapper.dataset.projectId;
+          const isActive = this.classList.contains('active');
+          const countElement = this.querySelector('.upvote-count');
+          
+          // Optimistic UI update
+          this.classList.toggle('active');
+          const currentCount = parseInt(countElement.textContent);
+          countElement.textContent = isActive ? currentCount - 1 : currentCount + 1;
+          
+          try {
+            const response = await fetch(`/projects/${projectId}/upvote`, {
+              method: isActive ? 'DELETE' : 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+              }
+            });
+            
+            if (!response.ok) {
+              // Revert if API call fails
+              this.classList.toggle('active');
+              countElement.textContent = currentCount;
+              throw new Error('Failed to update upvote');
+            }
+            
+            const data = await response.json();
+            // Ensure count is accurate from server
+            countElement.textContent = data.new_count;
+            
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        });
+      });
+    });
+</script>
+
 {% endblock %}

@@ -1,0 +1,391 @@
+{% extends 'parents/auth_base.html' %}
+
+{% block title %}Explore Projects{% endblock %}
+
+{% block content %}
+<div class="explore-projects container-fluid px-lg-4 px-3">
+    <!-- Hero Search Section -->
+    <div class="hero-search bg-light rounded-3 p-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-5 fw-bold mb-4">Discover Amazing Projects</h1>
+                <p class="lead mb-5">Find open projects to contribute to or get inspired by</p>
+                
+                <form action="{{ url_for('main.explore_projects') }}" method="get" class="search-form">
+                    <div class="input-group mb-3">
+                        <input type="text" 
+                               class="form-control form-control-lg" 
+                               name="q" 
+                               value="{{ search_query }}"
+                               placeholder="Search projects...">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{{ url_for('main.explore_projects') }}?type=public&sort=popular" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-globe me-1"></i> Public Projects
+                    </a>
+                    <a href="{{ url_for('main.explore_projects') }}?type=private&sort=recent" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-lock me-1"></i> Private Projects
+                    </a>
+                    <a href="{{ url_for('main.explore_projects') }}?min_upvotes=10" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-fire me-1"></i> Trending
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px; z-index: 1;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-filter me-2"></i> Filters
+                    </h5>
+                    
+                    <!-- Project Type Filter -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Project Type</h6>
+                        <div class="list-group list-group-flush">
+                            <a href="{{ url_for('main.explore_projects') }}?type=all&q={{ search_query }}&sort={{ sort_by }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if project_type == 'all' %}active{% endif %}">
+                                All Types
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?type=public&q={{ search_query }}&sort={{ sort_by }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if project_type == 'public' %}active{% endif %}">
+                                <i class="fas fa-globe me-2"></i> Public
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?type=private&q={{ search_query }}&sort={{ sort_by }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if project_type == 'private' %}active{% endif %}">
+                                <i class="fas fa-lock me-2"></i> Private
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Popularity Filter -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Popularity</h6>
+                        <div class="list-group list-group-flush">
+                            <a href="{{ url_for('main.explore_projects') }}?min_upvotes=0&q={{ search_query }}&sort={{ sort_by }}&type={{ project_type }}"
+                               class="list-group-item list-group-item-action {% if min_upvotes == 0 %}active{% endif %}">
+                                Any Popularity
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?min_upvotes=5&q={{ search_query }}&sort={{ sort_by }}&type={{ project_type }}"
+                               class="list-group-item list-group-item-action {% if min_upvotes == 5 %}active{% endif %}">
+                                <i class="fas fa-thumbs-up me-2"></i> 5+ Upvotes
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?min_upvotes=10&q={{ search_query }}&sort={{ sort_by }}&type={{ project_type }}"
+                               class="list-group-item list-group-item-action {% if min_upvotes == 10 %}active{% endif %}">
+                                <i class="fas fa-fire me-2"></i> 10+ Upvotes
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-3">Sort By</h6>
+                        <div class="list-group list-group-flush">
+                            <a href="{{ url_for('main.explore_projects') }}?sort=popular&q={{ search_query }}&type={{ project_type }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if sort_by == 'popular' %}active{% endif %}">
+                                <i class="fas fa-star me-2"></i> Most Popular
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?sort=recent&q={{ search_query }}&type={{ project_type }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if sort_by == 'recent' %}active{% endif %}">
+                                <i class="fas fa-clock me-2"></i> Recently Added
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?sort=active&q={{ search_query }}&type={{ project_type }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if sort_by == 'active' %}active{% endif %}">
+                                <i class="fas fa-bolt me-2"></i> Recently Active
+                            </a>
+                            <a href="{{ url_for('main.explore_projects') }}?sort=title&q={{ search_query }}&type={{ project_type }}&min_upvotes={{ min_upvotes }}"
+                               class="list-group-item list-group-item-action {% if sort_by == 'title' %}active{% endif %}">
+                                <i class="fas fa-sort-alpha-down me-2"></i> Alphabetical
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Projects Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0">
+                    {% if search_query %}
+                        Search Results for "{{ search_query }}"
+                    {% elif project_type != 'all' %}
+                        {{ project_type|title }} Projects
+                    {% elif min_upvotes > 0 %}
+                        Popular Projects ({{ min_upvotes }}+ upvotes)
+                    {% else %}
+                        All Projects
+                    {% endif %}
+                </h2>
+                <small class="text-muted">{{ projects|length }} project{{ '' if projects|length == 1 else 's' }} found</small>
+            </div>
+            
+            {% if projects %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for project in projects %}
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
+                        <!-- Project Cover -->
+                        {% if project.cover_image %}
+                        <img src="{{ url_for('static', filename='images/uploads/project_covers/' + project.cover_image) }}" 
+                             class="card-img-top" 
+                             alt="{{ project.title }}"
+                             style="height: 160px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                             style="height: 160px;">
+                            <i class="fas fa-project-diagram fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Project Body -->
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="h5 mb-0">
+                                    <a href="{{ url_for('main.project', project_id=project.id) }}" 
+                                       class="text-decoration-none text-dark stretched-link">
+                                        {{ project.title }}
+                                    </a>
+                                </h3>
+                                {% include 'partials/upvote_button.html' %}
+                            </div>
+                            
+                            <p class="card-text text-muted mb-3">
+                                {{ project.description|truncate(100) }}
+                            </p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-{{ 'primary' if project.type == 'public' else 'secondary' }}">
+                                    {{ project.type|title }}
+                                </span>
+                                {% if project.tags %}
+                                    {% for tag in project.tags[:2] %}
+                                        <span class="badge bg-light text-dark">{{ tag }}</span>
+                                    {% endfor %}
+                                    {% if project.tags|length > 2 %}
+                                        <span class="badge bg-light text-dark">+{{ project.tags|length - 2 }}</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Project Footer -->
+                        <div class="card-footer bg-transparent border-top-0 pt-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    {% for member in project.members[:3] %}
+                                    <div class="avatar-circle me-n2" 
+                                         title="{{ member.fname }} {{ member.lname }}"
+                                         data-bs-toggle="tooltip">
+                                        <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" 
+                                             alt="{{ member.fname }}"
+                                             class="img-fluid rounded-circle">
+                                    </div>
+                                    {% endfor %}
+                                    {% if project.members|length > 3 %}
+                                    <div class="avatar-circle more-members me-n2">
+                                        +{{ project.members|length - 3 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="text-muted small">
+                                    <i class="fas fa-thumbs-up me-1"></i>
+                                    <span id="upvoteCount{{project.id}}">{{ project.upvotes|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5 my-5">
+                <div class="empty-state-icon mb-4">
+                    <i class="fas fa-search fa-4x text-muted"></i>
+                </div>
+                <h2 class="h4 mb-3">No projects found</h2>
+                <p class="text-muted mb-4">
+                    {% if search_query %}
+                        Try a different search term or <a href="{{ url_for('main.explore_projects') }}">clear filters</a>
+                    {% else %}
+                        No projects match your current filters. <a href="{{ url_for('main.explore_projects') }}">Reset filters</a>
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('main.create_project') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Project
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .explore-projects {
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        margin-top: 50px;
+    }
+    
+    .hero-search {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .search-form .form-control {
+        border-right: 0;
+    }
+    
+    .search-form .btn {
+        border-left: 0;
+    }
+    
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid white;
+    }
+    
+    .avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .more-members {
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .empty-state-icon {
+        opacity: 0.7;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .hero-search {
+            padding: 2rem;
+        }
+        
+        .display-5 {
+            font-size: 2rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .hero-search {
+            padding: 1.5rem;
+        }
+        
+        .lead {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.upvote-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+          if (button.disabled) return;
+          
+          const wrapper = this.closest('.upvote-wrapper');
+          const projectId = wrapper.dataset.projectId;
+          const isActive = this.classList.contains('active');
+          const countElement = this.querySelector('.upvote-count');
+          
+          // Optimistic UI update
+          this.classList.toggle('active');
+          const currentCount = parseInt(countElement.textContent);
+          countElement.textContent = isActive ? currentCount - 1 : currentCount + 1;
+          document.getElementById(`upvoteCount${projectId}`).textContent = `${countElement.textContent}`;
+          
+          try {
+            const response = await fetch(`/projects/${projectId}/upvote`, {
+              method: isActive ? 'DELETE' : 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+              }
+            });
+            
+            if (!response.ok) {
+              // Revert if API call fails
+              this.classList.toggle('active');
+              countElement.textContent = currentCount;
+              throw new Error('Failed to update upvote');
+            }
+            
+            const data = await response.json();
+            // Ensure count is accurate from server
+            countElement.textContent = data.new_count;
+            
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        });
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
+        
+        // Make filter links preserve existing params
+        document.querySelectorAll('.list-group-item').forEach(item => {
+            if (item.classList.contains('active')) return;
+            
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = new URL(this.href);
+                window.location.href = url.toString();
+            });
+        });
+        
+        // Make search form preserve existing filters
+        const searchForm = document.querySelector('.search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const searchQuery = formData.get('q');
+                
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', searchQuery);
+                window.location.href = url.toString();
+            });
+        }
+    });
+</script>
+{% endblock %}
