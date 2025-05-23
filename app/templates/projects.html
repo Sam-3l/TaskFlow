@@ -38,7 +38,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input filter-checkbox" type="checkbox" value="private" id="filterPrivate" checked>
                                         <label class="form-check-label" for="filterPrivate">
-                                            <i class="fas fa-lock"></i> Private
+                                            <i class="fas fa-lock"></i> Private (Members Only)
                                         </label>
                                     </div>
                                 </div>
@@ -46,9 +46,19 @@
                             <li>
                                 <div class="dropdown-item">
                                     <div class="form-check">
-                                        <input class="form-check-input filter-checkbox" type="checkbox" value="public" id="filterPublic" checked>
-                                        <label class="form-check-label" for="filterPublic">
-                                            <i class="fas fa-globe"></i> Public
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="public-closed" id="filterPublicClosed" checked>
+                                        <label class="form-check-label" for="filterPublicClosed">
+                                            <i class="fas fa-globe"></i> Public (Closed)
+                                        </label>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="dropdown-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-checkbox" type="checkbox" value="public-open" id="filterPublicOpen" checked>
+                                        <label class="form-check-label" for="filterPublicOpen">
+                                            <i class="fas fa-globe-americas"></i> Public (Open)
                                         </label>
                                     </div>
                                 </div>
@@ -99,7 +109,7 @@
                  data-id="{{ project.id }}"
                  data-title="{{ project.title|lower }}"
                  data-created="{{ project.created_at.timestamp() if project.created_at else 0 }}"
-                 data-members="{{ project.members|length }}"
+                 data-members="{{ project.active_members|length }}"
                  data-tasks="{{ project.task_count }}"
                  data-upvotes="{{ project.upvotes|length }}"
                  data-type="{{ project.type }}"
@@ -131,9 +141,19 @@
                             <div class="mb-3">
                                 <h5 class="card-title mb-2 text-truncate pb-1">{{ project.title }}</h5>
                                 <div class="d-flex gap-2">
-                                    <span class="badge {% if project.type == 'private' %}bg-secondary{% else %}bg-primary{% endif %}">
-                                        {{ project.type|title }}
+                                    {% if project.type == 'private' %}
+                                    <span class="badge bg-secondary">Private</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">Public</span>
+                                    <span class="badge 
+                                        {% if project.type == 'public-closed' %}bg-warning text-dark
+                                        {% elif project.type == 'public-open' %}bg-success
+                                        {% endif %}">
+                                        {% if project.type == 'public-closed' %}Closed
+                                        {% elif project.type == 'public-open' %}Open
+                                        {% endif %}
                                     </span>
+                                    {% endif %}
                                     <span class="badge {% if project.user_role == 'project_manager' %}bg-primary
                                                     {% elif project.user_role == 'task_coordinator' %}bg-info
                                                     {% else %}bg-secondary{% endif %}">
@@ -146,14 +166,14 @@
                         <div class="mt-auto">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    {% for member in project.members[:3] %}
+                                    {% for member in project.active_members[:3] %}
                                     <div class="avatar-circle" title="{{ member.fname }} {{ member.lname }}">
                                         <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" alt="{{ member.fname }}">
                                     </div>
                                     {% endfor %}
-                                    {% if project.members|length > 3 %}
+                                    {% if project.active_members|length > 3 %}
                                     <div class="avatar-circle more-members" title="More members">
-                                        +{{ project.members|length - 3 }}
+                                        +{{ project.active_members|length - 3 }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -170,7 +190,7 @@
                     </div>
                 </div>
             </div>
-            {% endfor %}
+            {% endfor %}              
         {% else %}
             <div class="col-12">
                 <div class="text-center py-5 my-5">
@@ -186,6 +206,17 @@
             </div>
         {% endif %}
     </div>
+
+    {% if projects %}
+    <div class="explore-more-container text-center mt-5 mb-5">
+        <a href="{{ url_for('main.explore_projects') }}" class="explore-more-btn">
+          <span>Explore More Projects</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+    </div>
+    {% endif %}
 
     <!-- Floating Action Button -->
     <a href="/dashboard/projects/new" class="btn btn-primary btn-lg floating-action-button shadow">
@@ -219,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     const filterSettings = JSON.parse(localStorage.getItem('projectFilterSettings')) || {
-        types: ['private', 'public'],
+        types: ['private', 'public-open', 'public-closed'],
         roles: ['manager', 'coordinator', 'member']
     };
 
@@ -257,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set initial checked state from localStorage
         const filterType = this.value;
-        if (filterType === 'private' || filterType === 'public') {
+        if (filterType === 'private' || filterType === 'public-open' || filterType === 'public-closed') {
             this.checked = filterSettings.types.includes(filterType);
         } else {
             this.checked = filterSettings.roles.includes(filterType);
@@ -354,7 +385,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const roles = [];
         
         if (document.getElementById('filterPrivate').checked) types.push('private');
-        if (document.getElementById('filterPublic').checked) types.push('public');
+        if (document.getElementById('filterPublicOpen').checked) types.push('public-open');
+        if (document.getElementById('filterPublicClosed').checked) types.push('public-closed');
         if (document.getElementById('filterManager').checked) roles.push('manager');
         if (document.getElementById('filterCoordinator').checked) roles.push('coordinator');
         if (document.getElementById('filterMember').checked) roles.push('member');
@@ -602,5 +634,49 @@ function flash() {
     .empty-state-icon {
         opacity: 0.7;
     }
+
+    .explore-more-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 50px;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        cursor: pointer;
+      }
+    
+      .explore-more-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        color: white;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+      }
+    
+      .explore-more-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    
+      .explore-more-btn svg {
+        transition: transform 0.3s ease;
+      }
+    
+      .explore-more-btn:hover svg {
+        transform: translateX(4px);
+      }
+    
+      @media (max-width: 768px) {
+        .explore-more-btn {
+          padding: 10px 20px;
+          font-size: 14px;
+        }
+      }
 </style>
 {% endblock %}

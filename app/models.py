@@ -1,6 +1,7 @@
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import and_
 from sqlalchemy.sql import func
 import random
 from flask import current_app
@@ -229,7 +230,7 @@ membership = db.Table("ProjectMembership",
     db.Column("user_id", db.Integer, db.ForeignKey("user.id"), primary_key=True),
     db.Column("joined_at", db.DateTime, default=func.current_timestamp()),
     db.Column("role", db.String(30)),
-    db.Column("status", db.String(30)) # pending, active, inactive(past member)
+    db.Column("status", db.String(30)) # pending, active, inactive
     )
 
 upvotes = db.Table("Upvotes",
@@ -254,11 +255,21 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(60), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    type = db.Column(db.String(10), default="private")
+    type = db.Column(db.String(20), default="public-open") # private, public-open, public-closed
     project_links = db.Column(db.String(255), nullable=True)
     cover_image = db.Column(db.String(255), nullable=True, default=lambda: f"default_project{random.randint(1, 3)}.jpg")
     task_assignment = db.relationship("TaskAssignment", back_populates="source", cascade="all, delete-orphan")
     members = db.relationship("User", secondary=membership, backref="member_to")
+    active_members = db.relationship(
+        "User",
+        secondary=membership,
+        primaryjoin=and_(
+            membership.c.project_id == id,
+            membership.c.status == 'active'
+        ),
+        backref="active_member_of",
+        viewonly=True
+    )
     upvotes = db.relationship("User", secondary=upvotes, backref="upvote_to")
     created_at = db.Column(db.DateTime, default=func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())

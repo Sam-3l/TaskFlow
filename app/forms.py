@@ -52,8 +52,9 @@ class CreateProject(FlaskForm):
     title = StringField("Title:", validators=[DataRequired(), Length(min=3, max=60),], render_kw={"placeholder":"Name your project"})
     description = TextAreaField("Description:", validators=[DataRequired(), Length(min=4, max=255),], render_kw={"placeholder":"Describe your project"})
     type = SelectField("Project Type:", validators=[DataRequired()], choices=[
-        ("private", "Private - Only manager can add members"),
-        ("public", "Public - Anyone can request to join")
+        ("private", "Private - Only visible and accessible to members"), 
+        ("public-closed", "Public (Closed) - Visible to all, only manager can add members"),  
+        ("public-open", "Public (Open) - Visible to all, and anyone can request to join")  
     ])
     project_links = StringField("Project Links:", validators=[Optional(), Length(max=255)], render_kw={"placeholder":"Add relevant links (comma-separated)"})
     cover_image = FileField("Cover Image:", validators=[

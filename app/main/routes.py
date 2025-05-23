@@ -6,7 +6,7 @@ from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
 from wtforms import ValidationError
 from sqlalchemy.sql import func
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, not_
 from sqlalchemy import case
 
 # Data viz
@@ -185,7 +185,7 @@ def update_personal_task_status(task_id):
 def projects():
     from app import db
     # Get all projects where the user is a member
-    user_projects = Project.query.filter(Project.members.any(id=current_user.id)).all()
+    user_projects = Project.query.filter(Project.active_members.any(id=current_user.id)).all()
     
     # Add progress, task count, and user role to each project
     for project in user_projects:
@@ -243,12 +243,12 @@ def create_projects():
                 project.cover_image = filename
         
         db.session.add(project)
-        db.session.commit()  # Commit first to get project.id
+        db.session.commit()
         
         # Add the creator as a project manager
         db.session.execute(
             membership.insert().values(
-                project_id=project.id,  # Now we have the project.id
+                project_id=project.id,
                 user_id=current_user.id,
                 role="project_manager",
                 status="active"
@@ -266,11 +266,20 @@ def create_projects():
 def project(project_id):
     from app import db
 
+    # Get project and verify access
     project = Project.query.get_or_404(project_id)
+
+    # Check if user has active membership
     current_membership = db.session.query(membership).filter_by(
         project_id=project.id,
-        user_id=current_user.id
+        user_id=current_user.id,
+        status='active'  # Only consider active memberships
     ).first()
+
+    # Handle private project access
+    if project.type == 'private' and not current_membership:
+        flash('This is a private project. You need to be invited to access it.', 'error')
+        return redirect(url_for('main.projects'))
     
     # Get all members with their roles
     members = db.session.query(
@@ -470,7 +479,8 @@ def update_project_cover(project_id):
             and_(
                 membership.c.project_id == project.id,
                 membership.c.user_id == current_user.id,
-                membership.c.role == 'project_manager'
+                membership.c.role == 'project_manager',
+                membership.c.status == 'active'
             )
         )
     ).first()
@@ -513,7 +523,8 @@ def update_project_title(project_id):
             and_(
                 membership.c.project_id == project.id,
                 membership.c.user_id == current_user.id,
-                membership.c.role == 'project_manager'
+                membership.c.role == 'project_manager',
+                membership.c.status == 'active'
             )
         )
     ).first()
@@ -543,7 +554,8 @@ def update_project_description(project_id):
             and_(
                 membership.c.project_id == project.id,
                 membership.c.user_id == current_user.id,
-                membership.c.role == 'project_manager'
+                membership.c.role == 'project_manager',
+                membership.c.status == 'active'
             )
         )
     ).first()
@@ -606,7 +618,8 @@ def add_project_member(project_id):
             and_(
                 membership.c.project_id == project.id,
                 membership.c.user_id == current_user.id,
-                membership.c.role == 'project_manager'
+                membership.c.role == 'project_manager',
+                membership.c.status == 'active'
             )
         )
     ).first()
@@ -628,22 +641,27 @@ def add_project_member(project_id):
         db.select(membership).where(
             and_(
                 membership.c.project_id == project.id,
-                membership.c.user_id == user_id
+                membership.c.user_id == user_id,
             )
         )
     ).first()
     
     if existing_member:
-        return jsonify({'success': False, 'message': 'User is already a member'}), 400
-    
-    db.session.execute(
-        membership.insert().values(
-            project_id=project.id,
-            user_id=user_id,
-            role=role,
-            status='active'
+        print(existing_member)
+        if existing_member.status == 'active':
+            return jsonify({'success': False, 'message': 'User is already a member'}), 400
+        else:
+            existing_member.status = 'active'
+    else:    
+        db.session.execute(
+            membership.insert().values(
+                project_id=project.id,
+                user_id=user_id,
+                role=role,
+                status='active'
+            )
         )
-    )
+
     db.session.commit()
     
     new_member = User.query.get(user_id)
@@ -667,7 +685,8 @@ def change_member_role(project_id):
             and_(
                 membership.c.project_id == project.id,
                 membership.c.user_id == current_user.id,
-                membership.c.role == 'project_manager'
+                membership.c.role == 'project_manager',
+                membership.c.status == 'active'
             )
         )
     ).first()
@@ -760,6 +779,7 @@ def update_task_status(task_id):
     is_project_manager = db.session.query(membership).filter_by(
         project_id=task.assignment.source_project_id,
         user_id=current_user.id,
+        status='active',
         role='project_manager'
     ).first() is not None
     
@@ -769,6 +789,7 @@ def update_task_status(task_id):
         task_coordinator = db.session.query(membership).filter_by(
             project_id=task.assignment.source_project_id,
             user_id=current_user.id,
+            status='active',
             role='task_coordinator'
         ).first()
         
@@ -783,8 +804,11 @@ def update_task_status(task_id):
     is_assigned_contributor = (
         not is_project_manager and 
         not is_task_coordinator and 
-        current_user in task.assigned_users
+        current_user in task.assigned_users and
+        current_user in Project.query.filter_by(id=task.assignment.source_project_id).first().active_members
     )
+    # Testing.
+    print("Test Kanban board permissions")
     
     if not any([is_project_manager, is_task_coordinator, is_assigned_contributor]):
         return jsonify({
@@ -824,6 +848,7 @@ def can_edit_task(task_id):
     is_project_manager = db.session.query(membership).filter_by(
         project_id=task.assignment.source_project_id,
         user_id=current_user.id,
+        status='active',
         role='project_manager'
     ).first() is not None
     
@@ -832,6 +857,7 @@ def can_edit_task(task_id):
         task_coordinator = db.session.query(membership).filter_by(
             project_id=task.assignment.source_project_id,
             user_id=current_user.id,
+            status='active',
             role='task_coordinator'
         ).first()
         
@@ -844,7 +870,8 @@ def can_edit_task(task_id):
     is_assigned_contributor = (
         not is_project_manager and 
         not is_task_coordinator and 
-        current_user in task.assigned_users
+        current_user in task.assigned_users and
+        current_user in Project.query.filter_by(id=task.assignment.source_project_id).first().active_members
     )
     
     can_edit = any([is_project_manager, is_task_coordinator, is_assigned_contributor])
@@ -857,7 +884,8 @@ def create_task_assignment(project_id):
     project = Project.query.get_or_404(project_id)
     member = db.session.query(membership).filter_by(
         project_id=project.id,
-        user_id=current_user.id
+        user_id=current_user.id,
+        status='active'
     ).first()
     
     if not member or member.role not in ['project_manager', 'task_coordinator']:
@@ -919,7 +947,7 @@ def create_task_assignment(project_id):
         
         for user_id in task_data.get('assignees', []):
             user = User.query.get(user_id)
-            if user and user in project.members:
+            if user and user in project.active_members:
                 task.assigned_users.append(user)
         
         db.session.add(task)
@@ -951,7 +979,8 @@ def add_project_discussion(project_id):
         db.select(membership).where(
             and_(
                 membership.c.project_id == project.id,
-                membership.c.user_id == current_user.id
+                membership.c.user_id == current_user.id,
+                membership.c.status == "active"
             )
         )
     ).first()
@@ -1131,7 +1160,9 @@ def public_profile(username):
     user_profile = User.query.filter_by(username=username).first_or_404()
     
     # Get projects where the user is a member
-    user_projects = Project.query.filter(Project.members.any(id=user_profile.id)).all()
+    user_projects = Project.query.filter(
+        Project.active_members.any(id=user_profile.id)
+    ).all()
     
     for project in user_projects:
         # Calculate project progress based on completed tasks
@@ -1255,8 +1286,9 @@ def search():
             Project.description.ilike(f'%{query}%')
         ),
         db.or_(
-            Project.type == 'public',
-            Project.members.any(id=current_user.id)
+            Project.type == 'public-open',
+            Project.type == 'public-closed',
+            Project.active_members.any(id=current_user.id)
         )
     ).limit(5).all()
 
@@ -1305,8 +1337,9 @@ def search_suggest():
                 Project.description.ilike(f'%{query}%')
             ),
             db.or_(
-                Project.type == 'public',
-                Project.members.any(id=current_user.id)
+                Project.type == 'public-open',
+                Project.type == 'public-closed',
+                Project.active_members.any(id=current_user.id)
             )
         ).limit(3).all()
         
@@ -1381,6 +1414,20 @@ def explore_projects():
     
     # Base query
     query = Project.query
+
+    query = query.filter(
+        or_(
+            Project.type == 'public-open',
+            Project.type == 'public-closed',
+        )
+    ).filter(
+    not_(
+        Project.members.any(
+            and_(
+                membership.c.user_id == current_user.id,
+            )
+        )
+    ))
     
     # Apply filters
     if search_query:

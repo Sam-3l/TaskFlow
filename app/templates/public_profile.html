@@ -118,7 +118,7 @@
                                                     <div class="d-flex align-items-center">
                                                         <span class="badge bg-light text-dark me-2">
                                                             <i class="bi bi-people-fill me-1"></i>
-                                                            {{ project.members|length }} members
+                                                            {{ project.active_members|length }} members
                                                         </span>
                                                         {% if project.user_role %}
                                                         <span class="badge bg-primary">
@@ -158,7 +158,7 @@
                 <div class="card-body">
                     {% set common_projects = [] %}
                     {% for project in projects %}
-                        {% if current_user in project.members %}
+                        {% if current_user in project.active_members %}
                             {% set _ = common_projects.append(project) %}
                         {% endif %}
                     {% endfor %}
@@ -179,7 +179,7 @@
                                                     <div class="d-flex align-items-center">
                                                         <span class="badge bg-light text-dark me-2">
                                                             <i class="bi bi-people-fill me-1"></i>
-                                                            {{ project.members|length }} members
+                                                            {{ project.active_members|length }} members
                                                         </span>
                                                         <span class="badge bg-success">
                                                             <i class="bi bi-check-circle me-1"></i>
