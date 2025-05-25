@@ -117,7 +117,7 @@ body{
     border-top: 0px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.1);
     width: 300px;
-    z-index: 8;
+    z-index: 1010;
     transition: transform 0.2s ease, opacity 0.2s ease;
     max-height: 100vh;
     overflow-y: auto;
@@ -278,7 +278,7 @@ body{
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 4;
+    z-index: 1000;
     transition: top 0.3s;
 }
 .content{
@@ -467,7 +467,7 @@ body{
     background: linear-gradient(135deg, #4e575f, #6c757d);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
-    z-index: 4;
+    z-index: 1000;
 }
 
 .navbar-brand img {

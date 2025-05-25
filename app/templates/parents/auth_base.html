@@ -274,7 +274,7 @@
                 if (suggestion.type === 'user') {
                     window.location.href = `/user/${suggestion.username}`;
                 } else if (suggestion.type === 'project') {
-                    window.location.href = `/project/${suggestion.id}`;
+                    window.location.href = `/dashboard/projects/${suggestion.id}`;
                 }
             });
         });

@@ -192,7 +192,7 @@
             </div>
             {% endfor %}              
         {% else %}
-            <div class="col-12">
+            <div class="col-12 empty-state">
                 <div class="text-center py-5 my-5">
                     <div class="empty-state-icon mb-4">
                         <i class="fas fa-project-diagram fa-4x text-muted"></i>
@@ -203,7 +203,7 @@
                         <i class="fas fa-plus me-2"></i> Create Project
                     </a>
                     <a href="{{ url_for('main.explore_projects') }}" class="btn btn-primary">
-                        <i class="fas fa-compass me-2"></i> Explore Projects
+                        <i class="fas fa-project-diagram me-2"></i> Explore Projects
                     </a>
                 </div>
             </div>
@@ -371,10 +371,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show empty state if all filtered out
         const visibleProjects = document.querySelectorAll('.project-item[style="display: block;"]');
-        const emptyState = document.querySelector('.empty-state-icon')?.closest('.col-12');
+        const emptyState = document.querySelector('.empty-state-icon')?.closest('.empty-state');
         
         if (emptyState) {
-            if (visibleProjects.length === 0 && document.querySelectorAll('.project-item').length > 0) {
+            if (visibleProjects.length === 0) {
                 emptyState.style.display = 'block';
             } else {
                 emptyState.style.display = 'none';
@@ -455,6 +455,7 @@ function flash() {
     .projects {
         margin-top: 70px;
         padding: 2rem;
+        min-height: 70vh;
     }
 
     .project-card {
@@ -681,5 +682,8 @@ function flash() {
           font-size: 14px;
         }
       }
+    .dropdown{
+        z-index: 100;
+    }
 </style>
 {% endblock %}
