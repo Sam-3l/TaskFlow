@@ -30,11 +30,27 @@
             </h1>
             
             <div class="project-meta d-flex align-items-center gap-3">
-              <span class="badge project-type">{{ project.type|capitalize }} Project</span>
+              {% if current_membership and current_membership.role == 'project_manager' %}
+                <div class="dropdown project-type-dropdown">
+                  <button class="badge project-type dropdown-toggle" type="button" id="projectTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ project.type|replace('_', ' ')|replace('-', ' ')|title }} Project
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="projectTypeDropdown">
+                    <li><a class="dropdown-item" href="#" data-project-type="public-closed">Public (Closed) Project</a></li>
+                    <li><a class="dropdown-item" href="#" data-project-type="public-open">Public (Open) Project</a></li>
+                    <li><a class="dropdown-item" href="#" data-project-type="private">Private Project</a></li>
+                  </ul>
+                </div>
+              {% else %}
+                <span class="badge project-type">
+                  {{ project.type|replace('_', ' ')|replace('-', ' ')|title }} Project
+                </span>
+              {% endif %}
+              
               {% if current_membership %}
-              <span class="badge your-role">
-                Your Role: {{ current_membership.role|replace('_', ' ')|title }}
-              </span>
+                <span class="badge your-role">
+                  Your Role: {{ current_membership.role|replace('_', ' ')|title }}
+                </span>
               {% endif %}
             </div>
           </div>
@@ -1842,6 +1858,23 @@ input[type="date"]::-webkit-clear-button {
 .ai-subtask-list .form-check-label {
   width: 100%;
 }
+
+.project-type-dropdown .dropdown-toggle {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.project-type-dropdown .dropdown-toggle:hover {
+  background-color: var(--bs-primary-light);
+}
+
+.project-type-dropdown .dropdown-menu {
+  min-width: 200px;
+}
+
+.project-type-dropdown .dropdown-item {
+  padding: 0.5rem 1rem;
+}
 </style>
 
 <script>
@@ -2069,33 +2102,36 @@ document.addEventListener('DOMContentLoaded', function() {
           const memberCard = document.createElement('div');
           memberCard.className = 'member-card';
           memberCard.innerHTML = `
-            <div class="member-avatar">
-              <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}${data.member.avatar.split('/').pop()}" alt="${data.member.username}">
-              ${role === 'project_manager' ? '<span class="role-badge manager">Manager</span>' : 
-                role === 'task_coordinator' ? '<span class="role-badge coordinator">Coordinator</span>' : ''}
-            </div>
-            <div class="member-info">
-              <h3>${data.member.name}</h3>
-              <p class="username">@${data.member.username}</p>
-              <p class="role">${role.replace('_', ' ').toUpperCase()}</p>
-            </div>
-            {% if current_membership and current_membership.role == 'project_manager' %}
-            <div class="member-actions">
-              <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  Change Role
-                </button>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#" data-role="project_manager">Project Manager</a></li>
-                  <li><a class="dropdown-item" href="#" data-role="task_coordinator">Task Coordinator</a></li>
-                  <li><a class="dropdown-item" href="#" data-role="contributor">Contributor</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item text-danger" href="#" data-action="remove">Remove from Project</a></li>
-                </ul>
+            <a href="/user/${data.member.username}" class="member-link">
+              <div class="member-avatar">
+                <img src="/static/images/uploads/profile_img/${data.member.avatar.split('/').pop()}" alt="${data.member.username}">
+                ${role === 'project_manager' ? '<span class="role-badge manager">Manager</span>' : ''}
+                ${role === 'task_coordinator' ? '<span class="role-badge coordinator">Coordinator</span>' : ''}
               </div>
-            </div>
+              <div class="member-info">
+                <h3>${data.member.name}</h3>
+                <p class="username">@${data.member.username}</p>
+                <p class="role">${role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</p>
+              </div>
+            </a>
+            {% if current_membership and current_membership.role == 'project_manager' %}
+              <div class="member-actions">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Change Role
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" data-role="project_manager">Project Manager</a></li>
+                    <li><a class="dropdown-item" href="#" data-role="task_coordinator">Task Coordinator</a></li>
+                    <li><a class="dropdown-item" href="#" data-role="contributor">Contributor</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" data-action="remove">Remove from Project</a></li>
+                  </ul>
+                </div>
+              </div>
             {% endif %}
           `;
+
           
           // Insert before the add member card
           membersGrid.insertBefore(memberCard, addMemberCard);
@@ -2711,6 +2747,46 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (error) {
         console.error('Error:', error);
       }
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const dropdownItems = document.querySelectorAll('.project-type-dropdown .dropdown-item');
+  
+  dropdownItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const newType = this.getAttribute('data-project-type');
+      
+      // Update the button text
+      const button = document.querySelector('.project-type-dropdown .dropdown-toggle');
+      button.textContent = this.textContent;
+      
+      // Send AJAX request to update project type
+      fetch('/projects/{{ project.id }}/update_type', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ type: newType })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Optional: Show success message
+          console.log('Project type updated successfully');
+        } else {
+          // Revert if failed
+          button.textContent = '{{ project.type|replace("_", " ")|replace("-", " ")|title }} Project';
+          console.error('Failed to update project type');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        button.textContent = '{{ project.type|replace("_", " ")|replace("-", " ")|title }} Project';
+      });
     });
   });
 });

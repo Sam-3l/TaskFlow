@@ -435,9 +435,7 @@ def task_assignment(assignment_id):
     assigned_by = User.query.get(assignment.assigned_by_user_id)
     
     # Check permissions
-    if not (current_user in assignment.source.members or 
-            any(current_user in task.assigned_users for task in assignment.tasks) or 
-            current_user.id == assignment.assigned_by_user_id):
+    if not current_user in assignment.source.active_members:
         flash("You don't have permission to view this assignment", "error")
         return redirect(url_for('main.dashboard'))
     
@@ -545,6 +543,37 @@ def update_project_title(project_id):
     
     return jsonify({'success': True})
 
+@main.route('/projects/<int:project_id>/update_type', methods=['POST'])
+@login_required
+def update_project_type(project_id):
+    project = Project.query.get_or_404(project_id)
+    is_manager = db.session.execute(
+        db.select(membership).where(
+            and_(
+                membership.c.project_id == project.id,
+                membership.c.user_id == current_user.id,
+                membership.c.role == 'project_manager',
+                membership.c.status == 'active'
+            )
+        )
+    ).first()
+    
+    if not is_manager:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    data = request.get_json()
+    if not data or 'type' not in data:
+        return jsonify({'success': False, 'message': 'Invalid request'}), 400
+    
+    new_type = data['type'].strip()
+    if not new_type:
+        return jsonify({'success': False, 'message': 'Title cannot be empty'}), 400
+    
+    project.type = new_type
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
 @main.route('/projects/<int:project_id>/update_description', methods=['POST'])
 @login_required
 def update_project_description(project_id):
@@ -647,12 +676,21 @@ def add_project_member(project_id):
     ).first()
     
     if existing_member:
-        print(existing_member)
         if existing_member.status == 'active':
             return jsonify({'success': False, 'message': 'User is already a member'}), 400
         else:
-            existing_member.status = 'active'
-    else:    
+            stmt = (
+                membership.update()
+                .where(
+                    and_(
+                        membership.c.project_id == project.id,
+                        membership.c.user_id == user_id
+                    )
+                )
+                .values(status='active', role=role)
+            )
+            db.session.execute(stmt)
+    else:  
         db.session.execute(
             membership.insert().values(
                 project_id=project.id,
