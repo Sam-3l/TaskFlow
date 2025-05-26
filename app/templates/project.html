@@ -118,7 +118,7 @@
 
       <div>
       {% if current_membership and current_membership.role == 'project_manager' and project.type == 'public-open' %}
-        <a href="{{ url_for('projects.join_requests', project_id=project.id) }}" class="btn btn-requests">
+        <a href="{{ url_for('main.join_requests', project_id=project.id) }}" class="btn btn-requests">
           <i class="bi bi-people"></i> Join Requests
           {% if pending_requests_count > 0 %}
             <span class="request-badge">{{ pending_requests_count }}</span>
@@ -1962,6 +1962,41 @@ input[type="date"]::-webkit-clear-button {
 .request-status-badge.pending {
   background-color: #fef3c7;
   color: #d97706;
+}
+
+.btn-requests {
+  background: white;
+  color: #4f46e5;
+  border: 1px solid #e0e7ff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.btn-requests:hover {
+  background: #f0f4ff;
+  border-color: #c7d2fe;
+}
+
+.request-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
 }
 </style>
 

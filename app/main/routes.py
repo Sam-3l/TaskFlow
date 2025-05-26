@@ -464,18 +464,32 @@ def join_requests(project_id):
     if not is_manager:
         abort(403)
     
-    # Get all join requests (pending memberships)
-    pending_requests = db.session.query(
-        membership,
-        User
-    ).join(
-        User, User.id == membership.c.user_id
-    ).filter(
-        membership.c.project_id == project_id,
-        membership.c.status == 'pending'
-    ).order_by(
-        membership.c.joined_at.desc()
+    # Get all join requests with user info
+    pending_requests = db.session.execute(
+        db.select(
+            membership.c.user_id,
+            membership.c.joined_at,
+            membership.c.status,
+            User
+        ).join(
+            User, User.id == membership.c.user_id
+        ).where(
+            membership.c.project_id == project_id,
+            membership.c.status == 'pending'
+        ).order_by(
+            membership.c.joined_at.desc()
+        )
     ).all()
+
+    # Structure the data for the template
+    join_requests = []
+    for req in pending_requests:
+        join_requests.append({
+            'user_id': req.user_id,
+            'joined_at': req.joined_at,
+            'status': req.status,
+            'user': req.User  # The User object
+        })
     
     # Get counts
     pending_count = len(pending_requests)
@@ -484,9 +498,10 @@ def join_requests(project_id):
     ).count()
     
     return render_template(
-        'projects/join_requests.html',
+        'join_requests.html',
+        user=current_user,
         project=project,
-        join_requests=pending_requests,
+        join_requests=join_requests,
         pending_requests_count=pending_count,
         total_requests=total_count
     )

@@ -1,0 +1,269 @@
+{% extends 'parents/auth_base.html' %}
+{% block title %}Join Requests | {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container join-requests py-5">
+  <div class="requests-header mb-4">
+    <h2>Join Requests for {{ project.title }}</h2>
+    <div class="requests-subheader">
+      <span class="badge bg-primary">{{ pending_requests_count }} Pending</span>
+      <span class="badge bg-secondary">{{ total_requests }} Total</span>
+    </div>
+  </div>
+
+  <div class="requests-table-container">
+    <div class="table-responsive">
+      <table class="table requests-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Request Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for request in join_requests %}
+            <tr class="request-row request-{{ request.status }}">
+              <td>
+                <div class="req-user-info">
+                  <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}{{ request.user.profile_img }}" 
+                       alt="{{ request.user.username }}" class="user-avatar">
+                  <div>
+                    <div class="user-name">{{ request.user.fname }} {{ request.user.lname }}</div>
+                    <div class="user-username">@{{ request.user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ request.joined_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+              <td>
+                <span class="status-badge {{ request.status }}">
+                  {{ request.status|title }}
+                </span>
+              </td>
+              <td>
+                {% if request.status == 'pending' %}
+                  <div class="btn-group request-actions">
+                    <button class="btn btn-accept" data-user-id="{{ request.user.id }}">
+                      <i class="bi bi-check-lg"></i> Accept
+                    </button>
+                    <button class="btn btn-reject" data-user-id="{{ request.user.id }}">
+                      <i class="bi bi-x-lg"></i> Reject
+                    </button>
+                  </div>
+                {% else %}
+                  <div class="btn-group request-actions">
+                    <button class="btn btn-remove" data-user-id="{{ request.user.id }}">
+                      <i class="bi bi-trash"></i> Remove
+                    </button>
+                  </div>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center py-4">No join requests found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+.join-requests {
+    margin-top: 50px;
+}
+
+.requests-header {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.requests-subheader {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.requests-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.requests-table {
+  margin: 0;
+}
+
+.requests-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.requests-table td {
+  padding: 15px 20px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.req-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.user-username {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-accept, .btn-reject, .btn-remove {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-accept {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.btn-accept:hover {
+  background: #bbf7d0;
+}
+
+.btn-reject {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.btn-reject:hover {
+  background: #fecaca;
+}
+
+.btn-remove {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-remove:hover {
+  background: #e2e8f0;
+}
+
+/* Row states */
+.request-row.pending {
+  background: rgba(254, 243, 199, 0.1);
+}
+
+.request-row:hover {
+  background: #f8fafc;
+}
+</style>
+
+<script>
+  document.querySelectorAll('.btn-accept').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const requestId = this.dataset.requestId;
+      await processRequest(requestId, 'accept');
+    });
+  });
+  
+  document.querySelectorAll('.btn-reject').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const requestId = this.dataset.requestId;
+      await processRequest(requestId, 'reject');
+    });
+  });
+  
+  document.querySelectorAll('.btn-remove').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (!confirm('Are you sure you want to remove this request record?')) return;
+      const requestId = this.dataset.requestId;
+      await processRequest(requestId, 'remove');
+    });
+  });
+  
+  async function processRequest(requestId, action) {
+    try {
+      const response = await fetch(`/projects/{{ project.id }}/process_request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+          request_id: requestId,
+          action: action
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.message || `Failed to ${action} request`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred');
+    }
+  }
+</script>
+{% endblock %}
