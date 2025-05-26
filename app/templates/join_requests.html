@@ -23,48 +23,50 @@
           </tr>
         </thead>
         <tbody>
-            {% for request in join_requests %}
+        {% for request in join_requests %}
             <tr class="request-row request-{{ request.status }}">
-              <td>
+            <td>
                 <div class="req-user-info">
-                  <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}{{ request.user.profile_img }}" 
-                       alt="{{ request.user.username }}" class="user-avatar">
-                  <div>
+                <a href="{{ url_for('main.public_profile', username=request.user.username) }}" class="user-profile-link">
+                    <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}{{ request.user.profile_img }}" 
+                        alt="{{ request.user.username }}" class="user-avatar">
+                    <div>
                     <div class="user-name">{{ request.user.fname }} {{ request.user.lname }}</div>
                     <div class="user-username">@{{ request.user.username }}</div>
-                  </div>
+                    </div>
+                </a>
                 </div>
-              </td>
-              <td>{{ request.joined_at.strftime('%b %d, %Y %I:%M %p') }}</td>
-              <td>
+            </td>
+            <td>{{ request.joined_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+            <td>
                 <span class="status-badge {{ request.status }}">
-                  {{ request.status|title }}
+                {{ request.status|title }}
                 </span>
-              </td>
-              <td>
+            </td>
+            <td>
                 {% if request.status == 'pending' %}
-                  <div class="btn-group request-actions">
+                <div class="btn-group request-actions">
                     <button class="btn btn-accept" data-user-id="{{ request.user.id }}">
-                      <i class="bi bi-check-lg"></i> Accept
+                    <i class="bi bi-check-lg"></i> Accept
                     </button>
                     <button class="btn btn-reject" data-user-id="{{ request.user.id }}">
-                      <i class="bi bi-x-lg"></i> Reject
+                    <i class="bi bi-x-lg"></i> Reject
                     </button>
-                  </div>
+                </div>
                 {% else %}
-                  <div class="btn-group request-actions">
+                <div class="btn-group request-actions">
                     <button class="btn btn-remove" data-user-id="{{ request.user.id }}">
-                      <i class="bi bi-trash"></i> Remove
+                    <i class="bi bi-trash"></i> Remove
                     </button>
-                  </div>
+                </div>
                 {% endif %}
-              </td>
+            </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4" class="text-center py-4">No join requests found</td>
+            <td colspan="4" class="text-center py-4">No join requests found</td>
             </tr>
-            {% endfor %}
+        {% endfor %}
         </tbody>
       </table>
     </div>
@@ -214,32 +216,48 @@
 .request-row:hover {
   background: #f8fafc;
 }
+
+.user-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    }
+  
+  .user-profile-link:hover {
+    text-decoration: none;
+  }
+  
+  .user-profile-link:hover .user-name {
+    color: #6366f1; /* Your primary color */
+  }
 </style>
 
 <script>
   document.querySelectorAll('.btn-accept').forEach(btn => {
     btn.addEventListener('click', async function() {
-      const requestId = this.dataset.requestId;
-      await processRequest(requestId, 'accept');
+      const userId = this.dataset.userId;
+      await processRequest(userId, 'accept');
     });
   });
   
   document.querySelectorAll('.btn-reject').forEach(btn => {
     btn.addEventListener('click', async function() {
-      const requestId = this.dataset.requestId;
-      await processRequest(requestId, 'reject');
+      const userId = this.dataset.userId;
+      await processRequest(userId, 'reject');
     });
   });
   
   document.querySelectorAll('.btn-remove').forEach(btn => {
     btn.addEventListener('click', async function() {
       if (!confirm('Are you sure you want to remove this request record?')) return;
-      const requestId = this.dataset.requestId;
-      await processRequest(requestId, 'remove');
+      const userId = this.dataset.userId;
+      await processRequest(userId, 'remove');
     });
   });
   
-  async function processRequest(requestId, action) {
+  async function processRequest(userId, action) {
     try {
       const response = await fetch(`/projects/{{ project.id }}/process_request`, {
         method: 'POST',
@@ -248,7 +266,7 @@
           'X-CSRFToken': '{{ csrf_token() }}'
         },
         body: JSON.stringify({
-          request_id: requestId,
+          user_id: userId,
           action: action
         })
       });

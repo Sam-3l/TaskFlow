@@ -475,7 +475,7 @@ def join_requests(project_id):
             User, User.id == membership.c.user_id
         ).where(
             membership.c.project_id == project_id,
-            membership.c.status == 'pending'
+            membership.c.status != 'active'
         ).order_by(
             membership.c.joined_at.desc()
         )
