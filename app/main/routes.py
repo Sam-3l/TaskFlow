@@ -1,6 +1,6 @@
 import math
 from flask.helpers import flash
-from flask import Blueprint, render_template, redirect, url_for, current_app
+from flask import Blueprint, render_template, redirect, url_for, current_app, abort
 from flask_login import login_required, current_user
 from flask import request, jsonify
 from flask_wtf.csrf import validate_csrf
@@ -347,6 +347,30 @@ def project(project_id):
     for task in tasks:
         status = task.status if task.status in kanban_columns else 'pending'
         kanban_columns[status][1].append(task)
+
+    # Check if user is logged in and has pending request
+    has_pending_request = False
+    if current_user.is_authenticated:
+        has_pending_request = db.session.query(membership).filter(
+            membership.c.project_id == project_id,
+            membership.c.user_id == current_user.id,
+            membership.c.status == 'pending'
+        ).first() is not None
+    
+    # Get pending requests count for managers
+    pending_requests_count = 0
+    if current_user.is_authenticated:
+        is_manager = db.session.query(membership).filter(
+            membership.c.project_id == project_id,
+            membership.c.user_id == current_user.id,
+            membership.c.role == 'project_manager',
+            membership.c.status == 'active'
+        ).first()
+        if is_manager:
+            pending_requests_count = db.session.query(membership).filter(
+                membership.c.project_id == project_id,
+                membership.c.status == 'pending'
+            ).count()
     
     return render_template(
         'project.html',
@@ -356,9 +380,164 @@ def project(project_id):
         current_membership=current_membership,
         members=members,
         task_assignments=task_assignments,
+        has_pending_request=has_pending_request,
+        pending_requests_count=pending_requests_count,
         discussions=sorted_discussions,
         kanban_columns=kanban_columns
     )
+
+@main.route('/projects/<int:project_id>/request_join', methods=['POST'])
+@login_required
+def request_join(project_id):
+    project = Project.query.get_or_404(project_id)
+    
+    if project.type != 'public-open':
+        return jsonify({'success': False, 'message': 'This project is not open for joining'})
+    
+    # Check if user is already a member (active or pending)
+    existing_membership = db.session.query(membership).filter(
+        membership.c.project_id == project_id,
+        membership.c.user_id == current_user.id
+    ).first()
+
+    if existing_membership and existing_membership.status == 'rejected':
+        update_stmt = membership.update().where(
+            (membership.c.project_id == project_id) &
+            (membership.c.user_id == current_user.id)
+        ).values(status='pending')
+        
+        db.session.execute(update_stmt)
+        db.session.commit()
+
+        return jsonify({'success': True})
+    
+    if existing_membership:
+        status = 'active' if existing_membership.status == 'active' else 'pending'
+        return jsonify({
+            'success': False, 
+            'message': f'You already have a {status} membership for this project'
+        })
+    
+    # Create new membership with pending status
+    insert_stmt = membership.insert().values(
+        project_id=project_id,
+        user_id=current_user.id,
+        role='contributor',
+        status='pending',
+        joined_at=datetime.utcnow()
+    )
+    db.session.execute(insert_stmt)
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@main.route('/projects/<int:project_id>/cancel_request', methods=['POST'])
+@login_required
+def cancel_request(project_id):
+    # Delete the membership record
+    delete_stmt = membership.delete().where(
+        (membership.c.project_id == project_id) &
+        (membership.c.user_id == current_user.id) &
+        (membership.c.status == 'pending')
+    )
+    result = db.session.execute(delete_stmt)
+    db.session.commit()
+    
+    if result.rowcount == 0:
+        return jsonify({'success': False, 'message': 'No pending request found'})
+    
+    return jsonify({'success': True})
+
+@main.route('/projects/<int:project_id>/join_requests')
+@login_required
+def join_requests(project_id):
+    project = Project.query.get_or_404(project_id)
+    
+    # Check if current user is a project manager
+    is_manager = db.session.query(membership).filter(
+        membership.c.project_id == project_id,
+        membership.c.user_id == current_user.id,
+        membership.c.role == 'project_manager',
+        membership.c.status == 'active'
+    ).first()
+    
+    if not is_manager:
+        abort(403)
+    
+    # Get all join requests (pending memberships)
+    pending_requests = db.session.query(
+        membership,
+        User
+    ).join(
+        User, User.id == membership.c.user_id
+    ).filter(
+        membership.c.project_id == project_id,
+        membership.c.status == 'pending'
+    ).order_by(
+        membership.c.joined_at.desc()
+    ).all()
+    
+    # Get counts
+    pending_count = len(pending_requests)
+    total_count = db.session.query(membership).filter(
+        membership.c.project_id == project_id
+    ).count()
+    
+    return render_template(
+        'projects/join_requests.html',
+        project=project,
+        join_requests=pending_requests,
+        pending_requests_count=pending_count,
+        total_requests=total_count
+    )
+
+@main.route('/projects/<int:project_id>/process_request', methods=['POST'])
+@login_required
+def process_request(project_id):
+    data = request.get_json()
+    user_id = data.get('user_id')
+    action = data.get('action')
+    
+    if not user_id or not action:
+        return jsonify({'success': False, 'message': 'Missing parameters'})
+    
+    # Verify the current user is a manager of this project
+    is_manager = db.session.query(membership).filter(
+        membership.c.project_id == project_id,
+        membership.c.user_id == current_user.id,
+        membership.c.role == 'project_manager',
+        membership.c.status == 'active'
+    ).first()
+    
+    if not is_manager:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    # Update the membership status based on action
+    if action == 'accept':
+        update_stmt = membership.update().where(
+            (membership.c.project_id == project_id) &
+            (membership.c.user_id == user_id)
+        ).values(status='active')
+    elif action == 'reject':
+        update_stmt = membership.update().where(
+            (membership.c.project_id == project_id) &
+            (membership.c.user_id == user_id)
+        ).values(status='rejected')
+    elif action == 'remove':
+        delete_stmt = membership.delete().where(
+            (membership.c.project_id == project_id) &
+            (membership.c.user_id == user_id)
+        )
+        db.session.execute(delete_stmt)
+        db.session.commit()
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'message': 'Invalid action'})
+    
+    db.session.execute(update_stmt)
+    db.session.commit()
+    
+    return jsonify({'success': True})
 
 @main.route('/projects/<int:project_id>/upvote', methods=['POST', 'DELETE'])
 @login_required

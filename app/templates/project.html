@@ -61,6 +61,25 @@
           </div>
         </div>
       </div>
+
+      {% if not current_user.is_authenticated and project.type == 'public-open' %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-join-request">
+        <i class="bi bi-box-arrow-in-right"></i> Login to Join Project
+      </a>
+      {% elif current_user.is_authenticated and project.type == 'public-open' and not current_membership %}
+      <div class="join-request-container mb-3">
+        {% if not has_pending_request %}
+          <button class="btn btn-join-request" id="requestToJoinBtn">
+            <i class="bi bi-person-plus"></i> Request to Join Project
+          </button>
+        {% else %}
+          <button class="btn btn-cancel-request" id="cancelRequestBtn">
+            <i class="bi bi-person-dash"></i> Cancel Join Request
+          </button>
+          <div class="request-status-badge pending">Request Pending</div>
+        {% endif %}
+      </div>
+      {% endif %}
       
       <div class="project-description">
         {% if current_membership and current_membership.role == 'project_manager' %}
@@ -90,12 +109,25 @@
 
   <!-- Project Members Section -->
   <div class="project-section">
-    <h2 class="section-title">
-      <i class="bi bi-people-fill"></i> Team Members:
-      &nbsp;
-      <span class="member-count">{{ members|length }} members</span>
-    </h2>
-    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title">
+        <i class="bi bi-people-fill"></i> Team Members:
+        &nbsp;
+        <span class="member-count">{{ members|length }} members</span>
+      </h2>
+
+      <div>
+      {% if current_membership and current_membership.role == 'project_manager' and project.type == 'public-open' %}
+        <a href="{{ url_for('projects.join_requests', project_id=project.id) }}" class="btn btn-requests">
+          <i class="bi bi-people"></i> Join Requests
+          {% if pending_requests_count > 0 %}
+            <span class="request-badge">{{ pending_requests_count }}</span>
+          {% endif %}
+        </a>
+      {% endif %}
+      </div>
+    </div>
+
     <div class="members-grid">
       {% for member, role, status in members %}
       <div class="member-card">
@@ -1875,6 +1907,62 @@ input[type="date"]::-webkit-clear-button {
 .project-type-dropdown .dropdown-item {
   padding: 0.5rem 1rem;
 }
+
+.btn-join-request {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
+}
+
+.btn-join-request:hover {
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  color: white;
+}
+
+.btn-cancel-request {
+  background: linear-gradient(135deg, #f43f5e, #fb7185);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(244, 63, 94, 0.2);
+}
+
+.btn-cancel-request:hover {
+  background: linear-gradient(135deg, #e11d48, #f43f5e);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+  color: white;
+}
+
+.request-status-badge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.request-status-badge.pending {
+  background-color: #fef3c7;
+  color: #d97706;
+}
 </style>
 
 <script>
@@ -2789,6 +2877,56 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   });
+});
+
+// Request to Join functionality
+document.getElementById('requestToJoinBtn')?.addEventListener('click', async function() {
+  try {
+    const response = await fetch(`/projects/{{ project.id }}/request_join`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      window.location.reload();
+    } else {
+      alert(data.message || 'Failed to send request');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred');
+  }
+});
+
+// Cancel Request functionality
+document.getElementById('cancelRequestBtn')?.addEventListener('click', async function() {
+  if (!confirm('Are you sure you want to cancel your join request?')) return;
+  
+  try {
+    const response = await fetch(`/projects/{{ project.id }}/cancel_request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      window.location.reload();
+    } else {
+      alert(data.message || 'Failed to cancel request');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred');
+  }
 });
 </script>
 {% endblock %}
