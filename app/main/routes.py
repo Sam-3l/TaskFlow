@@ -580,6 +580,18 @@ def process_request(project_id):
             (membership.c.project_id == project_id) &
             (membership.c.user_id == user_id)
         ).values(status='active')
+
+        project = Project.query.get_or_404(project_id)
+        
+        # For accepted join requests (when manager approves a user's request)
+        add_notification(
+            user_id=user_id,
+            message=f"Your request to join '{project.title}' was accepted! You're now a contributor.",
+            link=url_for('main.project', project_id=project.id),
+            icon="project",
+            sender_id=current_user.id
+        )
+
     elif action == 'reject':
         update_stmt = membership.update().where(
             (membership.c.project_id == project_id) &
@@ -969,9 +981,19 @@ def add_project_member(project_id):
             )
         )
 
+    new_member = User.query.get(user_id)
+    
+    # Send notification to the new member
+    add_notification(
+        user_id=user_id,
+        message=f"You've been added to project '{project.title}' as a {role.replace('_', ' ')}",
+        link=url_for('main.project', project_id=project.id),
+        icon="project",
+        sender_id=current_user.id
+    )
+
     db.session.commit()
     
-    new_member = User.query.get(user_id)
     return jsonify({
         'success': True,
         'member': {
