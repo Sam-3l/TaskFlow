@@ -766,18 +766,16 @@ body{
     color: #777;
 }
 
-.notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ff4757;
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
+#notification-badge {
+    font-size: 0.65rem;
+    padding: 0.25em 0.4em;
+    min-width: 1.25em;
+    display: none;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
-    font-weight: bold;
+}
+
+/* For the bell icon to align properly */
+.nav-link i.bi-bell {
+    font-size: 1.25rem;
 }

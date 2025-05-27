@@ -23,7 +23,7 @@ from types import SimpleNamespace
 
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment, upvotes, Notification
 from app.forms import CreateTask, CreateProject
-from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications
+from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications, add_notification
 
 from datetime import datetime, date, timedelta
 
@@ -83,7 +83,7 @@ def datetime_format(value, format="%b %d, %Y"):
 
 @main.app_template_filter('time_ago')
 def time_ago_filter(dt):
-    now = datetime.now()
+    now = datetime.utcnow()
     diff = now - dt
     
     seconds = diff.total_seconds()
@@ -431,6 +431,8 @@ def request_join(project_id):
         db.session.execute(update_stmt)
         db.session.commit()
 
+        # Add notification for project managers
+        notify_project_managers(project, current_user)
         return jsonify({'success': True})
     
     if existing_membership:
@@ -451,7 +453,30 @@ def request_join(project_id):
     db.session.execute(insert_stmt)
     db.session.commit()
     
+    # Add notification for project managers
+    notify_project_managers(project, current_user)
     return jsonify({'success': True})
+
+def notify_project_managers(project, requesting_user):
+    """Notify all project managers about join request"""
+    
+    # Get all users with manager role in this project
+    managers = db.session.query(User).join(
+        membership, (membership.c.user_id == User.id)
+    ).filter(
+        membership.c.project_id == project.id,
+        membership.c.role == 'project_manager',
+        membership.c.status == 'active'
+    ).all()
+    
+    for manager in managers:
+        add_notification(
+            user_id=manager.id,
+            message=f"{requesting_user.username} requested to join project {project.title}",
+            link=url_for('main.join_requests', project_id=project.id),
+            icon="project",
+            sender_id=requesting_user.id
+        )
 
 @main.route('/projects/<int:project_id>/cancel_request', methods=['POST'])
 @login_required
@@ -585,6 +610,10 @@ def upvote_project(project_id):
         if current_user not in project.upvotes:
             project.upvotes.append(current_user)
             db.session.commit()
+
+            # Notify project members about the upvote (excluding the upvoter)
+            notify_project_upvote(project, current_user, action='added')
+
             return jsonify({
                 'success': True,
                 'new_count': len(project.upvotes),
@@ -602,6 +631,30 @@ def upvote_project(project_id):
             })
     
     return jsonify({'success': False}), 400
+
+def notify_project_upvote(project, upvoter, action):
+    """Notify project members when someone upvotes their project"""
+    # Get all active project members except the upvoter
+    members = User.query.join(
+        membership, (membership.c.user_id == User.id)
+    ).filter(
+        membership.c.project_id == project.id,
+        membership.c.status == 'active',
+        User.id != upvoter.id  # Don't notify the upvoter
+    ).all()
+    
+    for member in members:
+        if action == 'added':
+            message = f"{upvoter.username} upvoted your project {project.title}"
+            icon = "heart-fill"
+            
+        add_notification(
+            user_id=member.id,
+            message=message,
+            link=url_for('main.project', project_id=project.id),
+            icon=icon,
+            sender_id=upvoter.id
+        )
 
 @main.route('/dashboard/upvotes')
 @login_required
@@ -1174,6 +1227,9 @@ def create_task_assignment(project_id):
 
     db.session.add(assignment)
     db.session.flush()
+
+    # Create a dictionary to track users and their assigned task counts
+    user_task_counts = {}
     
     for task_data in tasks_data:
         if 'title' not in task_data or not task_data['title'].strip():
@@ -1203,9 +1259,24 @@ def create_task_assignment(project_id):
             user = User.query.get(user_id)
             if user and user in project.active_members:
                 task.assigned_users.append(user)
+                # Track task count per user
+                if user.id not in user_task_counts:
+                    user_task_counts[user.id] = 1
+                else:
+                    user_task_counts[user.id] += 1
         
         db.session.add(task)
     
+    # Send notifications with accurate task counts per user
+    for user_id, count in user_task_counts.items():
+        add_notification(
+            user_id=user_id,
+            message=f"You were assigned {count} new task{'s' if count > 1 else ''} in '{title}' for project {project.title}",
+            link=url_for('main.task_assignment', assignment_id=assignment.id),
+            icon="task",
+            sender_id=current_user.id
+        )
+        
     db.session.commit()
     
     return jsonify({
@@ -1445,6 +1516,16 @@ def connect_user(username):
         return jsonify({'success': False, 'error': 'Already connected'})
     
     current_user.connect(user)
+    
+    # Add notification to the user being followed
+    add_notification(
+        user_id=user.id,
+        message=f"{current_user.username} connected with you",
+        link=url_for('main.connections'),
+        icon="user-follow",
+        sender_id=current_user.id
+    )
+    
     db.session.commit()
     return jsonify({
         'success': True,
