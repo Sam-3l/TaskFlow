@@ -296,3 +296,36 @@ class TaskAssignmentComment(db.Model):
 
     assignment = db.relationship("TaskAssignment", back_populates="comments")
     user = db.relationship("User") 
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.current_timestamp())
+    link = db.Column(db.String(255), nullable=True)
+    icon = db.Column(db.String(50), nullable=True)  # For different notification types
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
+    sender = db.relationship('User', foreign_keys=[sender_id])
+
+    def mark_as_read(self):
+        self.is_read = True
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'message': self.message,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat(),
+            'link': self.link,
+            'icon': self.icon,
+            'sender': {
+                'id': self.sender.id if self.sender else None,
+                'username': self.sender.username if self.sender else None,
+                'profile_img': self.sender.profile_img if self.sender else None
+            } if self.sender else None
+        }

@@ -21,8 +21,9 @@ import time
 import re
 from types import SimpleNamespace
 
-from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment, upvotes
+from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment, upvotes, Notification
 from app.forms import CreateTask, CreateProject
+from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications
 
 from datetime import datetime, date, timedelta
 
@@ -79,6 +80,27 @@ def datetime_format(value, format="%b %d, %Y"):
     if value is None:
         return ""
     return value.strftime(format)
+
+@main.app_template_filter('time_ago')
+def time_ago_filter(dt):
+    now = datetime.now()
+    diff = now - dt
+    
+    seconds = diff.total_seconds()
+    minutes = seconds / 60
+    hours = minutes / 60
+    days = hours / 24
+    
+    if seconds < 60:
+        return "just now"
+    elif minutes < 60:
+        return f"{int(minutes)} minute{'s' if int(minutes) != 1 else ''} ago"
+    elif hours < 24:
+        return f"{int(hours)} hour{'s' if int(hours) != 1 else ''} ago"
+    elif days < 7:
+        return f"{int(days)} day{'s' if int(days) != 1 else ''} ago"
+    else:
+        return dt.strftime("%b %d, %Y")
 
 @main.route("/")
 def home():
@@ -2300,3 +2322,34 @@ def update_task(task_id):
     db.session.commit()
 
     return jsonify({"success": True}), 200
+
+@main.route('/dashboard/notifications')
+@login_required
+def notifications_page():
+    # Mark all notifications as read when user visits the page
+    mark_notifications_as_read(current_user.id)
+    
+    notifications = get_user_notifications(current_user.id)
+    return render_template('notifications.html', notifications=notifications, user=current_user, active_page="notifications")
+
+@main.route('/api/notifications')
+@login_required
+def get_notifications():
+    notifications = get_user_notifications(current_user.id)
+    return jsonify([n.to_dict() for n in notifications])
+
+@main.route('/api/notifications/unread-count')
+@login_required
+def unread_count():
+    count = get_unread_count(current_user.id)
+    return jsonify({'count': count})
+
+@main.route('/api/notifications/mark-read', methods=['POST'])
+@login_required
+def mark_read():
+    data = request.get_json()
+    notification_ids = data.get('notification_ids', None)
+    
+    if mark_notifications_as_read(current_user.id, notification_ids):
+        return jsonify({'success': True})
+    return jsonify({'success': False}), 400
