@@ -5,6 +5,8 @@ from sqlalchemy import and_
 from sqlalchemy.sql import func
 import random
 from flask import current_app
+from datetime import datetime, timedelta
+import secrets
 
 connections = db.Table('user_connections',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -30,6 +32,12 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(150), nullable=False)
     profile_img = db.Column(db.String(120), default="default_male.jpg")
 
+    email_verified = db.Column(db.Boolean, default=False)
+    email_verification_token = db.Column(db.String(100), unique=True)
+    email_verification_sent_at = db.Column(db.DateTime)
+    password_reset_token = db.Column(db.String(100), unique=True)
+    password_reset_sent_at = db.Column(db.DateTime)
+
     tasks = db.relationship(
         "Task",
         secondary="task_user_association",
@@ -43,6 +51,28 @@ class User(UserMixin, db.Model):
         primaryjoin=(connections.c.follower_id == id),
         secondaryjoin=(connections.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+
+    def generate_verification_token(self):
+        """Generate a unique verification token"""
+        self.email_verification_token = secrets.token_urlsafe(32)
+        self.email_verification_sent_at = datetime.utcnow()
+        return self.email_verification_token
+    
+    def generate_password_reset_token(self):
+        """Generate a unique password reset token"""
+        self.password_reset_token = secrets.token_urlsafe(32)
+        self.password_reset_sent_at = datetime.utcnow()
+        return self.password_reset_token
+    
+    def verify_token(self, token, token_type='email'):
+        """Verify if token is valid and not expired"""
+        if token_type == 'email':
+            return (self.email_verification_token == token and 
+                    datetime.utcnow() < self.email_verification_sent_at + timedelta(hours=24))
+        elif token_type == 'password':
+            return (self.password_reset_token == token and 
+                    datetime.utcnow() < self.password_reset_sent_at + timedelta(hours=1))
+        return False
     
     def connect(self, user):
         if not self.is_connected(user):

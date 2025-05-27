@@ -1,0 +1,26 @@
+{% extends "parents/email_base.html" %}
+
+{% block content %}
+<h1>Welcome to TaskFlow!</h1>
+<p>Hello {{ user.fname }},</p>
+<p>Thank you for signing up for TaskFlow. To complete your registration, please verify your email address by clicking the button below:</p>
+
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+  <tbody>
+    <tr>
+      <td align="left">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+          <tbody>
+            <tr>
+              <td> <a href="{{ url_for('auth.verify_email', token=token, _external=True) }}" target="_blank">Verify Email</a> </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If you didn't create a TaskFlow account, you can safely ignore this email.</p>
+<p>Thanks,<br>The TaskFlow Team</p>
+{% endblock %}

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import SelectField, StringField, DateField, EmailField, TelField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Optional
+from wtforms import SelectField, StringField, DateField, EmailField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Optional, Email
 
 class MyDateField(DateField):
     def process_formdata(self, valuelist):
@@ -40,6 +40,21 @@ class LoginForm(FlaskForm):
     password = PasswordField("Input Your Password", validators=[DataRequired(),], render_kw={"placeholder":"Enter your password", "class":"form-control", "oninput": "displayoff('uname_email_err')",})
     remember = BooleanField("Remember me", render_kw={"class":"form-check-input"},)
     submit = SubmitField("Login", render_kw={"class":"btn btn-secondary w-100"})
+
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[
+        DataRequired(),
+        Length(min=8, message="Password must be at least 8 characters long")
+    ])
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(),
+        EqualTo('password', message="Passwords must match")
+    ])
+    submit = SubmitField('Reset Password')
 
 class CreateTask(FlaskForm):
     title = StringField("Title:", validators=[DataRequired(), Length(min=3, max=60),], render_kw={"placeholder":"Name your task",})

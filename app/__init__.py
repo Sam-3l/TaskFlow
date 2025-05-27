@@ -6,7 +6,9 @@ from flask_bcrypt import Bcrypt
 from flask_login.login_manager import LoginManager
 import os
 from config import DevelopmentConfig, DeploymentConfig
+from flask_mail import Mail
 
+mail = Mail()
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
@@ -39,6 +41,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    mail.init_app(app)
     login_manager.init_app(app)
 
     with app.app_context():

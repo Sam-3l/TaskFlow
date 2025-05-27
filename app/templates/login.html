@@ -68,14 +68,20 @@
           <span class="checkmark"></span>
           Remember me
         </label>
-        <a href="#" class="forgot-password">Forgot password?</a>
+        <a href="{{ url_for('auth.forgot_password') }}" class="forgot-password">Forgot password?</a>
       </div>
 
       <button type="submit" class="login-button">Log In</button>
 
-      <div class="login-footer">
-        Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a>
-      </div>
+      {% if form.uname_or_email.data and user and not user.email_verified %}
+        <div class="login-footer">
+          Didn't receive verification email? <a href="{{ url_for('auth.resend_verification') }}">Resend</a>
+        </div>
+      {% else %}
+        <div class="login-footer">
+          Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a>
+        </div>
+      {% endif %}
     </form>
   </div>
 </div>
