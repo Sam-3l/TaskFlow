@@ -766,6 +766,12 @@ body{
     color: #777;
 }
 
+.navbar-nav .bi {
+    font-size: 1.1rem;
+    min-width: 24px; /* Ensures consistent spacing */
+}
+
+/* Better notification badge positioning */
 #notification-badge {
     font-size: 0.65rem;
     padding: 0.25em 0.4em;

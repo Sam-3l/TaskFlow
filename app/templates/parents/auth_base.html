@@ -39,54 +39,52 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
+    
             <!-- Navbar Links -->
             <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-center">
                     <li class="nav-item">
-                    <a class="nav-link {% if active_page == 'home' %} active {% endif %}" href="/dashboard" id="home-link">
-                        <svg height="20" viewBox="0 0 8 8" width="20" xmlns="http://www.w3.org/2000/svg">
-                            <path d="m4 0-4 3h1v4h2v-2h2v2h2v-4.03l1 .03-4-3z"/>
-                        </svg>&nbsp;
-                        Home
-                    </a></li>
+                        <a class="nav-link {% if active_page == 'home' %} active {% endif %}" href="/dashboard" id="home-link">
+                            <i class="bi bi-house-door"></i>
+                            <span class="ms-1">Home</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
-                    <a class="nav-link {% if active_page == 'tasks' %} active {% endif %}" href="/dashboard/tasks" id="tasks-link">
-                        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
-                            <path d="m139.61 35.5a12 12 0 0 0 -17 0l-63.68 63.31-22.7-22.12a12 12 0 0 0 -17 0l-15.7 15.72a12 12 0 0 0 0 17l47.59 47.4a12.78 12.78 0 0 0 17.61 0l15.59-15.62 72.2-72.19a12.09 12.09 0 0 0 .09-17zm0 159.19a12 12 0 0 0 -17 0l-63.68 63.72-22.7-22.1a12 12 0 0 0 -17 0l-15.7 15.69a12 12 0 0 0 0 17l47.47 47.5a12.77 12.77 0 0 0 17.6 0l15.7-15.69 72.2-72.22a12 12 0 0 0 .09-16.9zm-75.61 173.31c-26.49 0-48.59 21.5-48.59 48s22.12 48 48.59 48a48 48 0 0 0 0-96zm432 16h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0-320h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16zm0 160h-288a16 16 0 0 0 -16 16v32a16 16 0 0 0 16 16h288a16 16 0 0 0 16-16v-32a16 16 0 0 0 -16-16z"/>
-                        </svg>&nbsp;
-                        Tasks
-                    </a></li>
+                        <a class="nav-link {% if active_page == 'tasks' %} active {% endif %}" href="/dashboard/tasks" id="tasks-link">
+                            <i class="bi bi-list-task"></i>
+                            <span class="ms-1">Tasks</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
-                    <a class="nav-link {% if active_page == 'projects' %} active {% endif %}" href="/dashboard/projects" id="projects-link">
-                        <svg enable-background="new 0 0 20 20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" height="20" width="20">
-                            <path clip-rule="evenodd" d="m18 4c0-.55-.45-1-1-1h-14c-.55 0-1 .45-1 1v2h16zm-2-3c0-.55-.45-1-1-1h-10c-.55 0-1 .45-1 1v1h12zm3 6h-18c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-11c0-.55-.45-1-1-1zm-5 7c0 .55-.45 1-1 1h-6c-.55 0-1-.45-1-1v-2h1v2h6v-2h1z" fill-rule="evenodd"/>
-                        </svg>&nbsp;
-                        Projects
-                    </a></li>
+                        <a class="nav-link {% if active_page == 'projects' %} active {% endif %}" href="/dashboard/projects" id="projects-link">
+                            <i class="bi bi-columns"></i>
+                            <span class="ms-1">Projects</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'connections' %} active {% endif %}" href={{ url_for('main.connections') }} id="people-link">
-                            <i class="bi bi-people"></i>&nbsp; Connections
-                        </a></li>
+                        <a class="nav-link {% if active_page == 'connections' %} active {% endif %}" href="{{ url_for('main.connections') }}" id="people-link">
+                            <i class="bi bi-people"></i>
+                            <span class="ms-1">Connections</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative {% if active_page == 'notifications' %} active {% endif %}" href="{{ url_for('main.notifications_page') }}" id="notif-link">
-                            <i class="bi bi-bell"></i>&nbsp;
+                            <i class="bi bi-bell"></i>
+                            <span class="ms-1">Notifications</span>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
                                 id="notification-badge" 
                                 style="display: none;">
                             </span>
-                            <span class="ms-1 d-none d-md-inline">Notifications</span>
-                    </a></li>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'upvotes' %} active {% endif %}" href="/dashboard/upvotes" id="upvotes-link">
-                            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10 16L12 14V10L13.6569 8.34314C15.1571 6.84285 16 4.80802 16 2.68629V0H13.3137C11.192 0 9.15714 0.842855 7.65685 2.34315L6 4H2L0 6L10 16ZM10.5 7C11.3284 7 12 6.32843 12 5.5C12 4.67157 11.3284 4 10.5 4C9.67157 4 9 4.67157 9 5.5C9 6.32843 9.67157 7 10.5 7Z" fill="#fff"/>
-                                <path d="M4.9274 13.7558L2.24423 11.0726L0 15L1 16L4.9274 13.7558Z" fill="#fff"/>
-                            </svg>&nbsp;
-                            Upvotes
-                    </a></li>
+                            <i class="bi bi-arrow-up-circle"></i>
+                            <span class="ms-1">Upvotes</span>
+                        </a>
+                    </li>
                 </ul>
-
+    
                 <!-- Search and Profile -->
                 <div class="d-flex align-items-center">
                     <form class="d-flex me-3 on-sm-grow" action="{{ url_for('main.search') }}" method="GET" id="globalSearchForm">
