@@ -15,7 +15,7 @@
       {% if messages %}
         <div class="login-alert">
           <i class="bi bi-exclamation-circle"></i>
-          <span>{{ messages[0] }}</span>
+          <span>{{ messages[0] | safe }}</span>
           <button class="login-alert-close">&times;</button>
         </div>
       {% endif %}
@@ -73,15 +73,9 @@
 
       <button type="submit" class="login-button">Log In</button>
 
-      {% if form.uname_or_email.data and user and not user.email_verified %}
-        <div class="login-footer">
-          Didn't receive verification email? <a href="{{ url_for('auth.resend_verification') }}">Resend</a>
-        </div>
-      {% else %}
-        <div class="login-footer">
-          Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a>
-        </div>
-      {% endif %}
+      <div class="login-footer">
+        Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a>
+      </div>
     </form>
   </div>
 </div>

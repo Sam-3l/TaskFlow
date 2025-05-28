@@ -12,6 +12,9 @@ class Config:
     WTF_CSRF_ENABLED = True
     REMEMBER_COOKIE_DURATION = timedelta(days=4)
     DEBUG = False  # Default to False
+
+    # Email configuration
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
     
     # Base directory of the project
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -22,17 +25,17 @@ class Config:
     # Maximum file size (16MB)
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
-    # Email configuration
-    MAIL_SERVER = 'smtp.example.com'  # e.g., 'smtp.gmail.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = 'your_email@example.com'
-    MAIL_PASSWORD = 'your_email_password'
-    MAIL_DEFAULT_SENDER = 'TaskFlow <noreply@taskflow.com>'
-
 class DevelopmentConfig(Config):
     DEBUG = True  # Always True for development
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///site.db'
+
+    # Email configuration
+    MAIL_SERVER = 'localhost'
+    MAIL_PORT = 8025
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
 
 class TestingConfig(Config):
     TESTING = True
@@ -45,6 +48,13 @@ class DeploymentConfig(Config):
     # Use environment variables for sensitive data
     SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+
+    # Email configuration
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = os.environ.get('MAIL_PORT')
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS')
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     
     # Security settings
     SESSION_COOKIE_SECURE = True

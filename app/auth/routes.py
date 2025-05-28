@@ -64,7 +64,7 @@ def login():
         
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             if not user.email_verified:
-                flash("Please verify your email address before logging in.", "warning")
+                flash(f"Please verify {user.email} to login. <a href='{url_for('auth.resend_verification', email=user.email)}'>Resend link</a>", "warning")
                 return redirect(url_for("auth.login"))
             
             login_user(user, remember=form.remember.data)
