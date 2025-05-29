@@ -30,11 +30,11 @@
     {% endif %}
 
     <div class="oauth-providers">
-      <a href="" class="oauth-btn google">
+      <a href="{{ url_for('auth.google_auth') }}" class="oauth-btn google">
         <img src="{{ url_for('static', filename='images/icons/google.png') }}" alt="Google">
         Continue with Google
       </a>
-      <a href="" class="oauth-btn github">
+      <a href="{{ url_for('auth.github_auth') }}" class="oauth-btn github">
         <img src="{{ url_for('static', filename='images/icons/github.png') }}" alt="GitHub">
         Continue with GitHub
       </a>

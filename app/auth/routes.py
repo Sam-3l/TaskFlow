@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, login_user, logout_user, current_user
+from app.utils.oauth import oauth, handle_oauth_callback
+from authlib.integrations.flask_client import OAuthError
+from werkzeug.exceptions import HTTPException
+from flask_wtf import csrf
 
 from app import login_manager, db
 from app.utils.email import send_verification_email, send_password_reset_email
@@ -11,6 +15,26 @@ auth = Blueprint("auth", __name__)
 def user_loader(user_id):
     from app.models import User
     return User.query.get(int(user_id))
+
+@auth.errorhandler(Exception)
+def handle_oauth_errors(e):
+    """Global error handler for OAuth and other exceptions"""
+    if isinstance(e, OAuthError):
+        error_msg = f"OAuth authentication failed: {e.description}"
+        current_app.logger.error(f"OAuth Error: {str(e)}")
+        flash(error_msg, 'danger')
+        return redirect(url_for('auth.login'))
+    
+    elif isinstance(e, HTTPException):
+        # Handle other HTTP exceptions
+        current_app.logger.error(f"HTTP Error {e.code}: {str(e)}")
+        flash(f"An error occurred: {e.description}", 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Log unexpected errors
+    current_app.logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+    flash("An unexpected error occurred. Please try again.", 'danger')
+    return redirect(url_for('main.dashboard'))
 
 login_manager.login_view = "auth.login"
 
@@ -154,6 +178,44 @@ def reset_password(token):
         return redirect(url_for("auth.login"))
     
     return render_template("reset_password.html", form=form, token=token)
+
+@auth.route('/google')
+@csrf.exempt
+def google_auth():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+    redirect_uri = url_for('auth.google_callback', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+@auth.route('/google/callback')
+def google_callback():
+    user, error = handle_oauth_callback('google')
+    if error:
+        flash(f'Google authentication failed: {error}', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    login_user(user)
+    flash('Logged in successfully with Google', 'success')
+    return redirect(url_for('main.dashboard'))
+
+@auth.route('/github')
+@csrf.exempt
+def github_auth():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+    redirect_uri = url_for('auth.github_callback', _external=True)
+    return oauth.github.authorize_redirect(redirect_uri)
+
+@auth.route('/github/callback')
+def github_callback():
+    user, error = handle_oauth_callback('github')
+    if error:
+        flash(f'GitHub authentication failed: {error}', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    login_user(user)
+    flash('Logged in successfully with GitHub', 'success')
+    return redirect(url_for('main.dashboard'))
 
 @auth.route("/logout")
 @login_required

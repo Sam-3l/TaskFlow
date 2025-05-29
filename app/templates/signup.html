@@ -15,14 +15,14 @@
       </div>
 
       <div class="auth-social">
-        <button class="social-btn google-btn">
+        <a href="{{ url_for('auth.google_auth') }}" class="social-btn google-btn unstyled">
           <img src="{{ url_for('static', filename='images/icons/google.png') }}" alt="Google">
           Sign up with Google
-        </button>
-        <button class="social-btn github-btn">
+        </a>
+        <a href="{{ url_for('auth.github_auth') }}" class="social-btn github-btn unstyled">
           <img src="{{ url_for('static', filename='images/icons/github.png') }}" alt="GitHub">
           Sign up with GitHub
-        </button>
+        </a>
       </div>
 
       <div class="auth-divider">
@@ -232,6 +232,14 @@
   transition: all 0.2s ease;
 }
 
+a.unstyled {
+  text-decoration: none;
+}
+
+a.unstyled:hover {
+  text-decoration: none;
+}
+
 .social-btn:hover {
   background: #f8fafc;
 }
@@ -245,6 +253,10 @@
   color: #1e293b;
 }
 
+.google-btn:hover {
+  color: #1e293b;
+}
+
 .github-btn {
   color: white;
   background: #1e293b;
@@ -253,6 +265,7 @@
 
 .github-btn:hover {
   background: #0f172a;
+  color: white;
 }
 
 /* Divider */
