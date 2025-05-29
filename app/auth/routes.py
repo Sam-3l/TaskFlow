@@ -3,7 +3,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 from app.utils.oauth import oauth, handle_oauth_callback
 from authlib.integrations.flask_client import OAuthError
 from werkzeug.exceptions import HTTPException
-from flask_wtf import csrf
+from app import csrf
 
 from app import login_manager, db
 from app.utils.email import send_verification_email, send_password_reset_email
