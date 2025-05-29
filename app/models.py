@@ -56,12 +56,14 @@ class User(UserMixin, db.Model):
         """Generate a unique verification token"""
         self.email_verification_token = secrets.token_urlsafe(32)
         self.email_verification_sent_at = datetime.utcnow()
+        db.session.commit()
         return self.email_verification_token
     
     def generate_password_reset_token(self):
         """Generate a unique password reset token"""
         self.password_reset_token = secrets.token_urlsafe(32)
         self.password_reset_sent_at = datetime.utcnow()
+        db.session.commit()
         return self.password_reset_token
     
     def verify_token(self, token, token_type='email'):

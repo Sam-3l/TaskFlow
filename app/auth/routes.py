@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, login_user, logout_user, current_user
-from werkzeug.security import generate_password_hash
 
 from app import login_manager, db
 from app.utils.email import send_verification_email, send_password_reset_email
@@ -133,6 +132,8 @@ def forgot_password():
 
 @auth.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
+    from app import bcrypt
+
     from app.models import User
     from app.forms import ResetPasswordForm
     
@@ -144,7 +145,7 @@ def reset_password(token):
     
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        user.password = generate_password_hash(form.password.data)
+        user.password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user.password_reset_token = None
         user.password_reset_sent_at = None
         db.session.commit()
