@@ -8,6 +8,7 @@ from wtforms import ValidationError
 from sqlalchemy.sql import func
 from sqlalchemy import and_, or_, not_
 from sqlalchemy import case
+from sqlalchemy.orm import aliased
 
 # Data viz
 import plotly
@@ -1797,7 +1798,13 @@ def explore_projects():
     
     if project_type != 'all':
         query = query.filter(Project.type == project_type)
-    
+
+    UpvoteAlias = aliased(upvotes)
+
+    # Join upvotes if sorting by popular or filtering by min_upvotes
+    if sort_by == 'popular' or min_upvotes > 0:
+        query = query.outerjoin(UpvoteAlias, Project.id == UpvoteAlias.c.project_id)
+
     # Apply sorting
     if sort_by == 'recent':
         query = query.order_by(Project.created_at.desc())
@@ -1806,22 +1813,23 @@ def explore_projects():
     elif sort_by == 'active':
         query = query.order_by(Project.updated_at.desc())
     elif sort_by == 'popular':
-        # For PostgreSQL, we can use func.array_length
-        query = query.outerjoin(upvotes).group_by(Project.id).order_by(func.count(upvotes.c.user_id).desc())
-    
-    # Apply minimum upvotes filter
+        query = query.group_by(Project.id).order_by(func.count(UpvoteAlias.c.user_id).desc())
+
+    # Apply min upvotes filter
     if min_upvotes > 0:
-        query = query.outerjoin(upvotes).group_by(Project.id).having(func.count(upvotes.c.user_id) >= min_upvotes)
-    
+        query = query.group_by(Project.id).having(func.count(UpvoteAlias.c.user_id) >= min_upvotes)
+
     projects = query.all()
-    
-    return render_template('explore_projects.html',
-                         projects=projects,
-                         user=current_user,
-                         search_query=search_query,
-                         project_type=project_type,
-                         sort_by=sort_by,
-                         min_upvotes=min_upvotes)
+
+    return render_template(
+        'explore_projects.html',
+        projects=projects,
+        user=current_user,
+        search_query=search_query,
+        project_type=project_type,
+        sort_by=sort_by,
+        min_upvotes=min_upvotes
+    )
 
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required
