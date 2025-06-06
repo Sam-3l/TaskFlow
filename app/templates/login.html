@@ -21,14 +21,6 @@
       {% endif %}
     {% endwith %}
 
-    {% if form.uname_or_email.data %}
-      <div class="login-alert error">
-        <i class="bi bi-exclamation-circle"></i>
-        <span>Invalid credentials. Please try again.</span>
-        <button class="login-alert-close">&times;</button>
-      </div>
-    {% endif %}
-
     <div class="oauth-providers">
       <a href="{{ url_for('auth.google_auth') }}" class="oauth-btn google">
         <img src="{{ url_for('static', filename='images/icons/google.png') }}" alt="Google">

@@ -33,7 +33,7 @@ def handle_oauth_errors(e):
     
     # Log unexpected errors
     current_app.logger.error(f"Unexpected error: {str(e)}", exc_info=True)
-    flash("An unexpected error occurred. Please try again.", 'danger')
+    flash("An unexpected error occurred. Please try again. LLLLL", 'danger')
     return redirect(url_for('main.dashboard'))
 
 login_manager.login_view = "auth.login"
