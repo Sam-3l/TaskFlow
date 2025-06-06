@@ -65,22 +65,18 @@ class DeploymentConfig(Config):
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-        
-        # Production-specific initialization
+
         import logging
         from logging.handlers import RotatingFileHandler
-        
-        # Set up file logging
-        file_handler = RotatingFileHandler(
-            'logs/taskflow.log',
-            maxBytes=10240,
-            backupCount=10
-        )
-        file_handler.setFormatter(logging.Formatter(
+        from logging import StreamHandler
+
+        # console handler for AWS Lambda
+        stream_handler = StreamHandler()
+        stream_handler.setLevel(logging.INFO)
+        stream_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
         ))
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
-        
+        app.logger.addHandler(stream_handler)
+
         app.logger.setLevel(logging.INFO)
-        app.logger.info('TaskFlow startup')
+        app.logger.info('TaskFlow Lambda startup')

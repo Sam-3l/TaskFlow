@@ -17,7 +17,7 @@ def user_loader(user_id):
     return User.query.get(int(user_id))
 
 @auth.errorhandler(Exception)
-def handle_oauth_errors(e):
+def handle_errors(e):
     """Global error handler for OAuth and other exceptions"""
     if isinstance(e, OAuthError):
         error_msg = f"OAuth authentication failed: {e.description}"
@@ -33,7 +33,7 @@ def handle_oauth_errors(e):
     
     # Log unexpected errors
     current_app.logger.error(f"Unexpected error: {str(e)}", exc_info=True)
-    flash("An unexpected error occurred. Please try again. LLLLL", 'danger')
+    flash("An unexpected error occurred. Please try again.", 'danger')
     return redirect(url_for('main.dashboard'))
 
 login_manager.login_view = "auth.login"
