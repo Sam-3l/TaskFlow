@@ -25,6 +25,7 @@ from types import SimpleNamespace
 from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membership, Project, task_user_association, ProjectDiscussion, TaskAssignmentComment, upvotes, Notification
 from app.forms import CreateTask, CreateProject
 from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications, add_notification
+from app.utils.s3_upload import upload_file_to_s3
 
 from datetime import datetime, date, timedelta
 
@@ -258,11 +259,17 @@ def create_projects():
                 # Generate unique filename
                 base, ext = os.path.splitext(filename)
                 filename = f"{base}_{int(time.time())}{ext}"
-                # Ensure the upload directory exists
-                upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'project_covers')
-                os.makedirs(upload_dir, exist_ok=True)
-                # Save the file
-                file.save(os.path.join(upload_dir, filename))
+                s3_key = f"static/images/uploads/project_covers/{filename}"
+                
+                if current_app.config['USE_S3']:
+                    upload_file_to_s3(file, s3_key)
+                else:
+                    # Ensure the upload directory exists
+                    upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'project_covers')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    # Save the file
+                    file.save(os.path.join(upload_dir, filename))
+
                 project.cover_image = filename
         
         db.session.add(project)
@@ -777,10 +784,15 @@ def update_project_cover(project_id):
     
     if file:
         filename = secure_filename(f"project_{project_id}_{datetime.now().timestamp()}.{file.filename.split('.')[-1]}")
-        upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'uploads', 'project_covers')
-        os.makedirs(upload_folder, exist_ok=True)
-        filepath = os.path.join(upload_folder, filename)
-        file.save(filepath)
+        s3_key = f"static/images/uploads/project_covers/{filename}"
+
+        if current_app.config['USE_S3']:
+            upload_file_to_s3(file, s3_key)
+        else:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'uploads', 'project_covers')
+            os.makedirs(upload_folder, exist_ok=True)
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
         
         if not project.cover_image.startswith('default_project'):
             old_filepath = os.path.join(upload_folder, project.cover_image)
@@ -1477,13 +1489,15 @@ def update_profile_image():
         try:
             # Generate filename
             filename = f"profile_{current_user.id}.jpg"
-            save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'profile_img', filename)
+            s3_key = f"static/images/uploads/profile_img/{filename}"
             
-            # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            
-            # Save the file
-            file.save(save_path)
+            if current_app.config['USE_S3']:
+                upload_file_to_s3(file, s3_key)
+            else:
+                # Local filesystem
+                local_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'profile_img')
+                os.makedirs(local_path, exist_ok=True)
+                file.save(os.path.join(local_path, filename))
             
             # Update database
             user = User.query.get(current_user.id)

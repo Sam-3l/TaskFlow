@@ -90,4 +90,13 @@ def create_app():
     from app.utils.oauth import init_oauth
     init_oauth(app)
 
+    @app.context_processor
+    def override_url_for():
+        from flask import url_for, current_app
+        def s3_url_for(endpoint, **values):
+            if endpoint == 'static' and current_app.config['USE_S3']:
+                return current_app.config['STATIC_URL'] + values['filename']
+            return url_for(endpoint, **values)
+        return dict(url_for=s3_url_for)
+
     return app
