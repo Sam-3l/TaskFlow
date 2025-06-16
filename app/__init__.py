@@ -25,14 +25,15 @@ def create_app():
     else:
         app.config.from_object(DeploymentConfig)
 
-    # Ensure upload directories exist
-    upload_dirs = [
-        os.path.join(app.config['UPLOAD_FOLDER'], 'profile_img'),
-        os.path.join(app.config['UPLOAD_FOLDER'], 'project_covers')
-    ]
-    
-    # Create the base upload directory if it doesn't exist
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    if not app.config['USE_S3']:
+        # Ensure upload directories exist
+        upload_dirs = [
+            os.path.join(app.config['UPLOAD_FOLDER'], 'profile_img'),
+            os.path.join(app.config['UPLOAD_FOLDER'], 'project_covers')
+        ]
+        
+        # Create the base upload directory if it doesn't exist
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Create subdirectories
     for directory in upload_dirs:
