@@ -35,9 +35,9 @@ def create_app():
         # Create the base upload directory if it doesn't exist
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
-    # Create subdirectories
-    for directory in upload_dirs:
-        os.makedirs(directory, exist_ok=True)
+        # Create subdirectories
+        for directory in upload_dirs:
+            os.makedirs(directory, exist_ok=True)
 
     csrf.init_app(app)
     db.init_app(app)
