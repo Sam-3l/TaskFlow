@@ -58,7 +58,8 @@ def create_app():
             "style-src 'self' 'unsafe-inline' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "img-src 'self' data: blob: "
-            "https://*.googleusercontent.com https://avatars.githubusercontent.com; "
+            "https://*.googleusercontent.com https://avatars.githubusercontent.com "
+            "https://taskflow-static.s3.amazonaws.com; "
             "font-src 'self' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
             "connect-src 'self' "
@@ -66,7 +67,7 @@ def create_app():
             "frame-src 'self' https://accounts.google.com; "
             "worker-src 'self' blob:; "
             "child-src 'self' blob:; "
-            "media-src 'self' blob:"
+            "media-src 'self' blob:;"
         )
         
         response.headers['Content-Security-Policy'] = csp

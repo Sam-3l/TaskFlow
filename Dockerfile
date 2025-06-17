@@ -15,5 +15,8 @@ RUN pip install --upgrade pip && \
 # Copy the entire project
 COPY . .
 
+# Remove the static directory
+RUN rm -rf ./app/static
+
 # Set the Lambda handler function (points to lambda_handler.handler)
 CMD ["lambda_handler.handler"]
