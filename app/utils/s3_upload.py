@@ -11,5 +11,5 @@ def upload_file_to_s3(file, key, content_type='image/jpeg'):
         file,
         os.getenv('S3_BUCKET_NAME'),
         key,
-        ExtraArgs={'ACL': 'public-read', 'ContentType': content_type}
+        ExtraArgs={'ContentType': content_type}
     )

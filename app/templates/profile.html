@@ -219,20 +219,10 @@
         const imageToCrop = document.getElementById('imageToCrop');
         const cropImageBtn = document.getElementById('cropImageBtn');
     
-        // Debug state
-        console.log("Initialized elements:", {
-            input: profileUploadInput,
-            modal: imageCropModal,
-            image: imageToCrop,
-            button: cropImageBtn
-        });
-    
         // New clean event listener
         profileUploadInput.addEventListener('change', function(e) {
-            console.log("File input changed");
             
             if (!e.target.files || e.target.files.length === 0) {
-                console.log("No file selected");
                 return;
             }
             
@@ -245,8 +235,6 @@
             const reader = new FileReader();
             
             reader.onload = function(event) {
-                console.log("File loaded, preparing modal");
-                
                 // Set image source
                 imageToCrop.src = event.target.result;
                 
@@ -255,8 +243,6 @@
                 
                 // Initialize cropper AFTER modal is shown
                 $(imageCropModalEl).on('shown.bs.modal', function() {
-                    console.log("Modal shown - initializing cropper");
-                    
                     if (cropper) {
                         cropper.destroy();
                     }
@@ -267,14 +253,12 @@
                         autoCropArea: 0.8,
                         responsive: true,
                         ready: function() {
-                            console.log("Cropper ready");
                         }
                     });
                 });
                 
                 // Handle modal close
                 $(imageCropModalEl).on('hidden.bs.modal', function() {
-                    console.log("Modal hidden - cleaning up");
                     if (cropper) {
                         cropper.destroy();
                         cropper = null;
@@ -283,7 +267,6 @@
                 });
                 
                 // Show the modal - this should block execution until user acts
-                console.log("Showing modal now");
                 imageCropModal.show();
             };
             
@@ -292,14 +275,11 @@
                 alert("Couldn't read the image file");
             };
             
-            console.log("Reading file...");
             reader.readAsDataURL(file);
         });
     
         // Handle crop button click
         cropImageBtn.addEventListener('click', function() {
-            console.log("Crop button clicked");
-            
             if (!cropper) {
                 console.error("No cropper instance!");
                 return;
@@ -317,8 +297,6 @@
             }
             
             canvas.toBlob(async (blob) => {
-                console.log("Uploading cropped image...");
-                
                 const formData = new FormData();
                 formData.append('profile_image', blob, 'profile.jpg');
     
@@ -332,7 +310,6 @@
                     });
     
                     if (response.ok) {
-                        console.log("Upload successful, reloading");
                         window.location.reload();
                     } else {
                         console.error("Upload failed:", await response.text());
@@ -344,13 +321,6 @@
                 }
             }, 'image/jpeg', 0.9);
         });
-    
-        // Debug button - add this temporarily to your HTML
-        window.debugCropper = function() {
-            console.log("Current cropper:", cropper);
-            console.log("Modal state:", imageCropModal._isShown);
-            console.log("File input files:", profileUploadInput.files);
-        };
     });
 
     // Initialize modal
