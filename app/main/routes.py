@@ -106,6 +106,11 @@ def time_ago_filter(dt):
 
 @main.route("/")
 def home():
+    # Tempoary: db maintainance
+    from app import db
+    progress = TaskProgress.query.filter(not TaskProgress.progress).first()
+    db.session.delete(progress)
+    db.session.commit()
     return render_template("index.html", active_page="home")
 
 @main.route("/features")
@@ -2308,7 +2313,11 @@ def save_task_progress(task_id):
         progress=data['progress'],
         notes=data['notes']
     )
-    db.session.add(progress)    
+
+    if not data['progress']:
+        return jsonify({"error": "Can't save empty progress"}), 400
+
+    db.session.add(progress)
     db.session.commit()
     return jsonify({'message': 'Progress saved'}), 200
 
