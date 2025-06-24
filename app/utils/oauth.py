@@ -20,7 +20,10 @@ def init_oauth(app):
         authorize_url='https://accounts.google.com/o/oauth2/auth',
         authorize_params=None,
         api_base_url='https://www.googleapis.com/oauth2/v1/',
-        client_kwargs={'scope': 'openid email profile'},
+        client_kwargs={
+            'scope': 'openid email profile',
+            'token_endpoint_auth_method': 'client_secret_post'
+        },
         server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
     )
     
@@ -49,11 +52,17 @@ def handle_oauth_callback(provider):
             return None, "Failed to fetch access token."
             
         if provider == 'google':
-            user_info = oauth.google.get('userinfo').json()
+            user_info = oauth.google.parse_id_token(
+                token,
+                claims_options={
+                    'iss': {'essential': True, 'values': ['https://accounts.google.com']},
+                    'aud': {'essential': True, 'value': current_app.config['GOOGLE_CLIENT_ID']}
+                }
+            )
             email = user_info.get('email')
             first_name = user_info.get('given_name', '')
             last_name = user_info.get('family_name', '')
-            username = user_info.get('email').split('@')[0]
+            username = email.split('@')[0]
             picture = user_info.get('picture')
             
         elif provider == 'github':

@@ -107,11 +107,16 @@ def time_ago_filter(dt):
 @main.route("/")
 def home():
     from app import db
-    null_progress_records = TaskProgress.query.filter(TaskProgress.progress == None).all()
+    from sqlalchemy import func, cast
+    from sqlalchemy.dialects.postgresql import ARRAY, TEXT
+    records_to_delete = TaskProgress.query.filter(
+        TaskProgress.progress == cast([None], ARRAY(TEXT))
+    ).all()
 
-    for record in null_progress_records:
+    for record in records_to_delete:
         db.session.delete(record)
 
+    db.session.commit()
     return render_template("index.html", active_page="home")
 
 @main.route("/features")
