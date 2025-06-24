@@ -107,16 +107,15 @@ def time_ago_filter(dt):
 @main.route("/")
 def home():
     from app import db
-    from sqlalchemy import func, cast
-    from sqlalchemy.dialects.postgresql import ARRAY, TEXT
-    records_to_delete = TaskProgress.query.filter(
-        TaskProgress.progress == cast([None], ARRAY(TEXT))
-    ).all()
+    task = TaskProgress.query.get(2)
 
-    for record in records_to_delete:
-        db.session.delete(record)
+    if task:
+        db.session.delete(task)
+        db.session.commit()
+        print("Deleted")
+    else:
+        print("No task with ID 2")
 
-    db.session.commit()
     return render_template("index.html", active_page="home")
 
 @main.route("/features")
@@ -2327,8 +2326,9 @@ def save_task_progress(task_id):
         notes=data['notes']
     )
 
-    if not data['progress']:
-        return jsonify({"error": "Can't save empty progress"}), 400
+    progress_val = data['progress']
+    if not isinstance(progress_val, list) or not all(isinstance(x, (int, float)) for x in progress_val):
+        return jsonify({"error": "Invalid progress"}), 400
 
     db.session.add(progress)
     db.session.commit()
