@@ -106,11 +106,6 @@ def time_ago_filter(dt):
 
 @main.route("/")
 def home():
-    # Tempoary: db maintainance
-    from app import db
-    progress = TaskProgress.query.filter(not TaskProgress.progress).first()
-    db.session.delete(progress)
-    db.session.commit()
     return render_template("index.html", active_page="home")
 
 @main.route("/features")
