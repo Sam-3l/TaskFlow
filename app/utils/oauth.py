@@ -21,7 +21,7 @@ def init_oauth(app):
         authorize_params=None,
         api_base_url='https://www.googleapis.com/oauth2/v1/',
         client_kwargs={
-            'scope': 'openid email profile',
+            'scope': 'email profile',
             'token_endpoint_auth_method': 'client_secret_post',
             'prompt': 'select_account',
             'response_type': 'code'
