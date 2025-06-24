@@ -191,7 +191,7 @@
                                         height="32">
                                     <a href="{{ url_for('main.public_profile', username=user.username) }}" 
                                     class="text-decoration-none">
-                                        {{ user.fname }} {{ user.lname }}
+                                        {{ user.fname }} {{ user.lname or '' }}
                                     </a>
                                 </div>
                                 {% endfor %}
@@ -213,7 +213,7 @@
                                     height="32">
                                 <a href="{{ url_for('main.public_profile', username=assigned_by.username) }}" 
                                 class="text-decoration-none">
-                                    {{ assigned_by.fname }} {{ assigned_by.lname }}
+                                    {{ assigned_by.fname }} {{ assigned_by.lname or '' }}
                                 </a>
                             </div>
                         </div>

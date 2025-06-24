@@ -23,7 +23,7 @@
         <!-- Profile Body -->
         <div class="card-body pt-5 mt-4">
             <div class="mb-4">
-                <h1 class="h2 mb-1 mt-2">{{ user_profile.fname }} {{ user_profile.lname }}</h1>
+                <h1 class="h2 mb-1 mt-2">{{ user_profile.fname }} {{ user_profile.lname if user_profile.lname }}</h1>
                 <p class="text-muted mb-0">@{{ user_profile.username }}</p>
             </div>
 

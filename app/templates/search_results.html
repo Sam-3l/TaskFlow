@@ -29,7 +29,7 @@
                         <div class="card-body text-center">
                             <img src="{{ url_for('static', filename='images/uploads/profile_img/' + user.profile_img) }}" 
                                  class="rounded-circle mb-2" width="80" height="80">
-                            <h5 class="card-title mb-1">{{ user.fname }} {{ user.lname }}</h5>
+                            <h5 class="card-title mb-1">{{ user.fname }} {{ user.lname or '' }}</h5>
                             <p class="text-muted small mb-2">@{{ user.username }}</p>
                             <a href="{{ url_for('main.public_profile', username=user.username) }}" 
                                class="btn btn-sm btn-outline-primary">

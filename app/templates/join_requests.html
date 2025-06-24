@@ -31,7 +31,7 @@
                     <img src="{{ url_for('static', filename='images/uploads/profile_img/') }}{{ request.user.profile_img }}" 
                         alt="{{ request.user.username }}" class="user-avatar">
                     <div>
-                    <div class="user-name">{{ request.user.fname }} {{ request.user.lname }}</div>
+                    <div class="user-name">{{ request.user.fname }} {{ request.user.lname or '' }}</div>
                     <div class="user-username">@{{ request.user.username }}</div>
                     </div>
                 </a>

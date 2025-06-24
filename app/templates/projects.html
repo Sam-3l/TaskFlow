@@ -167,7 +167,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     {% for member in project.active_members[:3] %}
-                                    <div class="avatar-circle" title="{{ member.fname }} {{ member.lname }}">
+                                    <div class="avatar-circle" title="{{ member.fname }} {{ member.lname or '' }}">
                                         <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" alt="{{ member.fname }}">
                                     </div>
                                     {% endfor %}

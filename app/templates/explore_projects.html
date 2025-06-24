@@ -188,7 +188,7 @@
                                 <div class="d-flex align-items-center">
                                     {% for member in project.active_members[:3] %}
                                     <div class="avatar-circle me-n2" 
-                                         title="{{ member.fname }} {{ member.lname }}"
+                                         title="{{ member.fname }} {{ member.lname or '' }}"
                                          data-bs-toggle="tooltip">
                                         <img src="{{ url_for('static', filename='images/uploads/profile_img/' + member.profile_img) }}" 
                                              alt="{{ member.fname }}"
