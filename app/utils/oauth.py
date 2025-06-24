@@ -15,13 +15,11 @@ def init_oauth(app):
         name='google',
         client_id=app.config['GOOGLE_CLIENT_ID'],
         client_secret=app.config['GOOGLE_CLIENT_SECRET'],
-        access_token_url='https://accounts.google.com/o/oauth2/token',
         access_token_params=None,
-        authorize_url='https://accounts.google.com/o/oauth2/auth',
         authorize_params=None,
         api_base_url='https://www.googleapis.com/oauth2/v1/',
         client_kwargs={
-            'scope': 'email profile',
+            'scope': 'openid email profile',
             'token_endpoint_auth_method': 'client_secret_post',
             'prompt': 'select_account',
             'response_type': 'code'

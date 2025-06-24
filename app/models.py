@@ -17,7 +17,7 @@ connections = db.Table('user_connections',
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(150), nullable=False)
-    lname = db.Column(db.String(150), nullable=False)
+    lname = db.Column(db.String(150), nullable=True)
     gender = db.Column(db.String(15), nullable=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
     address = db.Column(db.String(150), nullable=True)
