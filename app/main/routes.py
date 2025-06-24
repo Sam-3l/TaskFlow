@@ -106,6 +106,12 @@ def time_ago_filter(dt):
 
 @main.route("/")
 def home():
+    from app import db
+    null_progress_records = TaskProgress.query.filter(TaskProgress.progress == None).all()
+
+    for record in null_progress_records:
+        db.session.delete(record)
+
     return render_template("index.html", active_page="home")
 
 @main.route("/features")
@@ -1460,7 +1466,14 @@ def update_profile():
             user.lname = data.get('lname', user.lname)
             user.bio = data.get('bio', user.bio)
             user.phone = data.get('phone', user.phone)
-            user.dob = data.get('dob', user.dob)  # Ensure proper date parsing
+            dob_str = data.get('dob')
+            if dob_str:
+                try:
+                    user.dob = datetime.strptime(dob_str, "%m/%d/%Y")
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid date format. Use MM/DD/YYYY.'}), 400
+            elif dob_str == "":
+                user.dob = None
             user.address = data.get('address', user.address)
             user.city = data.get('city', user.city)
             user.state = data.get('state', user.state)
