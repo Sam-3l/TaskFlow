@@ -184,8 +184,14 @@ def reset_password(token):
 def google_auth():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
+    
     redirect_uri = url_for('auth.google_callback', _external=True)
-    return oauth.google.authorize_redirect(redirect_uri)
+    return oauth.google.authorize_redirect(
+        redirect_uri,
+        access_type='offline',
+        prompt='select_account',
+        include_granted_scopes='true'
+    )
 
 @auth.route('/google/callback')
 def google_callback():
