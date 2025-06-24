@@ -106,16 +106,6 @@ def time_ago_filter(dt):
 
 @main.route("/")
 def home():
-    from app import db
-    task = TaskProgress.query.get(2)
-
-    if task:
-        db.session.delete(task)
-        db.session.commit()
-        print("Deleted")
-    else:
-        print("No task with ID 2")
-
     return render_template("index.html", active_page="home")
 
 @main.route("/features")
@@ -1454,6 +1444,9 @@ def profile():
     dates = {'joined': formatted_date_joined, 'birth': formatted_dob}
     return render_template("profile.html", user=current_user, user_profile_info=current_user, active_page=None, dates=dates)
 
+def clean(value):
+    return None if value in (None, '') else value
+
 @main.route('/update_profile', methods=['POST'])
 @login_required
 def update_profile():
@@ -1466,22 +1459,22 @@ def update_profile():
             # Update user profile in database
             # Example (adjust according to your ORM):
             user = User.query.get(current_user.id)
-            user.fname = data.get('fname', user.fname)
-            user.lname = data.get('lname', user.lname)
-            user.bio = data.get('bio', user.bio)
-            user.phone = data.get('phone', user.phone)
+            user.fname = clean(data.get('fname', user.fname))
+            user.lname = clean(data.get('lname', user.lname))
+            user.bio = clean(data.get('bio', user.bio))
+            user.phone = clean(data.get('phone', user.phone))
             dob_str = data.get('dob')
             if dob_str:
                 try:
                     user.dob = datetime.strptime(dob_str, "%m/%d/%Y")
                 except ValueError:
                     return jsonify({'success': False, 'error': 'Invalid date format. Use MM/DD/YYYY.'}), 400
-            elif dob_str == "":
+            else:
                 user.dob = None
-            user.address = data.get('address', user.address)
-            user.city = data.get('city', user.city)
-            user.state = data.get('state', user.state)
-            user.zip = data.get('zip', user.zip)
+            user.address = clean(data.get('address', user.address))
+            user.city = clean(data.get('city', user.city))
+            user.state = clean(data.get('state', user.state))
+            user.zip = clean(data.get('zip', user.zip))
             
             db.session.commit()
             return jsonify({'success': True}), 200

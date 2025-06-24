@@ -127,23 +127,23 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">First Name</label>
-                            <input type="text" name="fname" value="{{ user_profile_info['fname'] }}" class="form-control">
+                            <input type="text" name="fname" value="{{ user_profile_info['fname'] or '' }}" class="form-control">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Last Name</label>
-                            <input type="text" name="lname" value="{{ user_profile_info['lname'] }}" class="form-control">
+                            <input type="text" name="lname" value="{{ user_profile_info['lname'] or '' }}" class="form-control">
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Bio</label>
-                        <textarea name="bio" rows="3" class="form-control">{{ user_profile_info['bio'] }}</textarea>
+                        <textarea name="bio" rows="3" class="form-control">{{ user_profile_info['bio'] or '' }}</textarea>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Phone</label>
-                            <input type="tel" name="phone" value="{{ user_profile_info['phone'] }}" class="form-control">
+                            <input type="tel" name="phone" value="{{ user_profile_info['phone'] or '' }}" class="form-control">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Date of Birth</label>
@@ -153,21 +153,21 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Address</label>
-                        <input type="text" name="address" value="{{ user_profile_info['address'] }}" class="form-control">
+                        <input type="text" name="address" value="{{ user_profile_info['address'] or '' }}" class="form-control">
                     </div>
                     
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">City</label>
-                            <input type="text" name="city" value="{{ user_profile_info['city'] }}" class="form-control">
+                            <input type="text" name="city" value="{{ user_profile_info['city'] or '' }}" class="form-control">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">State</label>
-                            <input type="text" name="state" value="{{ user_profile_info['state'] }}" class="form-control">
+                            <input type="text" name="state" value="{{ user_profile_info['state'] or '' }}" class="form-control">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">ZIP Code</label>
-                            <input type="text" name="zip" value="{{ user_profile_info['zip'] }}" class="form-control">
+                            <input type="text" name="zip" value="{{ user_profile_info['zip'] or '' }}" class="form-control">
                         </div>
                     </div>
                 </div>
