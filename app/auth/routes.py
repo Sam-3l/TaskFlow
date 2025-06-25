@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, session
 from flask_login import login_required, login_user, logout_user, current_user
 from app.utils.oauth import oauth, handle_oauth_callback
 from authlib.integrations.flask_client import OAuthError
@@ -8,6 +8,8 @@ from app import csrf
 from app import login_manager, db
 from app.utils.email import send_verification_email, send_password_reset_email
 from app.models import User
+
+import secrets
 
 auth = Blueprint("auth", __name__)
 
@@ -185,12 +187,15 @@ def google_auth():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     
+    # Generate a random nonce
+    nonce = secrets.token_urlsafe(16)
+    session['nonce'] = nonce
+    
     redirect_uri = url_for('auth.google_callback', _external=True)
+    
     return oauth.google.authorize_redirect(
         redirect_uri,
-        access_type='offline',
-        prompt='select_account',
-        include_granted_scopes='true'
+        nonce=nonce
     )
 
 @auth.route('/google/callback')

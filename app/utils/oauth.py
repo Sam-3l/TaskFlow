@@ -1,4 +1,4 @@
-from flask import current_app, redirect, url_for, session
+from flask import current_app, session
 from authlib.integrations.flask_client import OAuth
 from app.models import User, db
 from app import bcrypt
@@ -50,15 +50,14 @@ def handle_oauth_callback(provider):
         token = oauth.create_client(provider).authorize_access_token()
         if not token:
             return None, "Failed to fetch access token."
-            
+                    
         if provider == 'google':
-            user_info = oauth.google.parse_id_token(
-                token,
-                claims_options={
-                    'iss': {'essential': True, 'values': ['https://accounts.google.com', 'accounts.google.com']},
-                    'aud': {'essential': True, 'value': current_app.config['GOOGLE_CLIENT_ID']}
-                }
-            )
+            nonce = session.pop('nonce', None)
+
+            if not nonce:
+                return None, "Missing nonce in session."
+            
+            user_info = oauth.google.parse_id_token(token, nonce=nonce)
             email = user_info.get('email')
             first_name = user_info.get('given_name', '')
             last_name = user_info.get('family_name', '')
