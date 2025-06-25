@@ -54,7 +54,13 @@ def handle_oauth_callback(provider):
             return None, "Failed to fetch access token."
             
         if provider == 'google':
-            user_info = oauth.google.parse_id_token(token)
+            user_info = oauth.google.parse_id_token(
+                token,
+                claims_options={
+                    'iss': {'essential': True, 'values': ['https://accounts.google.com', 'accounts.google.com']},
+                    'aud': {'essential': True, 'value': current_app.config['GOOGLE_CLIENT_ID']}
+                }
+            )
             email = user_info.get('email')
             first_name = user_info.get('given_name', '')
             last_name = user_info.get('family_name', '')
