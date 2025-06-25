@@ -54,7 +54,7 @@ def create_app():
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com "
             "https://apis.google.com https://www.google.com https://www.gstatic.com "
-            "https://taskflow-static.s3.amazonaws.com; "
+            "https://taskflow-static.s3.amazonaws.com https://cdn.plot.ly; "
             "style-src 'self' 'unsafe-inline' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
             "https://taskflow-static.s3.amazonaws.com; "

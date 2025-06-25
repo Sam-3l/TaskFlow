@@ -86,6 +86,11 @@
                     </li>
                 </ul>
             </div>
+
+            <!-- Smart Queue Button -->
+            <button id="smartQueueBtn" class="btn btn-primary">
+                <i class="fas fa-magic me-1"></i> Smart Queue
+            </button>
         </div>
     </div>
 
@@ -620,6 +625,15 @@
     .dropdown{
         z-index: 100;
     }
+
+    /* Smart Queue Modal */
+    #smartQueueModal .list-group-item {
+        transition: transform 0.2s;
+    }
+    #smartQueueModal .list-group-item:hover {
+        transform: translateX(5px);
+        background-color: #f8f9fa;
+    }
 </style>
 
 <a href="/dashboard/tasks/new" class="btn btn-primary btn-lg floating-action-button shadow">
@@ -792,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Your existing flash function
+// Flash function
 function flash() {
     const flashMessage = document.getElementById('flash-message');
     if (flashMessage) {
@@ -817,6 +831,74 @@ function flash() {
             }, 300);
         }, 5000);
     }
+}
+
+// Smart Queue Handler
+document.getElementById('smartQueueBtn').addEventListener('click', async () => {
+    // Show loading state
+    const btn = document.getElementById('smartQueueBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Optimizing...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/tasks/generate_smart_queue', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Show results in a modal
+            const modalHtml = `
+                <div class="modal fade" id="smartQueueModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Your Smart Task Queue</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-success mb-3">${data.summary}</p>
+                                <ol class="list-group">
+                                    ${data.task_order.map(id => `
+                                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                                            <span>Task #${id}</span>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="focusTask(${id})">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </button>
+                                        </li>
+                                    `).join('')}
+                                </ol>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Apply Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Inject and show modal
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('smartQueueModal'));
+            modal.show();
+        } else {
+            alert('Failed: ' + data.error);
+        }
+    } catch (error) {
+        alert('Network error');
+    } finally {
+        btn.innerHTML = '<i class="fas fa-magic me-1"></i> Smart Queue';
+        btn.disabled = false;
+    }
+});
+
+// Helper to focus a task
+function focusTask(id) {
+    document.querySelector(`[data-task-id="${id}"]`).scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+    });
 }
 </script>
 {% endblock %}

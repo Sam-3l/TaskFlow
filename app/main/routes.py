@@ -1886,7 +1886,7 @@ def create_task():
 
 # Hugging Face Inference API configuration
 # Configuration
-HUGGINGFACE_ROUTER_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
+HUGGINGFACE_ROUTER_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
 def generate_ai_subtasks(task):
@@ -2041,6 +2041,78 @@ def add_subtasks(task_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+    
+def generate_task_priority_analysis(tasks):
+    """Use Mistral to analyze/sort tasks based on priority, deadline, and context."""
+    # Format task data for the prompt
+    tasks_text = "\n".join(
+        f"- ID: {task.id} | Title: {task.title} | Priority: {task.priority} | "
+        f"Deadline: {task.deadline.strftime('%Y-%m-%d') if task.deadline else 'None'} | "
+        f"Description: {task.description[:100] if task.description else 'None'}"
+        for task in tasks
+    )
+
+    prompt = f"""
+    [INST] <<SYS>>
+    You are a productivity assistant. Analyze these tasks and return them in OPTIMAL EXECUTION ORDER (most urgent/important first).
+    Return STRICTLY as JSON with two keys: 
+    - "task_order": array of task IDs (e.g., [1, 3, 2])
+    - "summary": 1-sentence explanation (e.g., "Start with Task X because...")
+    <</SYS>>
+
+    Tasks:
+    {tasks_text}[/INST]"""
+
+    payload = {
+        "model": "mistralai/mistral-7b-instruct",
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.2,
+        "max_tokens": 300
+    }
+
+    headers = {
+        "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.post(
+            HUGGINGFACE_ROUTER_URL,
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+        response.raise_for_status()
+        
+        # Safely parse JSON
+        content = response.json()["choices"][0]["message"]["content"]
+        result = json.loads(content)
+        
+        # Validate required fields
+        if not isinstance(result.get("task_order"), list) or not isinstance(result.get("summary"), str):
+            raise ValueError("Invalid response format")
+            
+        return result
+        
+    except (json.JSONDecodeError, KeyError, ValueError) as e:
+        print(f"AI Parse Error: {e}\nRaw Response: {content}")
+        raise ValueError("AI returned an invalid format. Please try again.")
+    except Exception as e:
+        raise ValueError(f"Generation failed: {str(e)}")
+
+@main.route('/tasks/generate_smart_queue', methods=['POST'])
+def generate_smart_queue():
+    tasks = Task.query.filter(Task.assigned_users.any(id=current_user.id)).all()
+    try:
+        result = generate_task_priority_analysis(tasks)
+        return jsonify({
+            'success': True,
+            'task_order': result["task_order"],
+            'summary': result["summary"]
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 @main.route("/dashboard/tasks/<int:task_id>")
 @login_required
