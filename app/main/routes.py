@@ -26,7 +26,7 @@ from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membershi
 from app.forms import CreateTask, CreateProject
 from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications, add_notification
 from app.utils.s3_upload import upload_file_to_s3
-from app.utils.ai_handler import generate_ai_subtasks
+from app.utils.ai_handler import generate_ai_subtasks, generate_task_priority_analysis
 
 from datetime import datetime, date, timedelta
 
@@ -1973,71 +1973,18 @@ def add_subtasks(task_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
-    
-def generate_task_priority_analysis(tasks):
-    """Use Mistral to analyze/sort tasks based on priority, deadline, and context."""
-    # Format task data for the prompt
-    tasks_text = "\n".join(
-        f"- ID: {task.id} | Title: {task.title} | Priority: {task.priority} | "
-        f"Deadline: {task.deadline.strftime('%Y-%m-%d') if task.deadline else 'None'} | "
-        f"Description: {task.description[:100] if task.description else 'None'}"
-        for task in tasks
-    )
-
-    prompt = f"""
-    [INST] <<SYS>>
-    You are a productivity assistant. Analyze these tasks and return them in OPTIMAL EXECUTION ORDER (most urgent/important first).
-    Return STRICTLY as JSON with two keys: 
-    - "task_order": array of task IDs (e.g., [1, 3, 2])
-    - "summary": 1-sentence explanation (e.g., "Start with Task X because...")
-    <</SYS>>
-
-    Tasks:
-    {tasks_text}[/INST]"""
-
-    payload = {
-        "model": "mistralai/mistral-7b-instruct",
-        "messages": [{"role": "user", "content": prompt}],
-        "response_format": {"type": "json_object"},
-        "temperature": 0.2,
-        "max_tokens": 300
-    }
-
-    headers = {
-        "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    try:
-        response = requests.post(
-            HUGGINGFACE_ROUTER_URL,
-            headers=headers,
-            json=payload,
-            timeout=30
-        )
-        response.raise_for_status()
-        
-        # Safely parse JSON
-        content = response.json()["choices"][0]["message"]["content"]
-        result = json.loads(content)
-        
-        # Validate required fields
-        if not isinstance(result.get("task_order"), list) or not isinstance(result.get("summary"), str):
-            raise ValueError("Invalid response format")
-            
-        return result
-        
-    except (json.JSONDecodeError, KeyError, ValueError) as e:
-        print(f"AI Parse Error: {e}\nRaw Response: {content}")
-        raise ValueError("AI returned an invalid format. Please try again.")
-    except Exception as e:
-        raise ValueError(f"Generation failed: {str(e)}")
 
 @main.route('/tasks/generate_smart_queue', methods=['POST'])
 def generate_smart_queue():
     tasks = Task.query.filter(Task.assigned_users.any(id=current_user.id)).all()
+
+    # Filter out completed tasks
+    active_tasks = [task for task in tasks if task.status.lower() != 'completed']
+    if not active_tasks:
+        return jsonify({'success': False, 'message': 'No active tasks found'}), 400
+    
     try:
-        result = generate_task_priority_analysis(tasks)
+        result = generate_task_priority_analysis(active_tasks)
         return jsonify({
             'success': True,
             'task_order': result["task_order"],

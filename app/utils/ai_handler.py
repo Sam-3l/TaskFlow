@@ -67,6 +67,22 @@ def query_gemini(prompt: str, system_instruction: str = None) -> dict:
         'error': "AI assistant is temporarily busy or unavailable. Please try again in a little while."
     }
 
+def clean_json_code_block(raw_text: str) -> str:
+    """
+    Cleans markdown-style code block formatting from AI responses like:
+    ```json
+    { ... }
+    ```
+    """
+    if raw_text.strip().startswith("```"):
+        blocks = raw_text.strip().split('```')
+        for block in blocks:
+            block = block.strip()
+            if block.startswith("json"):
+                block = block[4:].strip()  # Remove 'json' prefix
+            if block.startswith('{') and block.endswith('}'):
+                return block
+    return raw_text.strip()
 
 def generate_ai_subtasks(task):
     """
@@ -123,3 +139,57 @@ def generate_ai_subtasks(task):
                 return matches[:7]  # Max 7 subtasks
 
             raise ValueError("Could not parse subtasks from AI response")
+
+def generate_task_priority_analysis(tasks):
+    """
+    Use Gemini to analyze and sort tasks based on priority, deadlines, and descriptions.
+    Returns a JSON with task execution order and a smart summary.
+    """
+
+    tasks_text = "\n".join(
+        f"- ID: {task.id} | Title: {task.title} | Priority: {task.priority} | "
+        f"Deadline: {task.deadline.strftime('%Y-%m-%d') if task.deadline else 'None'} | "
+        f"Description: {task.description[:100] if task.description else 'None'}"
+        for task in tasks
+    )
+
+    prompt = f"""
+    You are an expert productivity consultant helping users optimize their workflow.
+
+    Analyze the following list of tasks and return them in the BEST EXECUTION ORDER based on:
+    - Priority (High, Medium, Low)
+    - Deadline urgency
+    - Task complexity inferred from the description
+
+    Return STRICTLY in JSON format with:
+    - "task_order": an array of task IDs sorted from most urgent/important to least (e.g., [3, 1, 4, 2])
+    - "summary": a SINGLE impressive sentence summarizing your reasoning (e.g., "Start with Task 3 <don't refer to the ID though> since it's high priority with an urgent deadline, then...")
+
+    Do NOT include any extra text, notes, or formatting outside the JSON.
+
+    Tasks:
+    {tasks_text}
+    """
+
+    result = query_gemini(prompt)
+
+    if not result['success']:
+        raise ValueError(f"AI generation failed: {result['error']}")
+
+    content = clean_json_code_block(result['response'].strip())
+
+    try:
+        response_data = json.loads(content)
+
+        if not (
+            isinstance(response_data.get("task_order"), list)
+            and isinstance(response_data.get("summary"), str)
+        ):
+            raise ValueError("Invalid response format from AI")
+
+        return response_data
+
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing error: {e}")
+        print(f"Raw AI response: {content}")
+        raise ValueError("Could not parse AI response into JSON format")
