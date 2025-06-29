@@ -9,12 +9,16 @@ from config import DevelopmentConfig, DeploymentConfig
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from dotenv import load_dotenv
+
 mail = Mail()
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 csrf = CSRFProtect()
 login_manager = LoginManager()
+
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)

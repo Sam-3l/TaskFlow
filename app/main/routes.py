@@ -26,6 +26,7 @@ from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membershi
 from app.forms import CreateTask, CreateProject
 from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications, add_notification
 from app.utils.s3_upload import upload_file_to_s3
+from app.utils.ai_handler import generate_ai_subtasks
 
 from datetime import datetime, date, timedelta
 
@@ -1886,77 +1887,8 @@ def create_task():
 
 # Hugging Face Inference API configuration
 # Configuration
-HUGGINGFACE_ROUTER_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+HUGGINGFACE_ROUTER_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-
-def generate_ai_subtasks(task):
-    """Generate subtasks with bulletproof JSON parsing"""
-    prompt = """
-    [INST] <<SYS>>
-    You are a helpful productivity assistant that breaks down tasks into specific, actionable subtasks.
-    Based on the following task details, suggest 3-7 specific subtasks (todos) that would help complete this task.
-    Return ONLY a JSON array formatted EXACTLY like: 
-    ["First subtask", "Second subtask", "Third subtask"]
-
-    Do NOT include any other text or explanations.
-    <</SYS>>
-
-    Task: {title}
-    Description: {description}
-    Priority: {priority}
-    Deadline: {deadline}[/INST]""".format(
-        title=task.title,
-        description=task.description or "None",
-        priority=task.priority,
-        deadline=task.deadline.strftime('%Y-%m-%d') if task.deadline else "None"
-    )
-
-    payload = {
-        "model": "mistralai/mistral-7b-instruct",
-        "messages": [{"role": "user", "content": prompt}],
-        "response_format": {"type": "json_object"},
-        "temperature": 0.3,
-        "top_p": 0.9,
-        "max_tokens": 200,
-        "repetition_penalty": 1.2
-    }
-
-    headers = {
-        "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    try:
-        response = requests.post(
-            HUGGINGFACE_ROUTER_URL,
-            headers=headers,
-            json=payload,
-            timeout=30
-        )
-        response.raise_for_status()
-        
-        # Extract content safely
-        content = response.json()["choices"][0]["message"]["content"]
-        
-        # Robust JSON extraction
-        json_str = content.split('[', 1)[-1]  # Get everything after first [
-        json_str = '[' + json_str.split(']')[0] + ']'  # Get everything until first ]
-        
-        # Validate JSON
-        subtasks = json.loads(json_str)
-        if not isinstance(subtasks, list):
-            raise ValueError("Response was not a JSON array")
-            
-        return [s.strip() for s in subtasks if isinstance(s, str) and s.strip()]
-        
-    except json.JSONDecodeError:
-        # Fallback: Try to extract array-like content
-        matches = re.findall(r'"(.*?)"', content)
-        if matches:
-            return matches[:7]  # Return first 7 quoted items
-        raise ValueError("Could not parse subtasks from response")
-    except Exception as e:
-        raise ValueError(f"Generation failed: {str(e)}")
 
 @main.route('/tasks/<int:task_id>/generate_subtasks', methods=['POST'])
 def generate_subtasks(task_id):
