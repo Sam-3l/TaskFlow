@@ -26,7 +26,7 @@ from app.models import Task, User, TaskAssignment, Todo, TaskProgress, membershi
 from app.forms import CreateTask, CreateProject
 from app.utils.notifications import get_unread_count, mark_notifications_as_read, get_user_notifications, add_notification
 from app.utils.s3_upload import upload_file_to_s3
-from app.utils.ai_handler import generate_ai_subtasks, generate_task_priority_analysis
+from app.utils.ai_handler import generate_ai_subtasks, generate_task_priority_analysis, generate_task_insight
 
 from datetime import datetime, date, timedelta
 
@@ -1987,6 +1987,27 @@ def generate_smart_queue():
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
+
+@main.route('/tasks/<int:task_id>/insights', methods=['GET'])
+@login_required
+def get_task_insights(task_id):
+    try:
+        # Fetch the task from your database
+        task = Task.query.get_or_404(task_id)
+        
+        # Generate AI insights
+        insights = generate_task_insight(task)
+        
+        return jsonify({
+            'success': True,
+            'insights': insights
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @main.route("/dashboard/tasks/<int:task_id>")
 @login_required

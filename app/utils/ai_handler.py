@@ -218,7 +218,7 @@ def generate_task_insight(task):
     if hasattr(task, 'todos') and task.todos:
         for todo in task.todos:
             status = 'completed' if todo.is_completed else 'incomplete'
-            task_text += f"- {todo.title} ({status})\n"
+            task_text += f"- {todo.content} ({status})\n"
     else:
         task_text += "- None\n"
 

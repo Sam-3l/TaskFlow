@@ -72,40 +72,6 @@
                     <button id="generate-subtasks-btn" class="btn-ai-generate">
                         <i class="fas fa-magic"></i> Generate Subtasks with AI
                     </button>
-                    
-                    <div class="ai-subtask-modal" style="display: none;">
-                        <div class="ai-modal-content glass-card">
-                            <div class="ai-modal-header">
-                                <h3><i class="fas fa-robot"></i> AI Subtask Suggestions</h3>
-                                <button class="btn-close-modal">&times;</button>
-                            </div>
-                            
-                            <div class="ai-loading-state" style="display: none;">
-                                <div class="ai-loading-spinner"></div>
-                                <p>Analyzing your task and generating smart subtasks...</p>
-                            </div>
-                            
-                            <div class="ai-results" style="display: none;">
-                                <p class="ai-prompt-used"></p>
-                                <ul class="ai-subtask-list"></ul>
-                                
-                                <div class="ai-modal-actions">
-                                    <button class="btn-ai-cancel">Cancel</button>
-                                    <button class="btn-ai-confirm">
-                                        <i class="fas fa-check"></i> Add Selected Subtasks
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="ai-error-state" style="display: none;">
-                                <div class="ai-error-icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <p class="ai-error-message"></p>
-                                <button class="btn-ai-retry">Try Again</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 
                 <ul class="todo-list">
@@ -300,6 +266,166 @@
                 <h3 class="panel-title"><i class="fas fa-calendar-alt"></i> Weekly Activity</h3>
                 <div id="activity-heatmap" class="chart-container"></div>
                 <p class="chart-caption">14-day activity heatmap</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Intelligence Panel -->
+    <div class="task-intelligence-panel">
+        <button id="aiInsightsBtn" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-robot me-2"></i>
+            <span>Task Intelligence</span>
+            <span class="ai-pulse-dot"></span>
+        </button>
+        
+        <!-- Insights Modal -->
+        <div class="modal fade" id="aiInsightsModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0">
+                    <!-- Loading State -->
+                    <div id="aiInsightsLoading" class="modal-body text-center py-5">
+                        <div class="ai-brain-animation mb-4">
+                            <div class="ai-brain"></div>
+                            <div class="ai-connections">
+                                <span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <h3 class="h4 mb-3">Analyzing {{ task['title'] }}</h3>
+                        <p class="text-muted">Evaluating priority, deadlines, and context to provide optimal recommendations...</p>
+                        <div class="progress mt-4" style="height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; background-color: #6e8efb;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Results State -->
+                    <div id="aiInsightsResults" class="d-none">
+                        <div class="modal-header border-0 position-relative">
+                            <div>
+                                <h2 class="modal-title h4 mb-1">
+                                    <i class="fas fa-brain text-primary me-2"></i>
+                                    Task Intelligence Report
+                                </h2>
+                                <p class="text-muted small mb-0" id="insightTaskTitle"></p>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-header-pattern"></div>
+                        </div>
+                        <div class="modal-body pt-0">
+                            <div class="insights-container">
+                                <!-- Time Estimate Card -->
+                                <div class="insight-card time-estimate">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h3 class="h5 mb-2">Time Investment</h3>
+                                        <div class="insight-value" id="timeEstimateValue"></div>
+                                        <p class="insight-description small text-muted mb-0">
+                                            Based on similar tasks and complexity analysis
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Urgency Card -->
+                                <div class="insight-card urgency">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h3 class="h5 mb-2">Urgency Level</h3>
+                                        <div class="insight-value" id="urgencyValue"></div>
+                                        <p class="insight-description small text-muted mb-0">
+                                            Calculated from deadline, priority, and dependencies
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Next Step Card -->
+                                <div class="insight-card next-step">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h3 class="h5 mb-2">Recommended Next Step</h3>
+                                        <div class="insight-value" id="nextStepValue"></div>
+                                        <p class="insight-description small text-muted mb-0">
+                                            AI-suggested immediate action for maximum progress
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Risks Card -->
+                                <div class="insight-card risks">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h3 class="h5 mb-2">Potential Risks</h3>
+                                        <ul class="insight-value list-unstyled mb-2" id="risksValue"></ul>
+                                        <p class="insight-description small text-muted mb-0">
+                                            Factors that might impact successful completion
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Suggestion Card -->
+                                <div class="insight-card suggestion">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h3 class="h5 mb-2">Efficiency Tip</h3>
+                                        <div class="insight-value" id="suggestionValue"></div>
+                                        <p class="insight-description small text-muted mb-0">
+                                            Expert advice to complete this task smarter
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ai-subtask-modal-wrapper">
+    <div class="ai-subtask-modal-backdrop"></div>
+    <div class="ai-subtask-modal">
+        <div class="ai-modal-content glass-card">
+            <div class="ai-modal-header">
+                <h3><i class="fas fa-robot"></i> AI Subtask Suggestions</h3>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+            
+            <div class="ai-loading-state" style="display: none;">
+                <div class="ai-loading-spinner"></div>
+                <p>Analyzing your task and generating smart subtasks...</p>
+            </div>
+            
+            <div class="ai-results" style="display: none;">
+                <p class="ai-prompt-used"></p>
+                <ul class="ai-subtask-list"></ul>
+                
+                <div class="ai-modal-actions">
+                    <button class="btn-ai-cancel">Cancel</button>
+                    <button class="btn-ai-confirm">
+                        <i class="fas fa-check"></i> Add Selected Subtasks
+                    </button>
+                </div>
+            </div>
+            
+            <div class="ai-error-state" style="display: none;">
+                <div class="ai-error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p class="ai-error-message"></p>
+                <button class="btn-ai-retry">Try Again</button>
             </div>
         </div>
     </div>
@@ -712,7 +838,7 @@ function updateTaskTitle(title) {
 // AI Subtask Generation
 document.addEventListener('DOMContentLoaded', function() {
     const generateBtn = document.getElementById('generate-subtasks-btn');
-    const modal = document.querySelector('.ai-subtask-modal');
+    const modal = document.querySelector('.ai-subtask-modal-wrapper');
     const closeBtn = document.querySelector('.btn-close-modal');
     const cancelBtn = document.querySelector('.btn-ai-cancel');
     const confirmBtn = document.querySelector('.btn-ai-confirm');
@@ -1185,6 +1311,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 'X-CSRFToken': csrfToken  
             }
         });
+    }
+});
+
+// Task Intelligence Handler
+document.getElementById('aiInsightsBtn').addEventListener('click', async function() {
+    const taskId = window.location.pathname.split('/').pop();
+    const modal = new bootstrap.Modal(document.getElementById('aiInsightsModal'));
+    
+    // Show modal and loading state
+    modal.show();
+    document.getElementById('aiInsightsLoading').classList.remove('d-none');
+    document.getElementById('aiInsightsResults').classList.add('d-none');
+    
+    try {
+        // Fetch AI insights
+        const response = await fetch(`/tasks/${taskId}/insights`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Set task title
+            const taskTitle = document.querySelector('.task-title')?.textContent || 'Current Task';
+            document.getElementById('insightTaskTitle').textContent = taskTitle;
+            
+            // Populate insights
+            document.getElementById('timeEstimateValue').textContent = 
+                data.insights.estimated_time || 'Not estimated';
+                
+            const urgencyBadgeClass = `urgency-${data.insights.urgency.toLowerCase()}`;
+            document.getElementById('urgencyValue').innerHTML = `
+                <span class="urgency-badge ${urgencyBadgeClass}">
+                    ${data.insights.urgency}
+                </span>
+            `;
+            
+            document.getElementById('nextStepValue').textContent = 
+                data.insights.next_step || 'No specific recommendation';
+                
+            const risksList = document.getElementById('risksValue');
+            if (data.insights.risks && data.insights.risks.length > 0) {
+                risksList.innerHTML = data.insights.risks.map(risk => 
+                    `<li><i class="fas fa-circle text-danger me-2" style="font-size: 6px;"></i>${risk}</li>`
+                ).join('');
+            } else {
+                risksList.innerHTML = '<li>No significant risks identified</li>';
+            }
+            
+            document.getElementById('suggestionValue').textContent = 
+                data.insights.suggestion || 'No specific suggestions available';
+            
+            // Show results
+            document.getElementById('aiInsightsLoading').classList.add('d-none');
+            document.getElementById('aiInsightsResults').classList.remove('d-none');
+        } else {
+            throw new Error(data.error || 'Failed to generate insights');
+        }
+    } catch (error) {
+        console.error('Task Insights Error:', error);
+        
+        // Show error in modal
+        document.getElementById('aiInsightsLoading').classList.add('d-none');
+        document.getElementById('aiInsightsResults').classList.remove('d-none');
+        
+        document.getElementById('insightTaskTitle').textContent = 'Error';
+        document.getElementById('timeEstimateValue').textContent = 'N/A';
+        document.getElementById('urgencyValue').innerHTML = '<span class="text-muted">Error</span>';
+        document.getElementById('nextStepValue').textContent = 'Could not generate insights';
+        document.getElementById('risksValue').innerHTML = '<li>Error loading risk assessment</li>';
+        document.getElementById('suggestionValue').textContent = 'Please try again later';
     }
 });
 </script>
@@ -2026,6 +2220,26 @@ document.addEventListener('DOMContentLoaded', () => {
         transform: translateY(0);
     }
 
+    .ai-subtask-modal-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1050; /* Higher than other elements */
+        display: none; /* Hidden by default */
+      }
+      
+      .ai-subtask-modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1049;
+      }
+      
     .ai-subtask-modal {
         position: fixed;
         top: 0;
@@ -2035,8 +2249,9 @@ document.addEventListener('DOMContentLoaded', () => {
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 100;
+        z-index: 1050;
     }
+      
 
     .ai-modal-content {
         width: 90%;
@@ -2078,7 +2293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     .btn-close-modal:hover {
-        color: #fff;
+        color: #000;
     }
 
     .ai-loading-state {
@@ -2217,6 +2432,337 @@ document.addEventListener('DOMContentLoaded', () => {
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+    /* Task Intelligence Styles */
+    .task-intelligence-panel {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+    }
+
+    #aiInsightsBtn {
+        background: linear-gradient(135deg, #6e8efb, #a777e3);
+        border: none;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        box-shadow: 0 4px 20px rgba(106, 118, 251, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #aiInsightsBtn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(106, 118, 251, 0.4);
+    }
+
+    #aiInsightsBtn:active {
+        transform: translateY(1px);
+    }
+
+    .ai-pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #4cff8f;
+        border-radius: 50%;
+        margin-left: 10px;
+        animation: pulse 2s infinite;
+        box-shadow: 0 0 0 0 rgba(76, 255, 143, 0.7);
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(76, 255, 143, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(76, 255, 143, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(76, 255, 143, 0);
+        }
+    }
+
+    /* AI Brain Animation */
+    .ai-brain-animation {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1.5rem;
+    }
+
+    .ai-brain {
+        width: 60px;
+        height: 60px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236e8efb'%3E%3Cpath d='M12 3a9 9 0 0 0-9 9c0 1.47.38 2.85 1.04 4.06l-1.52 1.52a1 1 0 0 0 0 1.42l1.06 1.06a1 1 0 0 0 1.42 0l1.52-1.52A9 9 0 0 0 12 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9zm0 16a7 7 0 0 1-7-7c0-3.86 3.14-7 7-7s7 3.14 7 7a7 7 0 0 1-7 7z'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: brainPulse 2s infinite ease-in-out;
+    }
+
+    .ai-connections {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .ai-connections span {
+        position: absolute;
+        background-color: #6e8efb;
+        border-radius: 2px;
+        animation: connectionPulse 2s infinite ease-in-out;
+    }
+
+    .ai-connections span:nth-child(1) {
+        width: 2px;
+        height: 20px;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        animation-delay: 0.1s;
+    }
+
+    .ai-connections span:nth-child(2) {
+        width: 20px;
+        height: 2px;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        animation-delay: 0.2s;
+    }
+
+    .ai-connections span:nth-child(3) {
+        width: 2px;
+        height: 20px;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        animation-delay: 0.3s;
+    }
+
+    .ai-connections span:nth-child(4) {
+        width: 20px;
+        height: 2px;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        animation-delay: 0.4s;
+    }
+
+    .ai-connections span:nth-child(5) {
+        width: 15px;
+        height: 2px;
+        top: 20%;
+        left: 20%;
+        transform: rotate(45deg);
+        animation-delay: 0.5s;
+    }
+
+    .ai-connections span:nth-child(6) {
+        width: 15px;
+        height: 2px;
+        top: 20%;
+        right: 20%;
+        transform: rotate(-45deg);
+        animation-delay: 0.6s;
+    }
+
+    .ai-connections span:nth-child(7) {
+        width: 15px;
+        height: 2px;
+        bottom: 20%;
+        left: 20%;
+        transform: rotate(-45deg);
+        animation-delay: 0.7s;
+    }
+
+    .ai-connections span:nth-child(8) {
+        width: 15px;
+        height: 2px;
+        bottom: 20%;
+        right: 20%;
+        transform: rotate(45deg);
+        animation-delay: 0.8s;
+    }
+
+    @keyframes brainPulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    @keyframes connectionPulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+    }
+
+    /* Insights Modal */
+    #aiInsightsModal .modal-content {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(106, 118, 251, 0.2);
+    }
+
+    .modal-header-pattern {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 120px;
+        height: 100%;
+        background-image: radial-gradient(circle at 70% 50%, rgba(167, 119, 227, 0.1) 0%, transparent 60%);
+        z-index: -1;
+    }
+
+    .insights-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .insight-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        border-left: 4px solid;
+    }
+
+    .insight-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .insight-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        font-size: 1.25rem;
+    }
+
+    .insight-content {
+        flex-grow: 1;
+    }
+
+    .insight-value {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    /* Card-specific styles */
+    .insight-card.time-estimate {
+        border-left-color: #6e8efb;
+    }
+    .insight-card.time-estimate .insight-icon {
+        background-color: rgba(110, 142, 251, 0.1);
+        color: #6e8efb;
+    }
+
+    .insight-card.urgency {
+        border-left-color: #fd7e14;
+    }
+    .insight-card.urgency .insight-icon {
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+
+    .insight-card.next-step {
+        border-left-color: #4cff8f;
+    }
+    .insight-card.next-step .insight-icon {
+        background-color: rgba(76, 255, 143, 0.1);
+        color: #4cff8f;
+    }
+
+    .insight-card.risks {
+        border-left-color: #dc3545;
+    }
+    .insight-card.risks .insight-icon {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .insight-card.suggestion {
+        border-left-color: #a777e3;
+    }
+    .insight-card.suggestion .insight-icon {
+        background-color: rgba(167, 119, 227, 0.1);
+        color: #a777e3;
+    }
+
+    /* Urgency badges */
+    .urgency-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .urgency-high {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .urgency-medium {
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+
+    .urgency-low {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .insights-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .task-intelligence-panel {
+            bottom: 1rem;
+            right: 1rem;
+        }
+    }
+
+    /* Add these styles to your existing CSS */
+    #aiInsightsModal {
+        z-index: 99999 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 9999 !important;
+    }
+
+    /* Ensure the button stays above everything */
+    .task-intelligence-panel {
+        z-index: 10000;
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+    }
+
+    /* Make sure no parent elements are creating stacking contexts */
+    body.modal-open {
+        overflow: auto !important;
+        padding-right: 0 !important;
     }
 </style>
 
