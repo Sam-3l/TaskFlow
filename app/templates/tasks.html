@@ -539,12 +539,17 @@
     }
     
     .kanban-task-title {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #212529;
-        margin-bottom: 0.5rem;
-        line-height: 1.4;
+        cursor: pointer;
+        color: #333;
+        transition: color 0.2s ease, text-decoration 0.2s ease;
+        z-index: 20;
+        text-decoration: none;
     }
+    
+    .kanban-task-title:hover {
+        color: #0d6efd; /* Bootstrap primary blue */
+        text-decoration: underline;
+    }    
     
     .kanban-task-description {
         font-size: 0.8125rem;
