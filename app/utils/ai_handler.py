@@ -193,3 +193,84 @@ def generate_task_priority_analysis(tasks):
         print(f"JSON parsing error: {e}")
         print(f"Raw AI response: {content}")
         raise ValueError("Could not parse AI response into JSON format")
+
+def generate_task_insight(task):
+    """
+    Generates AI-powered task insights including:
+    - Estimated time
+    - Urgency
+    - Next step
+    - Risks/blockers
+    - Smart suggestion
+    """
+
+    # Prepare the input for the AI
+    task_text = (
+        f"Title: {task.title}\n"
+        f"Description: {task.description or 'None'}\n"
+        f"Priority: {task.priority}\n"
+        f"Deadline: {task.deadline.strftime('%Y-%m-%d') if task.deadline else 'None'}\n"
+        f"Status: {task.status}\n"
+        f"Subtasks:\n"
+    )
+
+    # Add subtasks if available
+    if hasattr(task, 'todos') and task.todos:
+        for todo in task.todos:
+            status = 'completed' if todo.is_completed else 'incomplete'
+            task_text += f"- {todo.title} ({status})\n"
+    else:
+        task_text += "- None\n"
+
+    # AI Prompt
+    prompt = f"""
+    You are an expert productivity consultant.
+
+    Given the task details below, analyze and return ONLY the following insights in STRICT JSON format:
+    - "estimated_time": Estimated time to complete (e.g., "2-3 hours")
+    - "urgency": High, Medium, or Low (based on priority, deadline, and todo progress)
+    - "next_step": The most logical immediate action the user should take
+    - "risks": List of potential risks or blockers (e.g., tight deadline, many incomplete subtasks, missing info)
+    - "suggestion": A smart tip or advice to help complete the task more efficiently
+
+    Do NOT include any other text or explanation outside the JSON.
+
+    Example format:
+    {{
+    "estimated_time": "...",
+    "urgency": "...",
+    "next_step": "...",
+    "risks": [...],
+    "suggestion": "..."
+    }}
+
+    Task Details:
+    {task_text}
+    """
+
+    # Query Gemini
+    result = query_gemini(prompt)
+
+    if not result["success"]:
+        raise ValueError(f"AI generation failed: {result['error']}")
+
+    content = clean_json_code_block(result["response"].strip())
+
+    # Parse the JSON response
+    try:
+        response_data = json.loads(content)
+
+        # Validate expected fields
+        expected_keys = {"estimated_time", "urgency", "next_step", "risks", "suggestion"}
+        if not expected_keys.issubset(response_data.keys()):
+            raise ValueError(f"Missing expected keys in AI response: {response_data}")
+
+        if not isinstance(response_data["risks"], list):
+            raise ValueError("Risks should be a list")
+
+        return response_data
+
+    except (json.JSONDecodeError, ValueError) as e:
+        print(f"AI Parsing Error: {e}")
+        print(f"Raw AI Response: {content}")
+        raise ValueError("Could not parse AI response into JSON format")

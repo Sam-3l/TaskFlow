@@ -193,7 +193,7 @@ def update_personal_task_status(task_id):
     task = Task.query.get_or_404(task_id)
     
     # Verify user owns the task or is assigned to it
-    if task.user_id != current_user.id and not any(u.id == current_user.id for u in task.assigned_users):
+    if not any(u.id == current_user.id for u in task.assigned_users):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
     new_status = request.json.get('status')
@@ -1884,11 +1884,6 @@ def create_task():
         flash("Task created successfully", "success")
         return redirect(url_for("main.task", task_id=task.id))
     return render_template("new_task.html", user=current_user, active_page="tasks", form=form)
-
-# Hugging Face Inference API configuration
-# Configuration
-HUGGINGFACE_ROUTER_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions"
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
 @main.route('/tasks/<int:task_id>/generate_subtasks', methods=['POST'])
 def generate_subtasks(task_id):

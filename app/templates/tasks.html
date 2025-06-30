@@ -88,8 +88,11 @@
             </div>
 
             <!-- Smart Queue Button -->
-            <button id="smartQueueBtn" class="btn btn-primary">
-                <i class="fas fa-magic me-1"></i> Smart Queue
+            <button id="smartQueueBtn" class="btn btn-primary px-4 position-relative" style="background: linear-gradient(135deg, #6e8efb, #a777e3); border: none;">
+                <i class="fas fa-stream me-2"></i> Smart Queue
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="ai-recommendation-badge">
+                    AI
+                </span>
             </button>
         </div>
     </div>
@@ -197,6 +200,11 @@
             </div>
         {% endif %}
     </div>
+    <div id="kanban-sort-notice" class="alert alert-info mt-2 d-none">
+        <i class="fas fa-info-circle me-2"></i>
+        Kanban tasks are displayed in their current status columns and aren't affected by Smart Queue sorting.
+        Switch to <a href="#" id="switch-to-list-link" onclick="setView('list')">List View</a> to see sorted tasks.
+    </div>
 
     <!-- List View (Hidden by default) -->
     <div id="list-view" class="d-none">
@@ -204,6 +212,8 @@
             {% if tasks %}
                 {% for task in tasks %}
                     <div class="col-12 col-md-6 col-xl-4 task-card-container"
+                        data-id="{{ task.id }}"
+                        data-title="{{ task.title }}"
                         data-priority="{{ task.priority }}"
                         data-deadline="{{ task.deadline.isoformat() if task.deadline else '' }}"
                         data-status="{{ task.status }}"
@@ -282,6 +292,61 @@
                     </div>
                 </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Smart Queue Modal Template -->
+    <div class="modal fade" id="smartQueueModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0">
+                <!-- Loading State -->
+                <div id="smartQueueLoading" class="modal-body text-center py-5 d-none">
+                    <div class="ai-processing-animation mb-4">
+                        <div class="ai-spinner"></div>
+                        <div class="ai-particles">
+                            <span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
+                    <h3 class="h4 mb-3">Optimizing Your Workflow</h3>
+                    <p class="text-muted">Analyzing your tasks based on deadlines, priorities, and context...</p>
+                    <div class="progress mt-4" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <!-- Results State -->
+                <div id="smartQueueResults" class="d-none">
+                    <div class="modal-header border-0 pb-0">
+                        <div>
+                            <h2 class="modal-title h4 mb-2">✨ Your Optimized Task Order</h2>
+                            <p id="aiSummaryText" class="text-muted mb-0"></p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-3">
+                        <div class="smart-queue-container">
+                            <div class="queue-header d-flex justify-content-between mb-3">
+                                <span class="text-muted small">RECOMMENDED PRIORITY ORDER</span>
+                                <span class="text-muted small">DEADLINE</span>
+                            </div>
+                            <div id="smartQueueList" class="list-group list-group-flush mb-3"></div>
+                            
+                            <div class="completed-tasks-section mt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">COMPLETED TASKS (Not prioritized)</span>
+                                </div>
+                                <div id="completedTasksList" class="list-group list-group-flush"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button id="applyQueueBtn" type="button" class="btn btn-primary px-4">
+                            <i class="fas fa-check-circle me-2"></i>Apply This Order
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -627,12 +692,232 @@
     }
 
     /* Smart Queue Modal */
-    #smartQueueModal .list-group-item {
-        transition: transform 0.2s;
+    #smartQueueModal .modal-content {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     }
-    #smartQueueModal .list-group-item:hover {
+    
+    #smartQueueModal .modal-header {
+        padding: 1.5rem 1.5rem 0;
+    }
+    
+    #smartQueueModal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    /* AI Processing Animation */
+    .ai-processing-animation {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .ai-spinner {
+        width: 100%;
+        height: 100%;
+        border: 3px solid rgba(167, 119, 227, 0.2);
+        border-top-color: #a777e3;
+        border-radius: 50%;
+        animation: spin 1.5s linear infinite;
+    }
+    
+    .ai-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .ai-particles span {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #6e8efb;
+        border-radius: 50%;
+        animation: float 2s infinite ease-in-out;
+    }
+    
+    .ai-particles span:nth-child(1) {
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation-delay: 0s;
+    }
+    
+    .ai-particles span:nth-child(2) {
+        top: 70%;
+        left: 15%;
+        animation-delay: 0.4s;
+    }
+    
+    .ai-particles span:nth-child(3) {
+        top: 70%;
+        right: 15%;
+        animation-delay: 0.8s;
+    }
+    
+    .ai-particles span:nth-child(4) {
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation-delay: 1.2s;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); opacity: 1; }
+        50% { transform: translateY(-15px); opacity: 0.5; }
+    }
+    
+    /* Task Queue Items */
+    .smart-queue-container .list-group-item {
+        padding: 1rem 1.25rem;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .smart-queue-container .list-group-item:hover {
         transform: translateX(5px);
         background-color: #f8f9fa;
+    }
+    
+    .smart-queue-container .list-group-item.critical {
+        border-left-color: #dc3545;
+    }
+    
+    .smart-queue-container .list-group-item.high-priority {
+        border-left-color: #fd7e14;
+    }
+    
+    .smart-queue-container .list-group-item.medium-priority {
+        border-left-color: #0dcaf0;
+    }
+    
+    .smart-queue-container .list-group-item.low-priority {
+        border-left-color: #6c757d;
+    }
+    
+    .smart-queue-container .list-group-item.optional {
+        border-left-color: #adb5bd;
+    }
+    
+    .queue-item-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .queue-item-title {
+        font-weight: 500;
+        margin-right: 1rem;
+    }
+    
+    .queue-item-meta {
+        display: flex;
+        align-items: center;
+    }
+    
+    .queue-item-priority {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        margin-right: 1rem;
+        text-transform: capitalize;
+    }
+    
+    .queue-item-deadline {
+        font-size: 0.8125rem;
+        color: #6c757d;
+        min-width: 80px;
+        text-align: right;
+    }
+    
+    .completed-tasks-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .completed-tasks-section .list-group-item {
+        background: transparent;
+        padding: 0.75rem 0;
+        border: none;
+        color: #6c757d;
+    }
+    
+    /* Badge colors */
+    .badge-critical {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .badge-high-priority {
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+    
+    .badge-medium-priority {
+        background-color: rgba(13, 202, 240, 0.1);
+        color: #0dcaf0;
+    }
+    
+    .badge-low-priority {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .badge-optional {
+        background-color: rgba(173, 181, 189, 0.1);
+        color: #adb5bd;
+    }
+    
+    /* Apply button animation */
+    #applyQueueBtn {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #applyQueueBtn:after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -60%;
+        width: 200%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(30deg);
+        transition: all 0.3s;
+    }
+    
+    #applyQueueBtn:hover:after {
+        left: 100%;
+    }
+
+    /* Kanban Sort Notice */
+    #kanban-sort-notice {
+    border-left: 4px solid #3b7ddd;
+    background-color: rgba(13, 110, 253, 0.05);
+    border-radius: 8px;
+    }
+
+    #switch-to-list-link {
+    color: #3b7ddd;
+    font-weight: 500;
+    text-decoration: underline;
+    cursor: pointer;
+    }
+
+    #switch-to-list-link:hover {
+    color: #2c68c7;
     }
 </style>
 
@@ -641,8 +926,12 @@
 </a>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.3.1/typeahead.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    initializeSavedQueueOrder();
+
     // Initialize view from localStorage or default to kanban
     const currentView = localStorage.getItem('tasksView') || 'kanban';
     setView(currentView);
@@ -688,13 +977,33 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('list-view').classList.add('d-none');
             document.getElementById('view-kanban').classList.add('active');
             document.getElementById('view-list').classList.remove('active');
+
+            // Show the kanban notice
+            document.getElementById('kanban-sort-notice').classList.remove('d-none');
+            
+            // When switching to kanban, clear the applied order visual indication
+            document.querySelectorAll('.task-card-container').forEach(el => {
+                el.style.order = '';
+            });
         } else {
             document.getElementById('kanban-view').classList.add('d-none');
             document.getElementById('list-view').classList.remove('d-none');
             document.getElementById('view-kanban').classList.remove('active');
             document.getElementById('view-list').classList.add('active');
+
+            // Hide the kanban notice
+            document.getElementById('kanban-sort-notice').classList.add('d-none');
+            
+            // When switching to list view, reapply any saved order
+            initializeSavedQueueOrder();
         }
     }
+
+    // Add click handler for the switch link
+    document.getElementById('switch-to-list-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        setView('list');
+    });
 
     function initializeKanban() {
         const columns = document.querySelectorAll('.kanban-column-body');
@@ -834,71 +1143,240 @@ function flash() {
 }
 
 // Smart Queue Handler
-document.getElementById('smartQueueBtn').addEventListener('click', async () => {
+document.getElementById('smartQueueBtn').addEventListener('click', async function() {
+    const btn = this;
+    const originalBtnHTML = btn.innerHTML;
+    
+    // Create and show modal
+    const modal = new bootstrap.Modal(document.getElementById('smartQueueModal'));
+    modal.show();
+    
     // Show loading state
-    const btn = document.getElementById('smartQueueBtn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Optimizing...';
-    btn.disabled = true;
-
+    document.getElementById('smartQueueLoading').classList.remove('d-none');
+    document.getElementById('smartQueueResults').classList.add('d-none');
+    
     try {
+        // Fetch AI recommendations
         const response = await fetch('/tasks/generate_smart_queue', {
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
         });
         const data = await response.json();
-
+        
         if (data.success) {
-            // Show results in a modal
-            const modalHtml = `
-                <div class="modal fade" id="smartQueueModal" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Your Smart Task Queue</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p class="text-success mb-3">${data.summary}</p>
-                                <ol class="list-group">
-                                    ${data.task_order.map(id => `
-                                        <li class="list-group-item d-flex justify-content-between align-items-start">
-                                            <span>Task #${id}</span>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="focusTask(${id})">
-                                                <i class="fas fa-arrow-right"></i>
-                                            </button>
-                                        </li>
-                                    `).join('')}
-                                </ol>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Apply Order</button>
+            // Hide loading, show results
+            document.getElementById('smartQueueLoading').classList.add('d-none');
+            document.getElementById('smartQueueResults').classList.remove('d-none');
+            
+            // Set summary text
+            document.getElementById('aiSummaryText').textContent = data.summary;
+            
+            // Get all tasks from the page
+            const allTasks = {};
+            document.querySelectorAll('.task-card-container').forEach(taskEl => {
+                const taskId = taskEl.dataset.id || taskEl.id.replace('task-', '');
+                if (taskId) {
+                    allTasks[taskId] = {
+                        element: taskEl,
+                        title: taskEl.dataset.title,
+                        priority: taskEl.dataset.priority || 'medium-priority',
+                        deadline: taskEl.querySelector('.badge[class*="deadline-"]')?.textContent.trim() || '',
+                        status: taskEl.dataset.status
+                    };
+                }
+            });
+            
+            // Clear existing list
+            const queueList = document.getElementById('smartQueueList');
+            queueList.innerHTML = '';
+            
+            const completedList = document.getElementById('completedTasksList');
+            completedList.innerHTML = '';
+            
+            // Add recommended tasks
+            data.task_order.forEach(taskId => {
+                const task = allTasks[taskId];
+                if (task && task.status !== 'completed') {
+                    const priorityClass = task.priority ? task.priority.toLowerCase().replace(' ', '-') : 'medium-priority';
+                    const priorityLabel = priorityClass.replace('-', ' ');
+                    
+                    const listItem = document.createElement('div');
+                    listItem.className = `list-group-item ${priorityClass}`;
+                    listItem.innerHTML = `
+                        <div class="queue-item-content">
+                            <div class="queue-item-title">${task.title}</div>
+                            <div class="queue-item-meta">
+                                <span class="queue-item-priority badge-${priorityClass}">${priorityLabel}</span>
+                                <span class="queue-item-deadline">${task.deadline || 'No deadline'}</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            `;
+                    `;
+                    queueList.appendChild(listItem);
+                }
+            });
             
-            // Inject and show modal
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            const modal = new bootstrap.Modal(document.getElementById('smartQueueModal'));
-            modal.show();
+            // Add completed tasks at the bottom
+            Object.entries(allTasks).forEach(([taskId, task]) => {
+                if (task.status === 'completed') {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-group-item';
+                    listItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-check-circle text-success me-2"></i>${task.title}</span>
+                        </div>
+                    `;
+                    completedList.appendChild(listItem);
+                }
+            });
+            
+            // Set up apply button handler
+            document.getElementById('applyQueueBtn').onclick = function() {
+                applySmartQueueOrder(data.task_order, allTasks);
+                modal.hide();
+            };
+            
         } else {
-            alert('Failed: ' + data.error);
+            throw new Error(data.error || 'Failed to generate smart queue');
         }
     } catch (error) {
-        alert('Network error');
+        console.error('Smart Queue Error:', error);
+        // Hide loading state
+        document.getElementById('smartQueueLoading').classList.add('d-none');
+        
+        // Show error in modal
+        document.getElementById('smartQueueResults').classList.remove('d-none');
+        document.getElementById('aiSummaryText').textContent = 'Could not generate recommendations';
+        document.getElementById('smartQueueList').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${error.message}
+            </div>
+        `;
+        document.getElementById('applyQueueBtn').disabled = true;
     } finally {
-        btn.innerHTML = '<i class="fas fa-magic me-1"></i> Smart Queue';
-        btn.disabled = false;
+        btn.innerHTML = originalBtnHTML;
     }
 });
 
-// Helper to focus a task
-function focusTask(id) {
-    document.querySelector(`[data-task-id="${id}"]`).scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-    });
+// Utility: Get all tasks from the DOM
+function collectAllTasks() {
+    const tasks = {};
+            document.querySelectorAll('.task-card-container').forEach(taskEl => {
+                const taskId = taskEl.dataset.id || taskEl.id.replace('task-', '');
+                if (taskId) {
+                    tasks[taskId] = {
+                        id: taskId,
+                        element: taskEl,
+                        title: taskEl.dataset.title,
+                        priority: taskEl.dataset.priority || 'medium-priority',
+                        status: taskEl.dataset.status
+                    };
+                }
+            });
+
+    return tasks;
 }
+
+// Core: Render tasks to the DOM
+function renderTasks(taskList) {
+    const tasksContainer = document.getElementById('tasks-container');
+    if (!tasksContainer) return;
+    const fragment = document.createDocumentFragment();
+
+    taskList.forEach(task => {
+        fragment.appendChild(task.element.cloneNode(true));
+    });
+
+    tasksContainer.innerHTML = '';
+    tasksContainer.appendChild(fragment);
+}
+
+// Sorter: Sort tasks based on smart queue or fallback
+function getSortedTasks(allTasks, taskOrder = null) {
+    const activeTasks = [];
+    const completedTasks = [];
+
+    Object.values(allTasks).forEach(task => {
+        if (task.status === 'completed') {
+            completedTasks.push(task);
+        } else {
+            activeTasks.push(task);
+        }
+    });
+
+    let sortedActive = [];
+
+    if (taskOrder && Array.isArray(taskOrder) && taskOrder.length) {
+        const orderSet = new Set(taskOrder);
+
+        // Add tasks that are in the smart queue order
+        taskOrder.forEach(id => {
+            const task = allTasks[id];
+            if (task && task.status !== 'completed') {
+                sortedActive.push(task);
+            }
+        });
+
+        // Add remaining active tasks not already added
+        const addedIds = new Set(sortedActive.map(t => t.id));
+        activeTasks.forEach(task => {
+            if (!addedIds.has(task.id)) {
+                sortedActive.push(task);
+            }
+        });
+
+    } else {
+        // No smart queue order — keep the natural DOM order
+        sortedActive = activeTasks;
+    }
+
+    return [...sortedActive, ...completedTasks];
+}
+
+// Apply smart queue order
+function applySmartQueueOrder(taskOrder) {
+    const allTasks = collectAllTasks();
+
+    if (document.getElementById('list-view').classList.contains('d-none')) {
+        setView('list');
+    }
+
+    const sortedTasks = getSortedTasks(allTasks, taskOrder);
+    renderTasks(sortedTasks);
+
+    // Save to localStorage
+    localStorage.setItem('smartQueueOrder', JSON.stringify({
+        order: taskOrder,
+        appliedAt: new Date().toISOString(),
+        allTaskIds: Object.keys(allTasks)
+    }));
+}
+
+// Initialize tasks
+function initializeSavedQueueOrder() {
+    const saved = localStorage.getItem('smartQueueOrder');
+    const allTasks = collectAllTasks();
+
+    if (document.getElementById('list-view').classList.contains('d-none')) {
+        return; // Only apply in list view
+    }
+
+    if (saved) {
+        try {
+            const { order } = JSON.parse(saved);
+            const sortedTasks = getSortedTasks(allTasks, order);
+            renderTasks(sortedTasks);
+        } catch (err) {
+            console.error('Failed to parse saved smart queue order:', err);
+            const sortedTasks = getSortedTasks(allTasks);
+            renderTasks(sortedTasks);
+        }
+    } else {
+        const sortedTasks = getSortedTasks(allTasks);
+        renderTasks(sortedTasks);
+    }
+}
+
 </script>
+
 {% endblock %}
