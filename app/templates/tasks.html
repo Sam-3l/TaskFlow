@@ -1181,31 +1181,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Flash function
-function flash() {
-    const flashMessage = document.getElementById('flash-message');
-    if (flashMessage) {
-        setTimeout(() => {
-            flashMessage.style.opacity = '1';
-            flashMessage.style.transform = 'translateY(0)';
-        }, 100);
+function createFlash(message) {
+    const flashMessage = document.createElement('div');
+    flashMessage.className = 'flash-message';
 
-        document.getElementById('close-btn').addEventListener('click', () => {
-            flashMessage.style.opacity = '0';
-            flashMessage.style.transform = 'translateY(-20px)';
-            setTimeout(() => {
-                flashMessage.remove();
-            }, 300);
-        });
+    flashMessage.innerHTML = `
+        <span>${message}</span>
+        <button class="close-btn">&times;</button>
+    `;
 
+    document.body.appendChild(flashMessage);
+
+    // Trigger the show class after a tiny delay to let it mount
+    setTimeout(() => {
+        flashMessage.classList.add('show');
+    }, 50);
+
+    // Close on button click
+    flashMessage.querySelector('.close-btn').addEventListener('click', () => {
+        flashMessage.classList.remove('show');
         setTimeout(() => {
-            flashMessage.style.opacity = '0';
-            flashMessage.style.transform = 'translateY(-20px)';
-            setTimeout(() => {
-                flashMessage.remove();
-            }, 300);
-        }, 5000);
-    }
+            flashMessage.remove();
+        }, 500);
+    });
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        flashMessage.classList.remove('show');
+        setTimeout(() => {
+            flashMessage.remove();
+        }, 500);
+    }, 5000);
 }
 
 // Smart Queue Handler
@@ -1299,6 +1305,8 @@ document.getElementById('smartQueueBtn').addEventListener('click', async functio
             document.getElementById('applyQueueBtn').onclick = function() {
                 applySmartQueueOrder(data.task_order, allTasks);
                 modal.hide();
+                createFlash('Tasks sorted successfully with Smart Queue!');
+                console.log('Smart Queue applied');
             };
             
         } else {

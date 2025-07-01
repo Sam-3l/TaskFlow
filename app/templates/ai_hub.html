@@ -1,0 +1,174 @@
+{% if user and user.is_authenticated %}
+    {% extends 'parents/auth_base.html' %}
+{% else %}
+    {% extends 'parents/base.html' %}
+{% endif %}
+
+{% block title %}AI Hub | TaskFlow{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(to right, #0f172a, #1e293b);
+        color: white;
+    }
+
+    .ai-hero {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .ai-hero h1 {
+        font-size: 3.5rem;
+        background: linear-gradient(90deg, #00f5a0, #00d9f5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: glow 3s ease-in-out infinite alternate;
+    }
+
+    .ai-hero p {
+        max-width: 650px;
+        margin: 0 auto;
+        color: #cbd5e1;
+        font-size: 1.2rem;
+    }
+
+    .feature-block {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        margin: 60px 0;
+        padding: 0 20px;
+    }
+
+    .feature-text {
+        flex: 1 1 400px;
+        max-width: 500px;
+    }
+
+    .feature-text h2 {
+        color: #38bdf8;
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .feature-text p {
+        color: #cbd5e1;
+        margin-bottom: 10px;
+    }
+
+    .feature-text ul {
+        padding-left: 20px;
+        color: #94a3b8;
+    }
+
+    .feature-image {
+        flex: 1 1 400px;
+        max-width: 500px;
+    }
+
+    .feature-image img {
+        width: 100%;
+        border-radius: 16px;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    }
+
+    .cta {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .cta h2 {
+        font-size: 2.5rem;
+        color: #38bdf8;
+    }
+
+    .cta a {
+        margin-top: 20px;
+        display: inline-block;
+        background: linear-gradient(to right, #06b6d4, #3b82f6);
+        color: white;
+        padding: 14px 28px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+
+    .cta a:hover {
+        background: linear-gradient(to right, #3b82f6, #06b6d4);
+    }
+
+    @keyframes glow {
+        0% {text-shadow: 0 0 10px #00f5a0;}
+        100% {text-shadow: 0 0 20px #00d9f5;}
+    }
+</style>
+{% if user and user.is_authenticated %}
+    <br><br>
+{% endif %}
+<div class="ai-hero">
+    <h1>AI Hub</h1>
+    <p>Supercharge your productivity with TaskFlow's AI-powered tools. Organize smarter, plan better, and execute faster with intelligent automation built right into your workspace.</p>
+</div>
+
+
+<!-- 🔥 Smart Queue -->
+<div class="feature-block">
+    <div class="feature-image">
+        <img src="{{ url_for('static', filename='images/ai/smart_queue.gif') }}" alt="Smart Queue Demo">
+    </div>
+    <div class="feature-text">
+        <h2>🧠 Smart Queue</h2>
+        <p>Never wonder what to do next. Smart Queue organizes your tasks based on urgency, deadlines, and priorities. Your day, intelligently planned.</p>
+        <ul>
+            <li>⚙️ AI-prioritized task ordering</li>
+            <li>🚀 Stay focused on high-impact tasks</li>
+            <li>⏳ Reduce decision fatigue</li>
+        </ul>
+    </div>
+</div>
+
+
+<!-- 🔥 Task Intelligence -->
+<div class="feature-block">
+    <div class="feature-text">
+        <h2>🧠⚙️ Task Intelligence</h2>
+        <p>Get insights on every task. Task Intelligence estimates time, spots potential blockers, and surfaces complexity — helping you plan smarter.</p>
+        <ul>
+            <li>⏱️ AI-generated time estimates</li>
+            <li>🚧 Risk and blocker detection</li>
+            <li>📊 Task complexity analysis</li>
+        </ul>
+    </div>
+    <div class="feature-image">
+        <img src="{{ url_for('static', filename='images/ai/task_intelligence.gif') }}" alt="Task Intelligence Demo">
+    </div>
+</div>
+
+
+<!-- 🔥 Subtask Generation -->
+<div class="feature-block">
+    <div class="feature-image">
+        <img src="{{ url_for('static', filename='images/ai/subtasks.gif') }}" alt="Subtask Generation Demo">
+    </div>
+    <div class="feature-text">
+        <h2>🪄 Subtask Generation</h2>
+        <p>Break complex tasks into actionable steps instantly. AI-powered subtask creation keeps you moving without overwhelm.</p>
+        <ul>
+            <li>✂️ AI-driven breakdown of big tasks</li>
+            <li>🚀 Clarity on next steps</li>
+            <li>🧠 Move from plan to action fast</li>
+        </ul>
+    </div>
+</div>
+
+
+<!-- 🚀 CTA -->
+<div class="cta">
+    <h2>Ready to let AI handle the heavy lifting?</h2>
+    <a href="{{ url_for('main.tasks') }}">Start Using AI Tools</a>
+</div>
+
+{% endblock %}

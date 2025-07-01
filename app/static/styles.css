@@ -35,6 +35,7 @@ body{
     visibility: hidden;
     transform: translateY(20px);
     transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
+    z-index: 99999;
 }
 
 /* Show the flash message */

@@ -1856,6 +1856,10 @@ def explore_projects():
         min_upvotes=min_upvotes
     )
 
+@main.route('/ai-hub')
+def ai_hub():
+    return render_template('ai_hub.html', user=current_user, active_page="ai")
+
 @main.route("/dashboard/tasks/new", methods=['GET','POST'])
 @login_required
 def create_task():
