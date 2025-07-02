@@ -31,21 +31,21 @@
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="badge-wrapper">
-                        <span class="badge pulse">NEW: AI Task Assistant</span>
+                        <span class="badge pulse">AI-Powered Productivity</span>
                     </div>
                     <h1 class="hero-title">
-                        <span class="text-gradient">Work Smarter</span> 
+                        <span class="text-gradient">Organize, Execute,</span> 
                         <span class="typing-animation"></span>
                     </h1>
-                    <p class="hero-subtitle">TaskFlow's AI-powered platform helps individuals and teams achieve more with less effort through intelligent task automation and analytics.</p>
+                    <p class="hero-subtitle">TaskFlow’s AI analyzes your workload to prioritize tasks, predict deadlines, and automate workflows—so you can focus on what matters.</p>
                     
                     <div class="cta-buttons">
                         <a href="auth/signup" class="btn btn-primary btn-3d">
                             <span>Get Started Free</span>
                             <div class="btn-hover"></div>
                         </a>
-                        <a href="#features" class="btn btn-outline-light btn-video">
-                            <i class="bi bi-play-circle"></i> Watch Demo
+                        <a href="#how-it-works" class="btn btn-outline-light btn-video">
+                            <i class="bi bi-play-circle"></i> See AI in Action
                         </a>
                     </div>
                     
@@ -56,24 +56,25 @@
                         </div>
                         <div class="trust-item">
                             <i class="bi bi-people-fill"></i>
-                            <span>Trusted by 50,000+ teams</span>
+                            <span>50,000+ productive teams</span>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Image Section -->
                 <div class="col-lg-6 hero-image-col">
                     <div class="hero-image-wrapper">
-                        <img src="{{ url_for('static', filename='images/landing_page.jpg') }}" 
-                             alt="TaskFlow Dashboard" 
-                             class="hero-image"
-                             loading="eager">
+                        <img src="{{ url_for('static', filename='images/kanban-preview.png') }}" 
+                            alt="TaskFlow Kanban Board" 
+                            class="hero-image"
+                            loading="eager">
                         <div class="floating-card card-1">
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                            <span>Task completed</span>
+                            <i class="bi bi-kanban text-primary"></i>
+                            <span>Drag & Drop Tasks</span>
                         </div>
                         <div class="floating-card card-2">
-                            <i class="bi bi-lightning-charge-fill text-warning"></i>
-                            <span>AI suggestion</span>
+                            <i class="bi bi-robot text-warning"></i>
+                            <span>AI Priority Sorting</span>
                         </div>
                     </div>
                 </div>
@@ -116,21 +117,19 @@
         <div class="container">
             <div class="row g-5 align-items-center">
                 <div class="col-lg-6">
-                    <div class="sticky-video">
-                        <div class="video-wrapper">
-                            <div class="video-placeholder">
-                                <button class="play-button">
-                                    <i class="bi bi-play-fill"></i>
-                                </button>
-                            </div>
+                    <div class="video-wrapper" data-audio="true">
+                        <div class="video-placeholder">
+                            <button class="play-button">
+                                <i class="bi bi-play-fill"></i>
+                            </button>
+                            <div class="pulse-effect"></div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="ps-lg-5">
-                        <span class="section-badge">POWERFUL YET SIMPLE</span>
-                        <h2 class="section-title">The Complete Productivity <span class="text-gradient">Solution</span></h2>
-                        
+            <div class="col-lg-6">
+                <div class="ps-lg-5">
+                    <span class="section-badge">SMART WORKFLOWS</span>
+                        <h2 class="section-title">AI-Powered <span class="text-gradient">Efficiency</span></h2>
                         <div class="value-item">
                             <div class="value-icon">
                                 <i class="bi bi-magic"></i>
@@ -166,7 +165,53 @@
         </div>
     </section>
 
-    <!-- Features Grid -->
+    <!-- AI Tools Grid -->
+    <section class="ai-tools-section py-6 pb-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-badge">AI POWERED</span>
+                <h2 class="section-title">Work Smarter with <span class="text-gradient">TaskFlow AI</span></h2>
+                <p class="section-subtitle">Our algorithms learn your habits to optimize productivity.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="ai-tool-card">
+                        <div class="ai-tool-icon bg-purple">
+                            <i class="bi bi-list-task"></i>
+                        </div>
+                        <h3>Smart Queue</h3>
+                        <p>Automatically orders tasks based on <strong>deadlines, priority, and your energy levels</strong>.</p>
+                        <a href="/ai-hub#smart-queue" class="ai-tool-link">Learn more →</a>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="ai-tool-card">
+                        <div class="ai-tool-icon bg-blue">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <h3>Task Intelligence</h3>
+                        <p>Estimates time, flags risks, and suggests <strong>optimal workflows</strong>.</p>
+                        <a href="/ai-hub#task-intel" class="ai-tool-link">Learn more →</a>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="ai-tool-card">
+                        <div class="ai-tool-icon bg-orange">
+                            <i class="bi bi-diagram-2"></i>
+                        </div>
+                        <h3>Subtask Generation</h3>
+                        <p>Breaks complex tasks into <strong>actionable steps</strong> with one click.</p>
+                        <a href="/ai-hub#subtasks" class="ai-tool-link">Learn more →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid Section -->
     <section id="features" class="features-section py-6 bg-light">
         <div class="container">
             <div class="text-center mb-6">
@@ -176,65 +221,73 @@
             </div>
             
             <div class="row g-4">
+                <!-- 1. AI Task Assistant -->
                 <div class="col-md-6 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="bi bi-robot"></i>
                         </div>
                         <h3>AI Task Assistant</h3>
-                        <p>Natural language processing lets you create and manage tasks through conversation.</p>
-                        <div class="feature-badge">AI-Powered</div>
+                        <p>Smart Queue organizes tasks by <strong>deadlines, priority, and context</strong>.</p>
+                        <a href="/ai-hub" class="feature-link">Explore AI Tools →</a>
                     </div>
                 </div>
                 
+                <!-- 2. Kanban Boards -->
                 <div class="col-md-6 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="bi bi-kanban"></i>
                         </div>
-                        <h3>Smart Kanban</h3>
-                        <p>Visual workflow management with auto-categorization and predictive column limits.</p>
-                        <div class="feature-badge">NEW</div>
+                        <h3>Interactive Kanban</h3>
+                        <p>Realtime drag-and-drop boards for <strong>personal and team tasks</strong>.</p>
+                        <div class="feature-badge">Popular</div>
                     </div>
                 </div>
                 
-                <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-graph-up-arrow"></i>
-                        </div>
-                        <h3>Progress Analytics</h3>
-                        <p>Detailed reports on completion rates, time tracking, and productivity trends.</p>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-calendar-check"></i>
-                        </div>
-                        <h3>Time Blocking</h3>
-                        <p>Schedule tasks directly on your calendar with smart time estimation.</p>
-                    </div>
-                </div>
-                
+                <!-- 3. Project Collaboration -->
                 <div class="col-md-6 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="bi bi-people"></i>
                         </div>
-                        <h3>Team Collaboration</h3>
-                        <p>Real-time task assignment, comments, and file sharing for seamless teamwork.</p>
+                        <h3>Team Projects</h3>
+                        <p>Assign tasks, set roles, and <strong>discuss in realtime</strong>.</p>
                     </div>
                 </div>
                 
+                <!-- 4. Progress Analytics -->
                 <div class="col-md-6 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="bi bi-bell"></i>
+                            <i class="bi bi-graph-up"></i>
                         </div>
-                        <h3>Smart Reminders</h3>
-                        <p>Context-aware notifications based on your location, schedule, and habits.</p>
+                        <h3>Progress Analytics</h3>
+                        <p>Track productivity with <strong>charts, time logs, and risks</strong>.</p>
+                    </div>
+                </div>
+                
+                <!-- 5. Subtask Generation -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <h3>Subtask Automation</h3>
+                        <p>Break tasks into <strong>smaller steps with AI</strong>.</p>
+                        <a href="/ai-hub#subtasks" class="feature-link">Try Now →</a>
+                    </div>
+                </div>
+                
+                <!-- 6. Task Intelligence -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightbulb"></i>
+                        </div>
+                        <h3>Task Intelligence</h3>
+                        <p>Get <strong>time estimates, blockers, and insights</strong>.</p>
+                        <div class="feature-badge">AI-Powered</div>
                     </div>
                 </div>
             </div>
@@ -738,6 +791,7 @@
     font-size: 0.85rem;
     font-weight: 600;
     animation: float 6s ease-in-out infinite;
+    z-index: 10;
 }
 
 .floating-card i {
@@ -1227,12 +1281,6 @@
     100% { opacity: 0.6; }
 }
 
-@keyframes float {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0); }
-}
-
 @keyframes scroll {
     0% { transform: translateY(0); }
     50% { transform: translateY(5px); }
@@ -1302,9 +1350,140 @@
         padding: 1.5rem;
     }
 }
+
+.feature-card, .ai-tool-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.feature-card:hover, .ai-tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(79, 70, 229, 0.15);
+}
+
+.feature-icon, .ai-tool-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  color: white;
+}
+
+/* Gradient icon backgrounds */
+.feature-icon { background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%); }
+.ai-tool-icon.bg-purple { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); }
+.ai-tool-icon.bg-blue { background: linear-gradient(135deg, #3b82f6 0%, #93c5fd 100%); }
+.ai-tool-icon.bg-orange { background: linear-gradient(135deg, #f97316 0%, #fdba74 100%); }
+
+.feature-link, .ai-tool-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 1rem;
+  transition: all 0.2s;
+  z-index: 10;
+    position: relative;
+}
+
+.feature-link:hover, .ai-tool-link:hover {
+  color: #4338ca;
+  transform: translateX(3px);
+}
+
+/* Enhanced Card Hover Effects */
+.feature-card, .ai-tool-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::after, .ai-tool-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, transparent 100%);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.feature-card:hover, .ai-tool-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 50px rgba(79, 70, 229, 0.2);
+}
+
+.feature-card:hover::after, .ai-tool-card:hover::after {
+  opacity: 1;
+}
+
+.feature-icon, .ai-tool-icon {
+  transition: transform 0.3s;
+}
+
+.feature-card:hover .feature-icon, 
+.ai-tool-card:hover .ai-tool-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Hero Image Styles */
+.hero-image-wrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  transform: perspective(1000px) rotateY(-10deg) rotateX(5deg);
+  box-shadow: 0 30px 60px rgba(79, 70, 229, 0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(20px, 20px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Video Play Button Animation */
+.pulse-effect {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: rgba(79, 70, 229, 0.2);
+  animation: pulse 2s infinite;
+  z-index: 0;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  70% { transform: scale(1.05); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}
 </style>
 
 <!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Typing animation for hero title
@@ -1441,6 +1620,83 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Load particles.js if needed -->
-<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<!-- Initialize Animations -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger);
+
+      /* ===== Hero Section ===== */
+      gsap.from(".hero-title, .hero-subtitle", {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        stagger: 0.2,
+        delay: 0.3
+      });
+
+      /* ===== Features & AI Tools ===== */
+      gsap.utils.toArray(".feature-card, .ai-tool-card").forEach((card, i) => {
+        gsap.from(card, {
+          opacity: 0,
+          y: 80,
+          rotation: -5,
+          duration: 0.8,
+          delay: i * 0.1,
+          scrollTrigger: {
+            trigger: card.closest('section'),
+            start: "top 80%",
+            toggleActions: "play none none none",
+            markers: false // Set to true to debug trigger positions
+          }
+        });
+      });
+
+      /* ===== Testimonials ===== */
+      gsap.from(".testimonial-card", {
+        opacity: 0,
+        x: -100,
+        duration: 0.8,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: ".testimonials-section",
+          start: "top 70%"
+        }
+      });
+
+      /* ===== Footer ===== */
+      gsap.from("footer .col-lg-4", {
+        opacity: 0,
+        y: 50,
+        duration: 0.6,
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: "footer",
+          start: "top 90%"
+        }
+      });
+
+    gsap.from(".value-item", {
+        opacity: 0,
+        x: -50,
+        duration: 0.8,
+        stagger: 0.2,
+        scrollTrigger: {
+        trigger: ".value-proposition",
+        start: "top 70%"
+        }
+    });
+    
+    gsap.from(".video-wrapper", {
+        opacity: 0,
+        scale: 0.8,
+        duration: 1,
+        scrollTrigger: {
+        trigger: ".value-proposition",
+        start: "top 60%"
+        }
+    });
+    }
+  });
+</script>
 {% endblock %}
