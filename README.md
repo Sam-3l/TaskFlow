@@ -1,9 +1,8 @@
 <div align="center">
   <img src="app/static/images/logo.png" width="40" height="40" style="vertical-align: middle;"/>
   <h1 style="display: inline-block; vertical-align: middle; margin: 0;">TaskFlow</h1>
+  <h2><i>The AI-Powered Productivity Platform That Adapts to You</i></h2>
 </div>
-
-### *The AI-Powered Productivity Platform That Adapts to You*  
 
 <div align="center">  
   <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWJ0ZzNxY3V3eGJ6Y3BqY2Z0dGZ6Z2V5bmRlY2JicG5yZ3F0eGZ5dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/qgQUggAC3Pfv687qPC/giphy.gif" width="600" alt="TaskFlow Demo">  
