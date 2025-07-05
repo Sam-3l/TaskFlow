@@ -1,4 +1,8 @@
-# TaskFlow 🚀  
+<div align="center">
+  <img src="app/static/images/logo.png" width="40" height="40" style="vertical-align: middle;"/>
+  <h1 style="display: inline-block; vertical-align: middle; margin: 0;">TaskFlow</h1>
+</div>
+
 ### *The AI-Powered Productivity Platform That Adapts to You*  
 
 <div align="center">  
@@ -120,5 +124,3 @@ Feel free to submit issues, fork the repository, and create pull requests. Contr
 ---
 
 <sub>✨ Pro Tip: The more you use TaskFlow, the smarter its AI becomes!</sub>  
-
----
