@@ -52,7 +52,7 @@ TaskFlow isn't just another task manager—it's your **AI-powered productivity c
 
 - **Backend:** Flask, Python  
 - **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5  
-- **Database:** PostgreSQL (RDS)  
+- **Database:** PostgreSQL
 - **Infrastructure:** Docker, AWS (EC2, S3), Cloudflare DNS  
 - **CI/CD:** GitHub Actions for automated deployments  
 
