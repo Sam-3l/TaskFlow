@@ -37,14 +37,14 @@
                         <span class="text-gradient">Organize, Execute,</span> 
                         <span class="typing-animation"></span>
                     </h1>
-                    <p class="hero-subtitle">TaskFlow’s AI analyzes your workload to prioritize tasks, predict deadlines, and automate workflows—so you can focus on what matters.</p>
+                    <p class="hero-subtitle">TaskFlow’s AI analyzes your workload to prioritize tasks, predict deadlines, and automate workflows, so you can focus on what matters.</p>
                     
                     <div class="cta-buttons">
                         <a href="auth/signup" class="btn btn-primary btn-3d">
                             <span>Get Started Free</span>
                             <div class="btn-hover"></div>
                         </a>
-                        <a href="#how-it-works" class="btn btn-outline-light btn-video">
+                        <a href="#ai-in-action" class="btn btn-outline-light btn-video">
                             <i class="bi bi-play-circle"></i> See AI in Action
                         </a>
                     </div>
@@ -117,14 +117,22 @@
         <div class="container">
             <div class="row g-5 align-items-center">
                 <div class="col-lg-6">
-                    <div class="video-wrapper" data-audio="true">
+                    <div class="video-wrapper" data-audio="true" id="ai-in-action">
                         <div class="video-placeholder">
-                            <button class="play-button">
+                            <div class="video-overlay" id="video-overlay"></div>
+                            <video id="ai-video" class="w-100 h-100" style="position: absolute; top: 0; left: 0; object-fit: cover;" preload="metadata">
+                                <source src="{{ url_for('static', filename='videos/ai-in-action.mp4') }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <button class="play-button" id="play-video" style="display: flex;">
                                 <i class="bi bi-play-fill"></i>
                             </button>
+                            <button class="play-button" id="pause-video" style="display: none;">
+                                <i class="bi bi-pause-fill"></i>
+                            </button>                            
                             <div class="pulse-effect"></div>
                         </div>
-                    </div>
+                    </div>                    
                 </div>
             <div class="col-lg-6">
                 <div class="ps-lg-5">
@@ -136,7 +144,7 @@
                             </div>
                             <div>
                                 <h3>AI-Powered Automation</h3>
-                                <p>Our intelligent system learns your work patterns to suggest optimal task scheduling, priority adjustments, and even auto-generates subtasks.</p>
+                                <p>Our intelligent system doesn’t just manage your tasks, it understands them, prioritizes them, plans for you, and transforms chaos into clarity.</p>
                             </div>
                         </div>
                         
@@ -165,7 +173,7 @@
         </div>
     </section>
 
-    <!-- AI Tools Grid -->
+    <!-- AI Tools -->
     <section class="ai-tools-section py-6 pb-5 bg-light">
         <div class="container">
             <div class="text-center mb-5">
@@ -306,7 +314,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="ai-image-wrapper">
-                        <img src="{{ url_for('static', filename='images/ai-interface.png') }}" 
+                        <img src="{{ url_for('static', filename='images/ai/smart_queue.gif') }}" 
                              alt="TaskFlow AI Interface" 
                              class="ai-image"
                              loading="lazy">
@@ -314,37 +322,37 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <span class="section-badge">AI REVOLUTION</span>
-                    <h2 class="section-title">Your Intelligent <span class="text-gradient">Productivity Partner</span></h2>
-                    <p class="mb-4">TaskFlow's AI continuously learns from your work patterns to provide personalized recommendations, automate routine tasks, and surface insights that help you focus on what matters most.</p>
+                    <span class="section-badge">AI ORGANIZATION</span>
+                    <h2 class="section-title">Meet <span class="text-gradient">Smart Queue</span> — Your Mental Load Manager</h2>
+                    <p class="mb-4">Overwhelmed by chaotic tasks and crushing deadlines? Smart Queue is your calm in the storm — an AI-driven engine that intelligently sorts, schedules, and simplifies your workload, so you always know exactly where to start.</p>
                     
                     <div class="ai-features">
                         <div class="ai-feature">
-                            <i class="bi bi-lightbulb"></i>
+                            <i class="bi bi-layout-text-window-reverse"></i>
                             <div>
-                                <h4>Smart Suggestions</h4>
-                                <p>Automatically recommends optimal times for deep work based on your habits.</p>
+                                <h4>AI Prioritization</h4>
+                                <p>Automatically ranks your tasks by urgency, importance, and context — no more decision fatigue, just smart, instant clarity.</p>
                             </div>
                         </div>
-                        
+                
                         <div class="ai-feature">
-                            <i class="bi bi-stopwatch"></i>
+                            <i class="bi bi-bar-chart-steps"></i>
                             <div>
-                                <h4>Time Prediction</h4>
-                                <p>Accurately estimates task duration based on your historical data.</p>
+                                <h4>Stress-Free Workflows</h4>
+                                <p>Instead of leaving you to juggle dozens of thoughts, Smart Queue says: “Start here.” It plans the rest, balancing effort and deadlines seamlessly.</p>
                             </div>
                         </div>
-                        
+                
                         <div class="ai-feature">
-                            <i class="bi bi-exclamation-triangle"></i>
+                            <i class="bi bi-stars"></i>
                             <div>
-                                <h4>Risk Detection</h4>
-                                <p>Flags potential deadline conflicts before they become problems.</p>
+                                <h4>Contextual Intelligence</h4>
+                                <p>Analyzes task titles, descriptions, and hidden intent — delivering the most relevant task order that just makes sense.</p>
                             </div>
                         </div>
-                    </div>
+                    </div>                
                     
-                    <a href="#" class="btn btn-primary mt-3">
+                    <a href="/ai-hub" class="btn btn-primary mt-3">
                         Learn About Our AI <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
@@ -660,7 +668,7 @@
 }
 
 .text-gradient {
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -885,6 +893,35 @@
 }
 
 .play-button {
+    box-shadow: 0 0 25px rgba(15, 23, 42, 0.5);
+    animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(15, 23, 42, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(15, 23, 42, 0.6);
+    }
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle at center,
+        rgba(15, 23, 42, 0.4) 0%,
+        rgba(15, 23, 42, 0.7) 100%
+    );
+    z-index: 1;
+    backdrop-filter: blur(1px);
+}
+
+.play-button {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -901,6 +938,7 @@
     border: none;
     transition: var(--transition);
     cursor: pointer;
+    z-index: 20;
 }
 
 .play-button:hover {
@@ -1698,5 +1736,68 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     }
   });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('ai-video');
+    const playButton = document.getElementById('play-video');
+    const pauseButton = document.getElementById('pause-video');
+
+    playButton.addEventListener('click', () => {
+        video.play();
+        playButton.style.display = 'none'; // Hide play button
+    });
+
+    // Optional: show button again when video ends
+    video.addEventListener('ended', () => {
+        playButton.style.display = 'flex';
+    });
+
+    playButton.addEventListener('click', () => {
+        video.play();
+        playButton.style.display = 'none';
+        pauseButton.style.display = 'flex';
+    });
+
+    pauseButton.addEventListener('click', () => {
+        video.pause();
+        pauseButton.style.display = 'none';
+        playButton.style.display = 'flex';
+    });
+
+    video.addEventListener('ended', () => {
+        playButton.style.display = 'flex';
+        pauseButton.style.display = 'none';
+    });
+
+    let controlsTimeout;
+
+    const showControls = () => {
+        pauseButton.style.opacity = '1';
+        pauseButton.style.pointerEvents = 'auto';
+
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+            pauseButton.style.opacity = '0';
+            pauseButton.style.pointerEvents = 'none';
+        }, 2000); // Hide after 2 seconds
+    };
+
+    video.addEventListener('mousemove', showControls);
+    video.addEventListener('play', showControls);
+    video.addEventListener('pause', () => {
+        pauseButton.style.opacity = '1';
+        pauseButton.style.pointerEvents = 'auto';
+        clearTimeout(controlsTimeout);
+    });
+
+    const overlay = document.getElementById('video-overlay');
+
+    playButton.addEventListener('click', () => {
+        video.play();
+        playButton.style.display = 'none';
+        pauseButton.style.display = 'flex';
+        overlay.style.opacity = '0';
+    });
+});
 </script>
 {% endblock %}

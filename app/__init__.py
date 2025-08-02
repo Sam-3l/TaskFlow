@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask import render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
@@ -58,7 +59,7 @@ def create_app():
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com "
             "https://apis.google.com https://www.google.com https://www.gstatic.com "
-            "https://taskflow-static.s3.amazonaws.com https://cdn.plot.ly; "
+            "https://taskflow-static.s3.amazonaws.com https://cdn.plot.ly https://unpkg.com; "
             "style-src 'self' 'unsafe-inline' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
             "https://taskflow-static.s3.amazonaws.com; "
@@ -93,6 +94,10 @@ def create_app():
 
     app.register_blueprint(main)
     app.register_blueprint(auth, url_prefix="/auth")
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template("404.html"), 404
 
     # Import OAuth after app creation to break circular dependency
     from app.utils.oauth import init_oauth

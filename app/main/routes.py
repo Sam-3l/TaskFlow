@@ -113,6 +113,11 @@ def home():
 def features():
     return render_template("features.html", active_page="features")
 
+@main.route("/pricing")
+def pricing():
+    # lol
+    return render_template("pricing.html", active_page="pricing")
+
 @main.route("/dashboard")
 @login_required
 def dashboard():

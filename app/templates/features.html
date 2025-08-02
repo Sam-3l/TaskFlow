@@ -9,9 +9,9 @@
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <h1 class="display-4 fw-bold mb-4">Supercharge Your Productivity</h1>
-                <p class="lead mb-4">TaskFlow isn't just a task manager—it's your AI-powered workflow companion designed to help you achieve more with less stress.</p>
-                <a href="#feature-cards" class="btn btn-light btn-lg px-4 me-2">Explore Features</a>
-                <a href="#" class="btn btn-outline-light btn-lg px-4">How It Works →</a>
+                <p class="lead mb-4">TaskFlow isn't just a task manager, it's your AI-powered workflow companion designed to help you achieve more with less stress.</p>
+                <a href="#feature-cards" class="btn btn-light btn-lg px-4 me-2">Enlighten Me!</a>
+                <a href="/auth/signup" class="btn btn-outline-light btn-lg px-4">Start Using TaskFlow →</a>
             </div>
             <div class="col-lg-6 d-none d-lg-block">
                 <img src="{{ url_for('static', filename='images/dashboard.png') }}" alt="TaskFlow Dashboard" class="img-fluid rounded-4 shadow">
@@ -37,7 +37,7 @@
                         <i class="fas fa-tasks fa-2x text-primary"></i>
                     </div>
                     <h3 class="h4 fw-bold">Smart Task Management</h3>
-                    <p class="text-muted">Create, organize, and prioritize tasks with AI-powered suggestions and natural language input.</p>
+                    <p class="text-muted">Create, organize, and manage tasks effortlessly, set deadlines, add subtasks, and track your progress.</p>
                     <div class="mt-3">
                         <span class="badge bg-primary-soft text-primary me-2">AI-Powered</span>
                         <span class="badge bg-primary-soft text-primary">Deadlines</span>
@@ -70,9 +70,9 @@
                         <i class="fas fa-chart-line fa-2x text-info"></i>
                     </div>
                     <h3 class="h4 fw-bold">Productivity Analytics</h3>
-                    <p class="text-muted">Visual reports and AI-driven insights help you optimize your workflow and identify bottlenecks.</p>
+                    <p class="text-muted">Interactive charts and visual reports, reveal patterns, highlight bottlenecks, and help you optimize your workflow.</p>
                     <div class="mt-3">
-                        <span class="badge bg-info-soft text-info">AI Insights</span>
+                        <span class="badge bg-info-soft text-info">Visual Insights</span>
                     </div>
                 </div>
             </div>
@@ -83,12 +83,13 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-warning-soft mb-4">
-                        <i class="fas fa-bell fa-2x text-warning"></i>
+                        <i class="fas fa-stream fa-2x text-warning"></i>
                     </div>
-                    <h3 class="h4 fw-bold">Smart Reminders</h3>
-                    <p class="text-muted">Context-aware notifications remind you at the optimal time based on your work patterns.</p>
+                    <h3 class="h4 fw-bold">Smart Queue</h3>
+                    <p class="text-muted">Combines deadlines, priorities, and context to sort tasks in the most optimized order so you always know what to do next.</p>
                     <div class="mt-3">
-                        <span class="badge bg-warning-soft text-warning">Adaptive</span>
+                        <span class="badge bg-warning-soft text-warning">Optimized</span>
+                        <span class="badge bg-warning-soft text-warning">AI-Powered</span>
                     </div>
                 </div>
             </div>
@@ -99,13 +100,13 @@
             <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
                 <div class="card-body p-4">
                     <div class="icon-wrapper bg-danger-soft mb-4">
-                        <i class="fas fa-robot fa-2x text-danger"></i>
+                        <i class="fas fa-brain fa-2x text-danger"></i>
                     </div>
-                    <h3 class="h4 fw-bold">AI Task Assistant</h3>
-                    <p class="text-muted">Chat-based interface to create tasks, generate summaries, and get recommendations instantly.</p>
+                    <h3 class="h4 fw-bold">Task Intelligence</h3>
+                    <p class="text-muted">Summarizes tasks, estimates completion time, flags risks, and suggests clear next steps to move forward confidently.</p>
                     <div class="mt-3">
-                        <span class="badge bg-danger-soft text-danger">New</span>
-                        <span class="badge bg-danger-soft text-danger">NLP</span>
+                        <span class="badge bg-danger-soft text-danger">Insightful</span>
+                        <span class="badge bg-danger-soft text-danger">Smart</span>
                     </div>
                 </div>
             </div>
@@ -119,48 +120,53 @@
                         <i class="fas fa-project-diagram fa-2x text-purple"></i>
                     </div>
                     <h3 class="h4 fw-bold">Custom Workflows</h3>
-                    <p class="text-muted">Build personalized Kanban boards, lists, or calendars that adapt to your projects.</p>
+                    <p class="text-muted">Create real-time Kanban boards for projects or personal use, fully customizable to fit any workflow.</p>
                     <div class="mt-3">
-                        <span class="badge bg-purple-soft text-purple">Flexible</span>
+                        <span class="badge bg-purple-soft text-dark">Real-time</span>
+                        <span class="badge bg-purple-soft text-dark">Flexible</span>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 </section>
 
-<!-- AI Features Highlight -->
-<section class="bg-light py-5">
+<!-- AI Features Section -->
+<section class="ai-hero-section text-white py-6 px-3 position-relative" style="background: linear-gradient(135deg, #0a0d2c, #111b47); overflow: hidden;">
     <div class="container py-5">
-        <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <img src="{{ url_for('static', filename='images/ai_placehold.webp') }}" alt="AI Features" class="img-fluid rounded-4 shadow">
+        <div class="row align-items-center gy-5">
+            <!-- Left: Title & Description -->
+            <div class="col-lg-6 text-center text-lg-start">
+                <h2 class="display-5 fw-bold mb-3">TaskFlow AI Hub</h2>
+                <p class="lead text-light mb-4">
+                    Experience next-level productivity with AI-powered features that prioritize your work, break down complexity, and give you intelligent guidance every step of the way.
+                </p>
+                <a href="/ai-hub" class="btn btn-danger px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                    Explore AI Features
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
+
+            <!-- Right: Feature Highlights -->
             <div class="col-lg-6">
-                <span class="badge bg-primary-soft text-primary mb-3">AI POWERED</span>
-                <h2 class="fw-bold mb-4">Intelligent Features That <span class="text-primary">Learn From You</span></h2>
-                <div class="d-flex flex-wrap mb-4">
-                    <div class="me-4 mb-3">
-                        <div class="bg-white rounded-circle shadow-sm p-3 mb-2" style="width: 60px; height: 60px;">
-                            <i class="fas fa-clock fa-lg text-primary"></i>
-                        </div>
-                        <h4 class="h6 fw-bold mb-0">Time Predictions</h4>
+                <div class="d-flex flex-column gap-4">
+                    <!-- Feature Item -->
+                    <div class="ai-feature-box bg-glass border-start border-4 border-warning ps-4 pe-3 py-3 rounded shadow-sm">
+                        <h5 class="mb-1 fw-bold text-warning">Smart Queue</h5>
+                        <p class="mb-0 small text-light">Intelligently organizes your tasks using priority, deadlines, and context — so you always know what to tackle next.</p>
                     </div>
-                    <div class="me-4 mb-3">
-                        <div class="bg-white rounded-circle shadow-sm p-3 mb-2" style="width: 60px; height: 60px;">
-                            <i class="fas fa-magic fa-lg text-primary"></i>
-                        </div>
-                        <h4 class="h6 fw-bold mb-0">Auto Scheduling</h4>
+
+                    <div class="ai-feature-box bg-glass border-start border-4 border-danger ps-4 pe-3 py-3 rounded shadow-sm">
+                        <h5 class="mb-1 fw-bold text-danger">Task Intelligence</h5>
+                        <p class="mb-0 small text-light">Summarizes tasks, estimates time, identifies risks, and gives you practical steps to move forward.</p>
                     </div>
-                    <div class="mb-3">
-                        <div class="bg-white rounded-circle shadow-sm p-3 mb-2" style="width: 60px; height: 60px;">
-                            <i class="fas fa-comments fa-lg text-primary"></i>
-                        </div>
-                        <h4 class="h6 fw-bold mb-0">Chat Assistant</h4>
+
+                    <div class="ai-feature-box bg-glass border-start border-4 border-info ps-4 pe-3 py-3 rounded shadow-sm">
+                        <h5 class="mb-1 fw-bold text-info">AI Subtask Generator</h5>
+                        <p class="mb-0 small text-light">Break complex tasks into actionable subtasks automatically, for better focus and progress.</p>
                     </div>
                 </div>
-                <p class="mb-4">TaskFlow's AI learns your work patterns to provide personalized recommendations, automate routine tasks, and surface insights to boost your productivity.</p>
-                <a href="#" class="btn btn-primary px-4">Explore AI Features →</a>
             </div>
         </div>
     </div>
@@ -178,7 +184,7 @@
             <div class="card border-0 shadow-lg">
                 <div class="card-body p-5">
                     <div class="d-flex align-items-center mb-4">
-                        <img src="https://ui-avatars.com/api/?name=Taylor+Smith&background=4f46e5&color=fff" alt="User" class="rounded-circle me-3" width="80">
+                        <img src="{{ url_for('static', filename='images/testimonials/default.jpg') }}" alt="User" class="rounded-circle me-3" width="80">
                         <div>
                             <h4 class="mb-0">Taylor Smith</h4>
                             <p class="text-muted mb-0">Project Manager @TechCorp</p>
@@ -206,8 +212,7 @@
                 <h2 class="fw-bold mb-4">Ready to Transform Your Productivity?</h2>
                 <p class="lead mb-4">Join TaskFlow today and experience the future of task management</p>
                 <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                    <a href="/auth/signup" class="btn btn-light btn-lg px-4 px-sm-5">Get Started Free</a>
-                    <a href="#" class="btn btn-outline-light btn-lg px-4 px-sm-5">See Pricing</a>
+                    <a href="/auth/signup" class="btn btn-outline-light btn-lg px-4 px-sm-5">Get Started Free</a>
                 </div>
             </div>
         </div>
@@ -257,6 +262,47 @@
     .transition-all {
         transition: all 0.3s ease;
     }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .icon-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .bg-glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .bg-glass:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    
+    .ai-feature-box {
+        border-radius: 1rem;
+    }    
+    
 </style>
 
 {% endblock %}

@@ -1,0 +1,120 @@
+{% extends "parents/base.html" %}
+
+{% block title %}Pricing - TaskFlow{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background: radial-gradient(circle at top left, #1a1a40, #0c0c1c);
+    overflow-x: hidden;
+  }
+
+  .pricing-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pricing-glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 2rem;
+    padding: 4rem 3rem;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeInUp 1s ease-out;
+  }
+
+  .pricing-glass h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+    color: #fff;
+  }
+
+  .pricing-glass p {
+    font-size: 1.25rem;
+    color: #ccc;
+    margin-bottom: 0;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    z-index: 0;
+    animation: float 12s ease-in-out infinite;
+  }
+
+  .orb1 {
+    width: 400px;
+    height: 400px;
+    background: #ff5f6d;
+    top: -100px;
+    left: -100px;
+  }
+
+  .orb2 {
+    width: 300px;
+    height: 300px;
+    background: #5f2c82;
+    bottom: -120px;
+    right: -80px;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0px);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .pricing-glass {
+      padding: 3rem 1.5rem;
+    }
+
+    .pricing-glass h1 {
+      font-size: 2rem;
+    }
+
+    .pricing-glass p {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<div class="pricing-wrapper">
+  <!-- Background Orbs -->
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <!-- Main Glass Box -->
+  <div class="pricing-glass position-relative z-1">
+    <h1>Yoo, it is completely free</h1>
+    <p>...for now though.</p>
+  </div>
+</div>
+{% endblock %}

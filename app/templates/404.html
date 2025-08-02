@@ -1,0 +1,82 @@
+{% extends "parents/base.html" %}
+
+{% block title %}404 Not Found - TaskFlow{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .not-found-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .not-found-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #0056b3;
+    animation: pulse 2s infinite;
+  }
+
+  .not-found-message {
+    font-size: 2rem;
+    margin-top: -1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .not-found-subtext {
+    font-size: 1.2rem;
+    color: #cccccc;
+    margin-bottom: 2rem;
+  }
+
+  .home-btn {
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background 0.3s ease;
+  }
+
+  .home-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #003f7f);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+    transform: translateY(-2px);
+    text-decoration: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+</style>
+
+<div class="not-found-container">
+  <div class="not-found-code">404</div>
+  <div class="not-found-message">Oops! Page Not Found</div>
+  <div class="not-found-subtext">
+    Looks like you took a wrong turn in TaskFlow.<br>
+    Let's get you back on track.
+  </div>
+  <a href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.home') }}" class="home-btn">
+    Take Me Home
+  </a>  
+</div>
+{% endblock %}
